@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -28,11 +28,11 @@ function Login() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', textAlign: 'center' }}>
+    <div style={{ maxWidth: '400px', margin: '50px auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
       <h2>AI Study Assistant Login</h2>
       
       {/* Show an error message if the login fails */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}
       
       <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
         <input 
@@ -41,7 +41,7 @@ function Login() {
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 
           required 
-          style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
         <input 
           type="password" 
@@ -49,12 +49,17 @@ function Login() {
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
           required 
-          style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
-        <button type="submit" style={{ padding: '10px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+        <button type="submit" style={{ padding: '10px', fontSize: '16px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
           Login
         </button>
       </form>
+
+      {/* --- NEW: Link to the registration page --- */}
+      <p style={{ marginTop: '20px' }}>
+        Don't have an account? <Link to="/register">Sign up here</Link>
+      </p>
     </div>
   );
 }

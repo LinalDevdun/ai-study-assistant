@@ -51,6 +51,7 @@ app.get('/', (req, res) => {
 // USER REGISTRATION ENDPOINT
 app.post('/register', async (req, res) => {
     try {
+        // Extract ALL THREE pieces of data from the frontend
         const { name, email, password } = req.body;
 
         const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
@@ -61,6 +62,7 @@ app.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const bcryptPassword = await bcrypt.hash(password, salt);
 
+        // Insert name, email, and password_hash into the database
         const newUser = await pool.query(
             'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING *',
             [name, email, bcryptPassword]
@@ -70,7 +72,7 @@ app.post('/register', async (req, res) => {
 
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server Error');
+        res.status(500).json({ error: 'Server Error' });
     }
 });
 
