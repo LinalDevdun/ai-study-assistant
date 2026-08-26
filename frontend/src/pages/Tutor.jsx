@@ -1,85 +1,94 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
-import ReactMarkdown from 'react-markdown';
+import '../index.css';
 
 function Tutor() {
+  const location = useLocation();
+  
+  const lessonContext = location.state?.lessonContext || '';
+  const lessonTitle = location.state?.lessonTitle || '';
+
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const handleAskQuestion = async (e) => {
+  const handleAskAI = async (e) => {
     e.preventDefault();
-    if (!question) return;
-
     setLoading(true);
-    setAnswer(''); // Clear previous answer
+    setAnswer('');
 
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/'); // Send to login if no token
-        return;
-      }
-
-      // Send the question to your backend AI route
+      
       const response = await axios.post('http://localhost:5000/tutor', 
-        { question },
+        { question, context: lessonContext },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+      
       setAnswer(response.data.answer);
-    } catch (error) {
-      console.error("Error asking AI:", error);
-      setAnswer("Sorry, I had trouble connecting to the AI. Please try again.");
+    } catch (err) {
+      setAnswer('The AI encountered an error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
+    // UPGRADED: Increased maxWidth from 750px to 900px for a much wider page layout
+    <div style={{ width: '100%', maxWidth: '900px', padding: '40px 20px', margin: '0 auto' }}>
       
-      {/* Navigation Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #eee', paddingBottom: '20px', marginBottom: '20px' }}>
-        <h2>🤖 AI Study Tutor</h2>
-        <Link to="/dashboard" style={{ textDecoration: 'none', color: '#007BFF', fontWeight: 'bold' }}>
-          ← Back to Dashboard
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <h1 style={{ color: '#FFFFFF', margin: 0, fontSize: '28px' }}>🤖 AI Study Tutor</h1>
+        <Link to="/dashboard" style={{ textDecoration: 'none' }}>
+          <button style={{ backgroundColor: '#475569', color: 'white', padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>
+            ← Back
+          </button>
         </Link>
       </div>
 
-      {/* Chat Area */}
-      <div style={{ backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
+      {/* UPGRADED: Added maxWidth: '100%' here to override the default narrow card width */}
+      <div className="card" style={{ width: '100%', maxWidth: '100%', padding: '35px', boxSizing: 'border-box' }}>
         
-        <form onSubmit={handleAskQuestion} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        {/* Context Banner */}
+        {lessonTitle && (
+          <div style={{ backgroundColor: '#ECFDF5', color: '#065F46', padding: '15px', borderRadius: '8px', marginBottom: '25px', fontWeight: 'bold', border: '1px solid #A7F3D0', textAlign: 'left' }}>
+            🧠 Context Active: Assisting with "{lessonTitle}"
+          </div>
+        )}
+
+        {/* Input Form */}
+        <form onSubmit={handleAskAI} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
           <input 
             type="text" 
-            placeholder="Ask me to explain a concept..." 
+            placeholder={lessonTitle ? `Ask a question about ${lessonTitle}...` : "Ask me to explain a concept..."}
             value={question} 
             onChange={(e) => setQuestion(e.target.value)} 
-            style={{ flex: 1, padding: '12px', borderRadius: '5px', border: '1px solid #ccc' }}
+            required 
+            style={{ 
+              width: '100%', 
+              padding: '16px', 
+              fontSize: '16px', 
+              borderRadius: '8px', 
+              border: '1px solid #CBD5E1',
+              boxSizing: 'border-box'
+            }}
           />
-          <button 
-            type="submit" 
-            disabled={loading}
-            style={{ padding: '12px 20px', backgroundColor: loading ? '#ccc' : '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: loading ? 'not-allowed' : 'pointer' }}
-          >
+          <button type="submit" className="btn-green" style={{ padding: '16px', fontSize: '18px', borderRadius: '8px' }}>
             {loading ? 'Thinking...' : 'Ask AI'}
           </button>
         </form>
 
-            
-        {/* AI Response Box */}
+        {/* AI Answer Display */}
         {answer && (
-        <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '5px', border: '1px solid #c3e6cb', color: '#155724', lineHeight: '1.6' }}>
-            <strong>Tutor says:</strong>
-            <div style={{ marginTop: '10px' }}>
-            <ReactMarkdown>{answer}</ReactMarkdown>
-            </div>
-        </div>
-)}
-        
+          <div style={{ marginTop: '30px', padding: '25px', backgroundColor: '#F8FAFC', borderLeft: '5px solid #2563EB', borderRadius: '8px', textAlign: 'left', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+            <h4 style={{ margin: '0 0 15px 0', color: '#1E293B', fontSize: '18px' }}>Tutor's Explanation:</h4>
+            <p style={{ margin: '0', color: '#334155', lineHeight: '1.8', whiteSpace: 'pre-wrap', fontSize: '16px' }}>
+              {answer}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

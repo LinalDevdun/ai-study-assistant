@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import '../index.css'; // This imports your new global theme!
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -9,7 +10,7 @@ function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevents the page from refreshing when you submit the form
+    e.preventDefault();
     try {
       // 1. Send the login request to your backend
       const response = await axios.post('http://localhost:5000/login', {
@@ -28,20 +29,21 @@ function Login() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
-      <h2>AI Study Assistant Login</h2>
+    // The "card" class applies the white floating box from your new CSS
+    <div className="card">
+      <h2 style={{ marginBottom: '30px', color: '#1E293B' }}>🎓 Study Assistant</h2>
       
       {/* Show an error message if the login fails */}
-      {error && <p style={{ color: 'red', fontWeight: 'bold' }}>{error}</p>}
+      {error && <p style={{ color: '#EF4444', fontWeight: 'bold' }}>{error}</p>}
       
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <form onSubmit={handleLogin}>
+        {/* Notice how clean this is now! The CSS handles all the sizing and colors */}
         <input 
           type="text" 
-          placeholder="Email" 
+          placeholder="Email Address" 
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 
           required 
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
         <input 
           type="password" 
@@ -49,15 +51,14 @@ function Login() {
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
           required 
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
-        <button type="submit" style={{ padding: '10px', fontSize: '16px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+        <button type="submit">
           Login
         </button>
       </form>
 
-      {/* --- NEW: Link to the registration page --- */}
-      <p style={{ marginTop: '20px' }}>
+      {/* Link to the registration page */}
+      <p style={{ marginTop: '25px', color: '#64748B' }}>
         Don't have an account? <Link to="/register">Sign up here</Link>
       </p>
     </div>

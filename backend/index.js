@@ -193,6 +193,34 @@ app.get('/tasks', authenticateToken, async (req, res) => {
     }
 });
 
+// --- LMS: COURSE & LESSON ROUTES ---
+
+// 1. Fetch all available courses
+app.get('/courses', authenticateToken, async (req, res) => {
+    try {
+        const courses = await pool.query('SELECT * FROM courses ORDER BY id ASC');
+        res.json(courses.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// 2. Fetch all lessons for a specific course
+app.get('/courses/:courseId/lessons', authenticateToken, async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const lessons = await pool.query(
+            'SELECT * FROM lessons WHERE course_id = $1 ORDER BY order_number ASC',
+            [courseId]
+        );
+        res.json(lessons.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 // --- AI TUTOR ENDPOINT ---
 app.post('/tutor', authenticateToken, async (req, res) => {
     try {
@@ -200,7 +228,7 @@ app.post('/tutor', authenticateToken, async (req, res) => {
         
         // 1. Initialize the AI with your secret key
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
 
         // 2. Give the AI its personality and rules (Prompt Engineering)
         const systemPrompt = `You are an expert, encouraging AI Study Tutor. 

@@ -1,70 +1,86 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import '../index.css';
 
 function Dashboard() {
+  const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
-  const [subjects, setSubjects] = useState([]);
 
+  // This runs automatically when the page loads to fetch the courses
   useEffect(() => {
-    // 1. Check if the user has a token (the "wristband")
-    const token = localStorage.getItem('token');
-    
-    // 2. If they don't have a token, kick them back to the login page!
-    if (!token) {
-      navigate('/');
-      return;
-    }
-
-    // 3. If they DO have a token, fetch their private data from the backend
-    const fetchSubjects = async () => {
+    const fetchCourses = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/subjects', {
-          headers: { Authorization: `Bearer ${token}` } // Show the wristband to the bouncer!
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/'); // Kick them back to login if they aren't authenticated
+          return;
+        }
+        
+        // Call our brand new LMS backend route!
+        const response = await axios.get('http://localhost:5000/courses', {
+          headers: { Authorization: `Bearer ${token}` }
         });
-        setSubjects(response.data);
-      } catch (error) {
-        console.error("Error fetching data, token might be expired.");
-        localStorage.removeItem('token');
-        navigate('/');
+        
+        setCourses(response.data);
+      } catch (err) {
+        console.error('Error fetching courses:', err);
       }
     };
 
-    fetchSubjects();
+    fetchCourses();
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Destroy the wristband
-    navigate('/'); // Send back to login
+    localStorage.removeItem('token');
+    navigate('/');
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '40px auto', padding: '20px', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #eee', paddingBottom: '20px' }}>
-        <h2>🎓 Student Dashboard</h2>
-        <Link to="/tutor" style={{ padding: '8px 15px', backgroundColor: '#28a745', color: 'white', textDecoration: 'none', borderRadius: '5px', marginLeft: '15px' }}>
-          Talk to AI Tutor
-        </Link>
-        <button onClick={handleLogout} style={{ padding: '8px 15px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-          Logout
-        </button>
-      </div>
+    <div style={{ width: '100%', maxWidth: '800px', padding: '40px 20px' }}>
       
-      <div style={{ marginTop: '30px' }}>
-        <h3>Your Subjects</h3>
-        {subjects.length === 0 ? (
-          <p style={{ color: '#666' }}>No subjects found. You are starting fresh!</p>
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <h1 style={{ color: '#FFFFFF', margin: 0 }}>🎓 Student Dashboard</h1>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <Link to="/tutor">
+            <button className="btn-green" style={{ width: 'auto', padding: '10px 20px' }}>Ask AI Tutor</button>
+          </Link>
+          <button className="btn-red" onClick={handleLogout}>Logout</button>
+        </div>
+      </div>
+
+      {/* Courses Section */}
+      <div className="card" style={{ maxWidth: '100%', textAlign: 'left', marginTop: '0' }}>
+        <h2 style={{ marginTop: '0', color: '#1E293B', borderBottom: '2px solid #F1F5F9', paddingBottom: '15px' }}>
+          My Enrolled Courses
+        </h2>
+        
+        {courses.length === 0 ? (
+          <p style={{ color: '#64748B' }}>No courses found. Check back later!</p>
         ) : (
-          <div style={{ display: 'grid', gap: '15px', gridTemplateColumns: '1fr 1fr' }}>
-            {subjects.map(subject => (
-              <div key={subject.id} style={{ padding: '15px', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-                <h4 style={{ margin: '0 0 10px 0' }}>{subject.name}</h4>
-                <p style={{ margin: '0', fontSize: '14px', color: '#555' }}>{subject.description}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
+            
+            {/* Loop through the courses from the database and create a card for each */}
+            {courses.map(course => (
+              <div key={course.id} style={{ padding: '20px', border: '1px solid #E2E8F0', borderRadius: '8px', backgroundColor: '#F8FAFC' }}>
+                <h3 style={{ margin: '0 0 10px 0', color: '#2563EB' }}>{course.title}</h3>
+                <p style={{ margin: '0 0 15px 0', color: '#64748B', lineHeight: '1.5' }}>{course.description}</p>
+                
+                {/* UPGRADED: This button now routes the user to the specific course page! */}
+                <button 
+                  onClick={() => navigate(`/course/${course.id}`)} 
+                  style={{ width: 'auto', padding: '10px 20px' }}
+                >
+                  Open Course
+                </button>
               </div>
             ))}
+
           </div>
         )}
       </div>
+      
     </div>
   );
 }

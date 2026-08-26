@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import '../index.css'; // This applies your global theme!
 
 function Register() {
-  const [name, setName] = useState(''); // State for the new Name field
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -26,27 +27,31 @@ function Register() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center', fontFamily: 'sans-serif' }}>
-      <h2>Create an Account</h2>
-      <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        
-        {/* THIS IS THE NEW NAME FIELD */}
+    // The "card" class puts everything inside a beautiful white floating box
+    <div className="card">
+      <h2 style={{ marginBottom: '30px', color: '#1E293B' }}>Create an Account</h2>
+      
+      {message && (
+        <p style={{ marginBottom: '20px', color: message.includes('successful') ? '#10B981' : '#EF4444', fontWeight: 'bold' }}>
+          {message}
+        </p>
+      )}
+
+      <form onSubmit={handleRegister}>
+        {/* CSS handles all the padding, borders, and hover effects now */}
         <input 
           type="text" 
           placeholder="Full Name" 
           value={name} 
           onChange={(e) => setName(e.target.value)} 
           required 
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
-
         <input 
-          type="text" 
-          placeholder="Email" 
+          type="email" 
+          placeholder="Email Address" 
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 
           required 
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
         <input 
           type="password" 
@@ -54,20 +59,13 @@ function Register() {
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
           required 
-          style={{ padding: '10px', fontSize: '16px', borderRadius: '5px', border: '1px solid #ccc' }}
         />
-        <button type="submit" style={{ padding: '10px', fontSize: '16px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+        <button type="submit" className="btn-green">
           Sign Up
         </button>
       </form>
       
-      {message && (
-        <p style={{ marginTop: '20px', color: message.includes('successful') ? 'green' : 'red', fontWeight: 'bold' }}>
-          {message}
-        </p>
-      )}
-
-      <p style={{ marginTop: '20px' }}>
+      <p style={{ marginTop: '25px', color: '#64748B' }}>
         Already have an account? <Link to="/">Login here</Link>
       </p>
     </div>
