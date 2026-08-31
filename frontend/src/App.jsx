@@ -5,22 +5,51 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Course from './pages/Course';
 import Tutor from './pages/Tutor';
+import LecturerDashboard from './pages/LecturerDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import ProtectedRoute from './components/ProtectedRoute'; // <-- IMPORT THE GUARD
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* 1. Splash screen is now the default front door */}
+        {/* Public Routes */}
         <Route path="/" element={<Splash />} />
-        
-        {/* 2. Login is moved to /login */}
         <Route path="/login" element={<Login />} />
-        
-        {/* The rest remain exactly the same */}
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/course/:id" element={<Course />} />
-        <Route path="/tutor" element={<Tutor />} />
+
+        {/* Protected Student Routes */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Protected Lecturer Routes */}
+        <Route path="/lecturer-dashboard" element={
+          <ProtectedRoute allowedRoles={['LECTURER']}>
+            <LecturerDashboard />
+          </ProtectedRoute>
+        } />
+        
+        {/* Protected Admin Routes */}
+        <Route path="/admin-dashboard" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+
+        {/* Shared Protected Routes (Anyone logged in can access) */}
+        <Route path="/course/:id" element={
+          <ProtectedRoute allowedRoles={['STUDENT', 'LECTURER', 'ADMIN']}>
+            <Course />
+          </ProtectedRoute>
+        } />
+        <Route path="/tutor" element={
+          <ProtectedRoute allowedRoles={['STUDENT', 'LECTURER', 'ADMIN']}>
+            <Tutor />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );
