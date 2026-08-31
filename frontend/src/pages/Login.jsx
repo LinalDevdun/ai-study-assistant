@@ -1,66 +1,134 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import '../index.css'; // This imports your new global theme!
+import axios from 'axios';
+import '../index.css';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // 1. Send the login request to your backend
-      const response = await axios.post('http://localhost:5000/login', {
-        email,
-        password
-      });
+      const response = await axios.post('http://localhost:5000/login', { email, password });
       
-      // 2. Save the JWT token to the browser's localStorage
       localStorage.setItem('token', response.data.token);
+      localStorage.setItem('role', response.data.role);
+
+      setMessage('Login successful! Redirecting...');
       
-      // 3. Send the user to the dashboard page
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Invalid email or password');
+      setTimeout(() => {
+        const userRole = response.data.role;
+        
+        if (userRole === 'ADMIN') {
+           navigate('/admin-dashboard'); 
+        } else if (userRole === 'LECTURER') {
+           navigate('/lecturer-dashboard'); 
+        } else {
+           navigate('/dashboard'); 
+        }
+      }, 1000);
+      
+    } catch (error) {
+      setMessage(error.response?.data?.error || 'Login failed. Please try again.');
     }
   };
 
   return (
-    // The "card" class applies the white floating box from your new CSS
-    <div className="card">
-      <h2 style={{ marginBottom: '30px', color: '#1E293B' }}>🎓 Study Assistant</h2>
-      
-      {/* Show an error message if the login fails */}
-      {error && <p style={{ color: '#EF4444', fontWeight: 'bold' }}>{error}</p>}
-      
-      <form onSubmit={handleLogin}>
-        {/* Notice how clean this is now! The CSS handles all the sizing and colors */}
-        <input 
-          type="text" 
-          placeholder="Email Address" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
-        />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-        />
-        <button type="submit">
-          Login
-        </button>
-      </form>
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      height: '100vh', 
+      width: '100vw', 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      backgroundColor: '#F4F7FE', 
+      fontFamily: 'sans-serif' 
+    }}>
+      <div style={{ 
+        backgroundColor: '#FFFFFF', 
+        padding: '40px', 
+        borderRadius: '16px', 
+        boxShadow: '0 10px 30px rgba(0,0,0,0.05)', 
+        width: '100%', 
+        maxWidth: '400px', 
+        textAlign: 'center' 
+      }}>
+        
+        <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '28px' }}>Welcome Back 👋</h2>
+        <p style={{ color: '#A3AED0', marginBottom: '30px', fontSize: '15px' }}>Enter your email and password to sign in.</p>
+        
+        {message && (
+          <p style={{ 
+            marginBottom: '20px', 
+            padding: '10px',
+            borderRadius: '8px',
+            backgroundColor: message.includes('successful') ? '#D1FAE5' : '#FEE2E2',
+            color: message.includes('successful') ? '#059669' : '#DC2626', 
+            fontWeight: 'bold',
+            fontSize: '14px'
+          }}>
+            {message}
+          </p>
+        )}
 
-      {/* Link to the registration page */}
-      <p style={{ marginTop: '25px', color: '#64748B' }}>
-        Don't have an account? <Link to="/register">Sign up here</Link>
-      </p>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <input 
+            type="email" 
+            placeholder="Email Address" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+            required 
+            style={{
+              padding: '14px',
+              borderRadius: '8px',
+              border: '1px solid #E2E8F0',
+              backgroundColor: '#F8FAFC',
+              color: '#111C44',
+              outline: 'none',
+              fontSize: '15px'
+            }}
+          />
+          <input 
+            type="password" 
+            placeholder="Password" 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+            required 
+            style={{
+              padding: '14px',
+              borderRadius: '8px',
+              border: '1px solid #E2E8F0',
+              backgroundColor: '#F8FAFC',
+              color: '#111C44',
+              outline: 'none',
+              fontSize: '15px'
+            }}
+          />
+          <button type="submit" style={{
+            padding: '14px',
+            backgroundColor: '#4318FF',
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            cursor: 'pointer',
+            marginTop: '10px',
+            boxShadow: '0 4px 12px rgba(67, 24, 255, 0.2)'
+          }}>
+            Sign In
+          </button>
+        </form>
+        
+        <p style={{ marginTop: '25px', color: '#A3AED0', fontSize: '14px' }}>
+          Don't have an account? <Link to="/register" style={{ color: '#4318FF', fontWeight: 'bold', textDecoration: 'none' }}>Sign up here</Link>
+        </p>
+      </div>
     </div>
   );
 }
