@@ -41,6 +41,17 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// --- NEW: ROLE-BASED MIDDLEWARE ---
+const authorizeRoles = (...allowedRoles) => {
+    return (req, res, next) => {
+        // If the user's role isn't in the allowed list, kick them out!
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({ error: 'Access denied. You do not have permission to view this.' });
+        }
+        next();
+    };
+};
+
 // --- ROUTES ---
 
 // A basic test route
@@ -62,7 +73,7 @@ app.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const bcryptPassword = await bcrypt.hash(password, salt);
 
-        // Insert name, email, and password_hash into the database
+        // Insert name, email, and password_hash into the database (role defaults to STUDENT)
         const newUser = await pool.query(
             'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING *',
             [name, email, bcryptPassword]
@@ -76,7 +87,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// USER LOGIN ENDPOINT
+// USER LOGIN ENDPOINT (UPDATED FOR RBAC)
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -91,13 +102,25 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
 
+        // UPGRADE 1: Log the time the user logged in
+        await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.rows[0].id]);
+
+        // UPGRADE 2: Pack the 'role' inside the security token!
         const token = jwt.sign(
-            { user_id: user.rows[0].id }, 
+            { 
+                user_id: user.rows[0].id,
+                role: user.rows[0].role // <-- The magic key!
+            }, 
             process.env.JWT_SECRET, 
             { expiresIn: '1h' } 
         );
 
-        res.json({ message: 'Login successful!', token });
+        // UPGRADE 3: Send the role back to the frontend so React knows where to route them
+        res.json({ 
+            message: 'Login successful!', 
+            token, 
+            role: user.rows[0].role 
+        });
 
     } catch (err) {
         console.error(err.message);
@@ -224,16 +247,19 @@ app.get('/courses/:courseId/lessons', authenticateToken, async (req, res) => {
 // --- AI TUTOR ENDPOINT ---
 app.post('/tutor', authenticateToken, async (req, res) => {
     try {
-        const { question } = req.body;
+        const { question, context } = req.body;
         
         // 1. Initialize the AI with your secret key
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash-lite" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         // 2. Give the AI its personality and rules (Prompt Engineering)
         const systemPrompt = `You are an expert, encouraging AI Study Tutor. 
         Your goal is to help a student understand academic concepts simply and clearly.
         Break down complex topics into beginner-friendly explanations.
+        
+        Context provided from the lesson: "${context || 'No specific lesson context provided.'}"
+        
         Here is the student's question: "${question}"`;
 
         // 3. Ask the AI and wait for the response
@@ -246,6 +272,37 @@ app.post('/tutor', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: 'AI failed to respond.' });
+    }
+});
+
+// --- ADMIN ROUTES ---
+
+// 1. Get all users (Admin only)
+app.get('/admin/users', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+    try {
+        const users = await pool.query('SELECT id, name, email, role, last_login FROM users ORDER BY id ASC');
+        res.json(users.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// 2. Update a user's role (Admin only)
+app.put('/admin/users/:id/role', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+        
+        const updatedUser = await pool.query(
+            'UPDATE users SET role = $1 WHERE id = $2 RETURNING id, name, email, role',
+            [role, id]
+        );
+        
+        res.json({ message: 'User role updated successfully!', user: updatedUser.rows[0] });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
     }
 });
 
