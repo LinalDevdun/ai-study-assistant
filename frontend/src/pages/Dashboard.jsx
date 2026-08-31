@@ -12,7 +12,6 @@ function Dashboard() {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          // UPGRADED: Now redirects unauthorized users to /login instead of the splash screen
           navigate('/login');
           return;
         }
@@ -29,23 +28,21 @@ function Dashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    // UPGRADED: Now correctly sends the user to the login page when they log out
     navigate('/login');
   };
 
-  // The new Navigation Menu based on your request
+  // UPGRADED: Your custom, highly-specific LMS navigation menu!
   const menuItems = [
-    { name: 'Home', icon: '🏠', path: '/dashboard', active: true },
-    { name: 'Events', icon: '📅', path: '#' },
-    { name: 'My Courses', icon: '📚', path: '/dashboard' },
-    { name: 'Time table', icon: '⏰', path: '#' },
-    { name: 'AI Study Tutor', icon: '🤖', path: '/tutor' },
-    { name: 'Settings', icon: '⚙️', path: '#' },
-    { name: 'Help Centre', icon: '❓', path: '#' },
+    { name: 'My Courses', icon: '📚', path: '/dashboard', active: true },
+    { name: 'Learning Progress', icon: '📈', path: '#' },
+    { name: 'Upcoming Assignments', icon: '📝', path: '#' },
+    { name: 'Upcoming Deadlines', icon: '📅', path: '#' },
+    { name: 'Notifications', icon: '🔔', path: '#' },
+    { name: 'AI Assistant', icon: '🤖', path: '/tutor' },
+    { name: 'Recent Grades', icon: '🏆', path: '#' },
   ];
 
   return (
-    // Main App Container (Forces full screen and light background)
     <div style={{ display: 'flex', height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, backgroundColor: '#F4F7FE', color: '#2B3674', fontFamily: 'sans-serif' }}>
       
       {/* 1. LEFT SIDEBAR */}
@@ -103,7 +100,7 @@ function Dashboard() {
         {/* Dashboard Content */}
         <div style={{ padding: '30px' }}>
           
-          {/* Quick Stats Grid (Placeholder mimicking your image) */}
+          {/* Quick Stats Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px' }}>
              <div style={{ backgroundColor: '#E0F7FA', padding: '20px', borderRadius: '12px' }}>
                 <p style={{ margin: 0, color: '#006064', fontWeight: 'bold' }}>Courses</p>
