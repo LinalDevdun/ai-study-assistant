@@ -7,7 +7,12 @@ import Course from './pages/Course';
 import Tutor from './pages/Tutor';
 import LecturerDashboard from './pages/LecturerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import ProtectedRoute from './components/ProtectedRoute'; // <-- IMPORT THE GUARD
+import ProtectedRoute from './components/ProtectedRoute';
+import Progress from './pages/Progress';
+import Deadlines from './pages/Deadlines';
+import Assignments from './pages/Assignments';
+import Notifications from './pages/Notifications';
+import Grades from './pages/Grades'; // <-- IMPORTED HERE
 
 function App() {
   return (
@@ -22,6 +27,37 @@ function App() {
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <Dashboard />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/progress" element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <Progress />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/assignments" element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <Assignments />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/deadlines" element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <Deadlines />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/notifications" element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <Notifications />
+          </ProtectedRoute>
+        } />
+
+        {/* NEW: Grades Route */}
+        <Route path="/grades" element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <Grades />
           </ProtectedRoute>
         } />
         

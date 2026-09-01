@@ -31,15 +31,15 @@ function Dashboard() {
     navigate('/login');
   };
 
-  // UPGRADED: Your custom, highly-specific LMS navigation menu!
+  // UPGRADED: Added the final /grades path! The menu is now complete!
   const menuItems = [
     { name: 'My Courses', icon: '📚', path: '/dashboard', active: true },
-    { name: 'Learning Progress', icon: '📈', path: '#' },
-    { name: 'Upcoming Assignments', icon: '📝', path: '#' },
-    { name: 'Upcoming Deadlines', icon: '📅', path: '#' },
-    { name: 'Notifications', icon: '🔔', path: '#' },
+    { name: 'Learning Progress', icon: '📈', path: '/progress' },
+    { name: 'Upcoming Assignments', icon: '📝', path: '/assignments' }, 
+    { name: 'Upcoming Deadlines', icon: '📅', path: '/deadlines' }, 
+    { name: 'Notifications', icon: '🔔', path: '/notifications' },
     { name: 'AI Assistant', icon: '🤖', path: '/tutor' },
-    { name: 'Recent Grades', icon: '🏆', path: '#' },
+    { name: 'Recent Grades', icon: '🏆', path: '/grades' }, // <-- UPDATED HERE
   ];
 
   return (
@@ -104,7 +104,7 @@ function Dashboard() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px' }}>
              <div style={{ backgroundColor: '#E0F7FA', padding: '20px', borderRadius: '12px' }}>
                 <p style={{ margin: 0, color: '#006064', fontWeight: 'bold' }}>Courses</p>
-                <h2 style={{ margin: '10px 0 0 0', color: '#00838F', fontSize: '28px' }}>1 / 5</h2>
+                <h2 style={{ margin: '10px 0 0 0', color: '#00838F', fontSize: '28px' }}>{courses.length}</h2>
              </div>
              <div style={{ backgroundColor: '#FFF3E0', padding: '20px', borderRadius: '12px' }}>
                 <p style={{ margin: 0, color: '#E65100', fontWeight: 'bold' }}>Class Attendance</p>
