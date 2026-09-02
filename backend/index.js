@@ -4,6 +4,9 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -26,10 +29,27 @@ pool.connect()
     .then(() => console.log('✅ Connected to PostgreSQL Database successfully!'))
     .catch(err => console.error('❌ Database connection error', err.stack));
 
+// --- MULTER CONFIGURATION (FOR FILE UPLOADS) ---
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname); 
+  }
+});
+const upload = multer({ storage: storage });
+
 // --- AUTHENTICATION MIDDLEWARE (The Bouncer) ---
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Format expects "Bearer <token>"
+    const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) return res.status(401).json({ error: 'Access denied. Please log in.' });
 
@@ -41,10 +61,9 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// --- NEW: ROLE-BASED MIDDLEWARE ---
+// --- ROLE-BASED MIDDLEWARE ---
 const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
-        // If the user's role isn't in the allowed list, kick them out!
         if (!req.user || !allowedRoles.includes(req.user.role)) {
             return res.status(403).json({ error: 'Access denied. You do not have permission to view this.' });
         }
@@ -54,16 +73,14 @@ const authorizeRoles = (...allowedRoles) => {
 
 // --- ROUTES ---
 
-// A basic test route
 app.get('/', (req, res) => {
     res.send('AI Study Assistant Backend is running!');
 });
 
-// USER REGISTRATION ENDPOINT
+// USER REGISTRATION ENDPOINT (UPDATED FOR DEGREE & BATCH)
 app.post('/register', async (req, res) => {
     try {
-        // Extract ALL THREE pieces of data from the frontend
-        const { name, email, password } = req.body;
+        const { name, email, password, degree, batch } = req.body;
 
         const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userCheck.rows.length > 0) {
@@ -73,10 +90,9 @@ app.post('/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const bcryptPassword = await bcrypt.hash(password, salt);
 
-        // Insert name, email, and password_hash into the database (role defaults to STUDENT)
         const newUser = await pool.query(
-            'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING *',
-            [name, email, bcryptPassword]
+            'INSERT INTO users (name, email, password_hash, degree, batch) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [name, email, bcryptPassword, degree, batch]
         );
 
         res.json({ message: 'User registered successfully!', user: newUser.rows[0] });
@@ -87,7 +103,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// USER LOGIN ENDPOINT (UPDATED FOR RBAC)
+// USER LOGIN ENDPOINT
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -102,20 +118,17 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
 
-        // UPGRADE 1: Log the time the user logged in
         await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.rows[0].id]);
 
-        // UPGRADE 2: Pack the 'role' inside the security token!
         const token = jwt.sign(
             { 
                 user_id: user.rows[0].id,
-                role: user.rows[0].role // <-- The magic key!
+                role: user.rows[0].role 
             }, 
             process.env.JWT_SECRET, 
             { expiresIn: '1h' } 
         );
 
-        // UPGRADE 3: Send the role back to the frontend so React knows where to route them
         res.json({ 
             message: 'Login successful!', 
             token, 
@@ -146,7 +159,6 @@ app.post('/subjects', authenticateToken, async (req, res) => {
     }
 });
 
-// --- GET ALL SUBJECTS FOR A USER ---
 app.get('/subjects', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.user_id;
@@ -158,7 +170,6 @@ app.get('/subjects', authenticateToken, async (req, res) => {
     }
 });
 
-// --- CREATE A NOTE ---
 app.post('/notes', authenticateToken, async (req, res) => {
     try {
         const { subject_id, title, content } = req.body;
@@ -175,7 +186,6 @@ app.post('/notes', authenticateToken, async (req, res) => {
     }
 });
 
-// --- GET ALL NOTES ---
 app.get('/notes', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.user_id;
@@ -187,7 +197,6 @@ app.get('/notes', authenticateToken, async (req, res) => {
     }
 });
 
-// --- CREATE A TASK ---
 app.post('/tasks', authenticateToken, async (req, res) => {
     try {
         const { subject_id, title, description, due_date, priority } = req.body;
@@ -204,7 +213,6 @@ app.post('/tasks', authenticateToken, async (req, res) => {
     }
 });
 
-// --- GET ALL TASKS ---
 app.get('/tasks', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.user_id;
@@ -216,12 +224,61 @@ app.get('/tasks', authenticateToken, async (req, res) => {
     }
 });
 
+
 // --- LMS: COURSE & LESSON ROUTES ---
 
-// 1. Fetch all available courses
+// UPLOAD A MODULE & SAVE TO DATABASE (Lecturers & Admins Only)
+app.post('/courses', authenticateToken, authorizeRoles('LECTURER', 'ADMIN'), upload.single('file'), async (req, res) => {
+  try {
+    const { courseTitle, degree, batch } = req.body;
+    const file = req.file;
+    const lecturerId = req.user.user_id;
+
+    if (!file) {
+      return res.status(400).json({ error: 'Please upload a file' });
+    }
+
+    const newCourse = await pool.query(
+      'INSERT INTO courses (title, degree, batch, file_path, lecturer_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [courseTitle, degree, batch, file.path, lecturerId]
+    );
+
+    res.status(201).json({ 
+      message: 'Module successfully uploaded and saved to database!',
+      course: newCourse.rows[0] 
+    });
+  } catch (error) {
+    console.error('Database Upload Error:', error.message);
+    res.status(500).json({ error: 'Server error during upload to database' });
+  }
+});
+
+// FETCH COURSES (Filtered by student's Degree and Batch automatically)
 app.get('/courses', authenticateToken, async (req, res) => {
     try {
-        const courses = await pool.query('SELECT * FROM courses ORDER BY id ASC');
+        const userId = req.user.user_id;
+        const userRole = req.user.role;
+
+        // Admins and Lecturers can view all courses
+        if (userRole === 'ADMIN' || userRole === 'LECTURER') {
+            const courses = await pool.query('SELECT * FROM courses ORDER BY id ASC');
+            return res.json(courses.rows);
+        }
+
+        // Fetch student's assigned degree and batch profile
+        const userResult = await pool.query('SELECT degree, batch FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'User profile not found' });
+        }
+
+        const { degree, batch } = userResult.rows[0];
+
+        // Return only courses matching the student's specific degree and batch cohort
+        const courses = await pool.query(
+            'SELECT * FROM courses WHERE degree = $1 AND batch = $2 ORDER BY id ASC',
+            [degree, batch]
+        );
+
         res.json(courses.rows);
     } catch (err) {
         console.error(err.message);
@@ -229,7 +286,6 @@ app.get('/courses', authenticateToken, async (req, res) => {
     }
 });
 
-// 2. Fetch all lessons for a specific course
 app.get('/courses/:courseId/lessons', authenticateToken, async (req, res) => {
     try {
         const { courseId } = req.params;
@@ -249,11 +305,9 @@ app.post('/tutor', authenticateToken, async (req, res) => {
     try {
         const { question, context } = req.body;
         
-        // 1. Initialize the AI with your secret key
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        // 2. Give the AI its personality and rules (Prompt Engineering)
         const systemPrompt = `You are an expert, encouraging AI Study Tutor. 
         Your goal is to help a student understand academic concepts simply and clearly.
         Break down complex topics into beginner-friendly explanations.
@@ -262,11 +316,9 @@ app.post('/tutor', authenticateToken, async (req, res) => {
         
         Here is the student's question: "${question}"`;
 
-        // 3. Ask the AI and wait for the response
         const result = await model.generateContent(systemPrompt);
         const responseText = result.response.text();
 
-        // 4. Send the AI's answer back to the React frontend
         res.json({ answer: responseText });
 
     } catch (err) {
@@ -277,10 +329,9 @@ app.post('/tutor', authenticateToken, async (req, res) => {
 
 // --- ADMIN ROUTES ---
 
-// 1. Get all users (Admin only)
 app.get('/admin/users', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
     try {
-        const users = await pool.query('SELECT id, name, email, role, last_login FROM users ORDER BY id ASC');
+        const users = await pool.query('SELECT id, name, email, role, degree, batch, last_login FROM users ORDER BY id ASC');
         res.json(users.rows);
     } catch (err) {
         console.error(err.message);
@@ -288,7 +339,6 @@ app.get('/admin/users', authenticateToken, authorizeRoles('ADMIN'), async (req, 
     }
 });
 
-// 2. Update a user's role (Admin only)
 app.put('/admin/users/:id/role', authenticateToken, authorizeRoles('ADMIN'), async (req, res) => {
     try {
         const { id } = req.params;
