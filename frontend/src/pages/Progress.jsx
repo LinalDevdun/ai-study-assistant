@@ -37,10 +37,7 @@ function Progress() {
             📅 Upcoming Deadlines
           </div>
           
-          {/* FIXED: Added Notifications onClick handler! */}
-          <div onClick={() => navigate('/notifications')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🔔 Notifications
-          </div>
+
           
           <div onClick={() => navigate('/tutor')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
             🤖 AI Assistant
@@ -52,11 +49,7 @@ function Progress() {
           </div>
         </nav>
 
-        <div style={{ padding: '0 15px' }}>
-          <div onClick={handleLogout} style={{ padding: '12px 20px', color: '#EF4444', cursor: 'pointer', fontWeight: 'bold' }}>
-            🚪 Log Out
-          </div>
-        </div>
+
       </aside>
 
       {/* Main Content */}
