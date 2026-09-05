@@ -13,6 +13,7 @@ import Deadlines from './pages/Deadlines';
 import Assignments from './pages/Assignments';
 import Notifications from './pages/Notifications';
 import Grades from './pages/Grades'; // <-- IMPORTED HERE
+import MyCourses from './pages/MyCourses';
 
 function App() {
   return (
@@ -27,6 +28,12 @@ function App() {
         <Route path="/dashboard" element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <Dashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/courses" element={
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <MyCourses />
           </ProtectedRoute>
         } />
         
