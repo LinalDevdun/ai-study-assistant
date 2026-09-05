@@ -36,7 +36,7 @@ function MyCourses() {
     { name: 'Dashboard', icon: '🏠', path: '/dashboard' },
     { name: 'My Courses', icon: '📚', path: '/courses', active: true }, // <-- Active state here!
     { name: 'Learning Progress', icon: '📈', path: '/progress' },
-    { name: 'Upcoming Assignments', icon: '📝', path: '/assignments' }, 
+    { name: 'Assignments', icon: '📝', path: '/assignments' }, 
     { name: 'Upcoming Deadlines', icon: '📅', path: '/deadlines' }, 
     { name: 'AI Assistant', icon: '🤖', path: '/tutor' },
     { name: 'Recent Grades', icon: '🏆', path: '/grades' }, 
