@@ -369,15 +369,143 @@ app.get('/assignments', authenticateToken, async (req, res) => {
 
         const { degree, batch } = userResult.rows[0];
 
-        // Return only assignments matching the student's specific degree and batch cohort
-        const assignments = await pool.query(
-            'SELECT * FROM assignments WHERE degree = $1 AND batch = $2 ORDER BY due_date ASC',
-            [degree, batch]
-        );
+        // Return assignments matching the cohort, AND check if the student already submitted it / got graded
+        const assignments = await pool.query(`
+            SELECT a.*, 
+                   EXISTS (SELECT 1 FROM submissions s WHERE s.assignment_id = a.id AND s.student_id = $3) AS is_submitted,
+                   EXISTS (SELECT 1 FROM submissions s WHERE s.assignment_id = a.id AND s.student_id = $3 AND s.grade IS NOT NULL) AS is_graded
+            FROM assignments a 
+            WHERE a.degree = $1 AND a.batch = $2 
+            ORDER BY a.due_date ASC
+        `, [degree, batch, userId]);
 
         res.json(assignments.rows);
     } catch (err) {
         console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// --- LMS: SUBMISSION ROUTES ---
+
+// 1. STUDENT SUBMITS (OR RESUBMITS) AN ASSIGNMENT
+app.post('/submissions', authenticateToken, upload.single('file'), async (req, res) => {
+    try {
+        const { assignmentId } = req.body;
+        const file = req.file;
+        const studentId = req.user.user_id;
+
+        if (!file) {
+            return res.status(400).json({ error: 'Please attach a file to submit.' });
+        }
+
+        // Check if already submitted
+        const existing = await pool.query(
+            'SELECT * FROM submissions WHERE assignment_id = $1 AND student_id = $2',
+            [assignmentId, studentId]
+        );
+
+        if (existing.rows.length > 0) {
+            if (existing.rows[0].grade) {
+                return res.status(403).json({ error: 'You cannot resubmit work that has already been graded.' });
+            }
+
+            const updatedSubmission = await pool.query(
+                'UPDATE submissions SET file_path = $1, submitted_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+                [file.path, existing.rows[0].id]
+            );
+            return res.status(200).json({
+                message: 'Assignment successfully updated and resubmitted! 🔄',
+                submission: updatedSubmission.rows[0]
+            });
+        } else {
+            const newSubmission = await pool.query(
+                'INSERT INTO submissions (assignment_id, student_id, file_path) VALUES ($1, $2, $3) RETURNING *',
+                [assignmentId, studentId, file.path]
+            );
+            return res.status(201).json({
+                message: 'Assignment submitted successfully! 🎉',
+                submission: newSubmission.rows[0]
+            });
+        }
+    } catch (error) {
+        console.error('Submission Error:', error.message);
+        res.status(500).json({ error: 'Server error during submission' });
+    }
+});
+
+// 2. LECTURER VIEWS ALL SUBMISSIONS
+app.get('/submissions', authenticateToken, authorizeRoles('LECTURER', 'ADMIN'), async (req, res) => {
+    try {
+        const submissions = await pool.query(`
+            SELECT 
+                s.id AS submission_id,
+                s.file_path,
+                s.submitted_at,
+                s.grade,
+                s.feedback,
+                a.title AS assignment_title,
+                u.name AS student_name,
+                u.degree,
+                u.batch
+            FROM submissions s
+            JOIN assignments a ON s.assignment_id = a.id
+            JOIN users u ON s.student_id = u.id
+            ORDER BY s.submitted_at DESC
+        `);
+        res.json(submissions.rows);
+    } catch (err) {
+        console.error('Fetch Submissions Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// 3. LECTURER GRADES A SUBMISSION
+app.put('/submissions/:id/grade', authenticateToken, authorizeRoles('LECTURER', 'ADMIN'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { grade, feedback } = req.body;
+
+        const updatedSubmission = await pool.query(
+            'UPDATE submissions SET grade = $1, feedback = $2 WHERE id = $3 RETURNING *',
+            [grade, feedback, id]
+        );
+
+        if (updatedSubmission.rows.length === 0) {
+            return res.status(404).json({ error: 'Submission not found' });
+        }
+
+        res.json({ 
+            message: 'Grade and feedback saved successfully!', 
+            submission: updatedSubmission.rows[0] 
+        });
+    } catch (err) {
+        console.error('Grading Error:', err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// 4. STUDENT VIEWS THEIR OWN GRADES
+app.get('/my-grades', authenticateToken, async (req, res) => {
+    try {
+        const studentId = req.user.user_id;
+        
+        const grades = await pool.query(`
+            SELECT 
+                s.id AS submission_id,
+                s.submitted_at,
+                s.grade,
+                s.feedback,
+                a.title AS assignment_title
+            FROM submissions s
+            JOIN assignments a ON s.assignment_id = a.id
+            WHERE s.student_id = $1 AND s.grade IS NOT NULL
+            ORDER BY s.submitted_at DESC
+        `, [studentId]);
+        
+        res.json(grades.rows);
+    } catch (err) {
+        console.error('Fetch Grades Error:', err.message);
         res.status(500).send('Server Error');
     }
 });
