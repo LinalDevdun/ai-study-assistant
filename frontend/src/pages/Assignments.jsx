@@ -1,13 +1,44 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import '../index.css';
 
 function Assignments() {
   const navigate = useNavigate();
+  const [assignments, setAssignments] = useState([]);
+
+  useEffect(() => {
+    const fetchAssignments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login');
+          return;
+        }
+
+        const response = await axios.get('http://localhost:5000/assignments', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setAssignments(response.data);
+      } catch (err) {
+        console.error('Error fetching assignments:', err);
+      }
+    };
+
+    fetchAssignments();
+  }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     navigate('/login');
+  };
+
+  // Helper function to format the database timestamp into a readable string
+  const formatDueDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   return (
@@ -36,19 +67,20 @@ function Assignments() {
             📅 Upcoming Deadlines
           </div>
           
-
-          
           <div onClick={() => navigate('/tutor')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
             🤖 AI Assistant
           </div>
           
-          {/* BONUS FIXED: Added Grades onClick handler for the future! */}
           <div onClick={() => navigate('/grades')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
             🏆 Recent Grades
           </div>
         </nav>
 
-
+        <div style={{ padding: '0 15px' }}>
+          <div onClick={handleLogout} style={{ padding: '12px 20px', color: '#EF4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            🚪 Log Out
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -61,29 +93,51 @@ function Assignments() {
         {/* Assignments List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '900px' }}>
           
-          {/* Assignment Card 1 */}
-          <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ margin: '0 0 8px 0', color: '#111C44' }}>Build a React Navigation Bar</h3>
-              <p style={{ margin: '0 0 10px 0', color: '#64748B', fontSize: '14px' }}>Course: Frontend Development</p>
-              <span style={{ backgroundColor: '#F1F5F9', color: '#475569', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold' }}>Worth: 15 Points</span>
+          {assignments.length === 0 ? (
+            <div style={{ backgroundColor: '#FFFFFF', padding: '40px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+              <h3 style={{ color: '#64748B', margin: 0 }}>No pending assignments! 🎉</h3>
+              <p style={{ color: '#A3AED0', marginTop: '8px' }}>You are all caught up.</p>
             </div>
-            <button style={{ padding: '12px 24px', backgroundColor: '#4318FF', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(67, 24, 255, 0.2)' }}>
-              Submit Work
-            </button>
-          </div>
+          ) : (
+            assignments.map((assignment) => (
+              <div key={assignment.id} style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
+                <div style={{ flex: 1, minWidth: '300px' }}>
+                  <h3 style={{ margin: '0 0 8px 0', color: '#111C44', fontSize: '20px' }}>{assignment.title}</h3>
+                  <p style={{ margin: '0 0 15px 0', color: '#64748B', fontSize: '15px', lineHeight: '1.5' }}>{assignment.description}</p>
+                  
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <span style={{ backgroundColor: '#FEF2F2', color: '#EF4444', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold' }}>
+                      🚨 Due: {formatDueDate(assignment.due_date)}
+                    </span>
+                    <span style={{ backgroundColor: '#F1F5F9', color: '#475569', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold' }}>
+                      Cohort: {assignment.degree} ({assignment.batch})
+                    </span>
+                  </div>
+                </div>
 
-          {/* Assignment Card 2 */}
-          <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ margin: '0 0 8px 0', color: '#111C44' }}>PostgreSQL ER Diagram</h3>
-              <p style={{ margin: '0 0 10px 0', color: '#64748B', fontSize: '14px' }}>Course: Advanced Databases</p>
-              <span style={{ backgroundColor: '#F1F5F9', color: '#475569', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold' }}>Worth: 20 Points</span>
-            </div>
-            <button style={{ padding: '12px 24px', backgroundColor: '#4318FF', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(67, 24, 255, 0.2)' }}>
-              Submit Work
-            </button>
-          </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '200px' }}>
+                  {/* Download Instructions Button */}
+                  {assignment.file_path && (
+                    <a 
+                      href={`http://localhost:5000/${assignment.file_path.replace(/\\/g, '/')}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: 'none' }}
+                    >
+                      <button style={{ width: '100%', padding: '10px 20px', backgroundColor: '#F8FAFC', color: '#4318FF', border: '1px solid #E2E8F0', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>
+                        📄 Download Brief
+                      </button>
+                    </a>
+                  )}
+
+                  {/* Submit Button */}
+                  <button style={{ width: '100%', padding: '12px 24px', backgroundColor: '#4318FF', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(67, 24, 255, 0.2)' }}>
+                    Submit Work
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
 
         </div>
       </main>
