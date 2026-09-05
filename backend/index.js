@@ -15,6 +15,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// --- NEW: SERVE UPLOADS FOLDER PUBLICLY ---
+// This allows the frontend to download/view the PDFs via URL
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Set up the PostgreSQL Database Connection
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -77,7 +81,7 @@ app.get('/', (req, res) => {
     res.send('AI Study Assistant Backend is running!');
 });
 
-// USER REGISTRATION ENDPOINT (UPDATED FOR DEGREE & BATCH)
+// USER REGISTRATION ENDPOINT
 app.post('/register', async (req, res) => {
     try {
         const { name, email, password, degree, batch } = req.body;
@@ -286,6 +290,23 @@ app.get('/courses', authenticateToken, async (req, res) => {
     }
 });
 
+// FETCH A SINGLE COURSE BY ID
+app.get('/courses/:courseId', authenticateToken, async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const course = await pool.query('SELECT * FROM courses WHERE id = $1', [courseId]);
+        
+        if (course.rows.length === 0) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+        
+        res.json(course.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 app.get('/courses/:courseId/lessons', authenticateToken, async (req, res) => {
     try {
         const { courseId } = req.params;
@@ -299,6 +320,68 @@ app.get('/courses/:courseId/lessons', authenticateToken, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
+// --- LMS: ASSIGNMENT ROUTES ---
+
+// UPLOAD AN ASSIGNMENT (Lecturers & Admins Only)
+app.post('/assignments', authenticateToken, authorizeRoles('LECTURER', 'ADMIN'), upload.single('file'), async (req, res) => {
+  try {
+    const { title, description, dueDate, degree, batch } = req.body;
+    const file = req.file;
+    const lecturerId = req.user.user_id;
+
+    if (!file) {
+      return res.status(400).json({ error: 'Please upload an assignment file (PDF, DOCX, etc.)' });
+    }
+
+    const newAssignment = await pool.query(
+      'INSERT INTO assignments (title, description, due_date, degree, batch, file_path, lecturer_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [title, description, dueDate, degree, batch, file.path, lecturerId]
+    );
+
+    res.status(201).json({ 
+      message: 'Assignment successfully uploaded!',
+      assignment: newAssignment.rows[0] 
+    });
+  } catch (error) {
+    console.error('Database Upload Error:', error.message);
+    res.status(500).json({ error: 'Server error during assignment upload' });
+  }
+});
+
+// FETCH ASSIGNMENTS (Filtered by student's Degree and Batch automatically)
+app.get('/assignments', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.user_id;
+        const userRole = req.user.role;
+
+        // Admins and Lecturers can view all assignments
+        if (userRole === 'ADMIN' || userRole === 'LECTURER') {
+            const assignments = await pool.query('SELECT * FROM assignments ORDER BY due_date ASC');
+            return res.json(assignments.rows);
+        }
+
+        // Fetch student's assigned degree and batch profile
+        const userResult = await pool.query('SELECT degree, batch FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'User profile not found' });
+        }
+
+        const { degree, batch } = userResult.rows[0];
+
+        // Return only assignments matching the student's specific degree and batch cohort
+        const assignments = await pool.query(
+            'SELECT * FROM assignments WHERE degree = $1 AND batch = $2 ORDER BY due_date ASC',
+            [degree, batch]
+        );
+
+        res.json(assignments.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 
 // --- AI TUTOR ENDPOINT ---
 app.post('/tutor', authenticateToken, async (req, res) => {
