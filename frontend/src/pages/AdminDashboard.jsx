@@ -5,61 +5,23 @@ import '../index.css';
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
-  // NEW: Tracks dropdown changes before they are saved to the database
-  const [pendingRoles, setPendingRoles] = useState({}); 
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch users just so we can calculate the stats on the dashboard
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/admin/users', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setUsers(response.data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
     fetchUsers();
   }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/admin/users', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setUsers(response.data);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-    }
-  };
-
-  // 1. Updates the dropdown locally (but doesn't save to the DB yet)
-  const handleDropdownChange = (userId, newRole) => {
-    setPendingRoles({
-      ...pendingRoles,
-      [userId]: newRole
-    });
-  };
-
-  // 2. Triggers when you click "Save"
-  const handleSaveRole = async (userId) => {
-    const roleToSave = pendingRoles[userId];
-    if (!roleToSave) return; 
-
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/admin/users/${userId}/role`, 
-        { role: roleToSave },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-      
-      // Update the main user list with the new permanent role
-      setUsers(users.map(user => 
-        user.id === userId ? { ...user, role: roleToSave } : user
-      ));
-      
-      // Clear the pending state so the Save button hides itself again
-      const updatedPending = { ...pendingRoles };
-      delete updatedPending[userId];
-      setPendingRoles(updatedPending);
-
-    } catch (error) {
-      console.error('Error updating role:', error);
-      alert('Failed to update user role.');
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -67,130 +29,109 @@ function AdminDashboard() {
     navigate('/login');
   };
 
+  const studentCount = users.filter(u => u.role === 'STUDENT').length;
+  const lecturerCount = users.filter(u => u.role === 'LECTURER').length;
+
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, backgroundColor: '#F4F7FE', color: '#2B3674', fontFamily: 'sans-serif' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, backgroundColor: '#F4F7FE', color: '#2B3674', fontFamily: 'sans-serif' }}>
       
-      {/* Sidebar */}
-      <aside style={{ width: '260px', backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
-        <div style={{ padding: '0 20px', marginBottom: '30px' }}>
-          <h2 style={{ margin: 0, color: '#111C44', fontSize: '22px' }}>🛡️ Admin Panel</h2>
+      {/* TOP NAVBAR */}
+      <header style={{ height: '70px', backgroundColor: '#FFFFFF', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 30px', zIndex: 10 }}>
+        <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#111C44', letterSpacing: '0.5px' }}>
+          LMS Pro Admin
         </div>
-
-        <nav style={{ flex: 1, padding: '0 15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ padding: '12px 20px', borderRadius: '8px', backgroundColor: '#4318FF', color: '#FFFFFF', fontWeight: 'bold' }}>
-            👥 Manage Users
-          </div>
-          <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer' }}>
-            📖 Course Directory
-          </div>
-          <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer' }}>
-            📊 System Analytics
-          </div>
-        </nav>
-
-        <div style={{ padding: '0 15px' }}>
-          <div onClick={handleLogout} style={{ padding: '12px 20px', color: '#EF4444', cursor: 'pointer', fontWeight: 'bold' }}>
-            🚪 Log Out
+        <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
+          <span style={{ fontSize: '20px', cursor: 'pointer' }}>🔔</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', color: '#111C44', cursor: 'pointer' }}>
+            Admin <span style={{ backgroundColor: '#F4F7FE', padding: '8px', borderRadius: '50%', fontSize: '16px' }}>👤</span>
           </div>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Content */}
-      <main style={{ flex: 1, padding: '30px', overflowY: 'auto' }}>
-        <h1 style={{ color: '#111C44', margin: '0 0 10px 0' }}>User Management</h1>
-        <p style={{ color: '#A3AED0', marginBottom: '30px' }}>View and update user roles across the system.</p>
-
-        {/* Admin Metric Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '30px' }}>
-          <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: '12px' }}>
-            <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold' }}>Total Users</p>
-            <h2 style={{ margin: '10px 0 0 0', color: '#111C44', fontSize: '28px' }}>{users.length}</h2>
+      {/* LOWER BODY */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        
+        {/* SIDEBAR */}
+        <aside style={{ width: '250px', backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
+          <nav style={{ flex: 1, padding: '0 15px', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
+            
+            {/* ACTIVE: Dashboard */}
+            <div style={{ padding: '12px 20px', borderRadius: '8px', backgroundColor: '#4318FF', color: '#FFFFFF', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              🏠 Dashboard
+            </div>
+            
+            {/* INACTIVE: Users (Navigates to AdminUsers.jsx) */}
+            <div onClick={() => navigate('/admin-users')} style={{ padding: '12px 20px', borderRadius: '8px', backgroundColor: 'transparent', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', transition: '0.2s' }}>
+              👥 Users
+            </div>
+            
+            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>📚 Courses</div>
+            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>📋 Enrollment</div>
+            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>📊 Analytics</div>
+            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>🔔 Announce.</div>
+            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>🛡️ Activity</div>
+            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>⚙️ Settings</div>
+          </nav>
+          
+          <div style={{ padding: '15px', borderTop: '1px solid #E2E8F0', marginTop: 'auto' }}>
+            <div onClick={handleLogout} style={{ padding: '12px 20px', color: '#EF4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              🚪 Log Out
+            </div>
           </div>
-          <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: '12px' }}>
-            <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold' }}>Total Courses</p>
-            <h2 style={{ margin: '10px 0 0 0', color: '#111C44', fontSize: '28px' }}>Active</h2>
+        </aside>
+
+        {/* MAIN CONTENT AREA */}
+        <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '1000px' }}>
+            <h1 style={{ color: '#111C44', margin: '0 0 30px 0', fontSize: '28px' }}>Welcome, Administrator</h1>
+            
+            {/* 4 Stat Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
+              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+                <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '32px' }}>{studentCount || 1248}</h2>
+                <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold', fontSize: '14px' }}>Students</p>
+              </div>
+              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+                <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '32px' }}>{lecturerCount || 86}</h2>
+                <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold', fontSize: '14px' }}>Lecturers</p>
+              </div>
+              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+                <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '32px' }}>74</h2>
+                <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold', fontSize: '14px' }}>Courses</p>
+              </div>
+              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+                <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '32px' }}>892</h2>
+                <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold', fontSize: '14px' }}>Active</p>
+              </div>
+            </div>
+
+            {/* Bottom 2 Columns */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+              
+              {/* Recent Activity */}
+              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+                <h3 style={{ margin: '0 0 20px 0', color: '#111C44', borderBottom: '2px solid #F4F7FE', paddingBottom: '10px' }}>Recent Activity</h3>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#4B5563', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <li>🟢 New user registered</li>
+                  <li>✅ Course approved</li>
+                  <li>🔄 Role changed</li>
+                </ul>
+              </div>
+
+              {/* Course Statistics */}
+              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
+                <h3 style={{ margin: '0 0 20px 0', color: '#111C44', borderBottom: '2px solid #F4F7FE', paddingBottom: '10px' }}>Course Statistics</h3>
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#4B5563', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                  <li style={{ display: 'flex', justifyContent: 'space-between' }}><span>AI & ML</span> <strong>85%</strong></li>
+                  <li style={{ display: 'flex', justifyContent: 'space-between' }}><span>Database</span> <strong>72%</strong></li>
+                  <li style={{ display: 'flex', justifyContent: 'space-between' }}><span>Software</span> <strong>61%</strong></li>
+                </ul>
+              </div>
+
+            </div>
           </div>
-          <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: '12px' }}>
-            <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold' }}>System Status</p>
-            <h2 style={{ margin: '10px 0 0 0', color: '#10B981', fontSize: '28px' }}>Healthy 🟢</h2>
-          </div>
-        </div>
-
-        {/* The Users Table */}
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-          <h2 style={{ color: '#111C44', marginTop: 0, marginBottom: '20px' }}>Registered Users</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #F4F7FE', color: '#A3AED0' }}>
-                <th style={{ padding: '12px' }}>ID</th>
-                <th style={{ padding: '12px' }}>Name</th>
-                <th style={{ padding: '12px' }}>Email</th>
-                <th style={{ padding: '12px' }}>Role</th>
-                <th style={{ padding: '12px' }}>Actions</th> {/* <-- NEW COLUMN */}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => {
-                // Figure out what role is currently selected in the dropdown
-                const currentDisplayRole = pendingRoles[user.id] || user.role;
-                // Check if the dropdown is different from the database
-                const hasChanged = pendingRoles[user.id] && pendingRoles[user.id] !== user.role;
-
-                return (
-                  <tr key={user.id} style={{ borderBottom: '1px solid #F4F7FE' }}>
-                    <td style={{ padding: '12px', color: '#2B3674', fontWeight: 'bold' }}>#{user.id}</td>
-                    <td style={{ padding: '12px', color: '#2B3674' }}>{user.name}</td>
-                    <td style={{ padding: '12px', color: '#A3AED0' }}>{user.email}</td>
-                    <td style={{ padding: '12px' }}>
-                      
-                      <select 
-                        value={currentDisplayRole} 
-                        onChange={(e) => handleDropdownChange(user.id, e.target.value)}
-                        style={{
-                          padding: '8px', 
-                          borderRadius: '6px', 
-                          border: '1px solid #E2E8F0',
-                          backgroundColor: currentDisplayRole === 'ADMIN' ? '#FEE2E2' : currentDisplayRole === 'LECTURER' ? '#E0E7FF' : '#F3F4F6',
-                          color: currentDisplayRole === 'ADMIN' ? '#EF4444' : currentDisplayRole === 'LECTURER' ? '#4318FF' : '#4B5563',
-                          fontWeight: 'bold',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <option value="STUDENT">STUDENT</option>
-                        <option value="LECTURER">LECTURER</option>
-                        <option value="ADMIN">ADMIN</option>
-                      </select>
-                    </td>
-                    
-                    {/* The Action Column for the Save Button */}
-                    <td style={{ padding: '12px' }}>
-                      {hasChanged && (
-                        <button 
-                          onClick={() => handleSaveRole(user.id)}
-                          style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#10B981',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            boxShadow: '0 2px 4px rgba(16, 185, 129, 0.3)'
-                          }}
-                        >
-                          Save
-                        </button>
-                      )}
-                    </td>
-
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
