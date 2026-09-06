@@ -12,8 +12,9 @@ import Progress from './pages/Progress';
 import Deadlines from './pages/Deadlines';
 import Assignments from './pages/Assignments';
 import Notifications from './pages/Notifications';
-import Grades from './pages/Grades'; // <-- IMPORTED HERE
+import Grades from './pages/Grades';
 import MyCourses from './pages/MyCourses';
+import AdminUsers from './pages/AdminUsers';
 
 function App() {
   return (
@@ -61,7 +62,6 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/* NEW: Grades Route */}
         <Route path="/grades" element={
           <ProtectedRoute allowedRoles={['STUDENT']}>
             <Grades />
@@ -79,6 +79,12 @@ function App() {
         <Route path="/admin-dashboard" element={
           <ProtectedRoute allowedRoles={['ADMIN']}>
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/admin-users" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminUsers />
           </ProtectedRoute>
         } />
 
