@@ -1,0 +1,603 @@
+/* =========================================
+   LECTURER LAYOUT
+========================================= */
+
+.lecturer-layout {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+
+  background: var(--background);
+}
+
+
+/* =========================================
+   SIDEBAR
+========================================= */
+
+.lecturer-sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 26px 18px 20px;
+
+  background: white;
+
+  border-right: 1px solid var(--border-light);
+
+  z-index: 100;
+}
+
+
+/* LOGO */
+
+.lecturer-logo {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 0 8px;
+
+  margin-bottom: 38px;
+}
+
+.lecturer-logo-icon {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #6366f1
+    );
+
+  border-radius: 13px;
+
+  box-shadow:
+    0 8px 20px
+    rgba(37, 99, 235, 0.2);
+}
+
+.lecturer-logo-title {
+  color: var(--text-primary);
+
+  font-size: 19px;
+  font-weight: 800;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.5px;
+}
+
+.lecturer-logo-title span {
+  color: #4f63e7;
+}
+
+.lecturer-logo-subtitle {
+  margin-top: 3px;
+
+  color: var(--text-muted);
+
+  font-size: 11px;
+}
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+.lecturer-navigation {
+  flex: 1;
+
+  overflow-y: auto;
+}
+
+.lecturer-section-label {
+  margin: 0 0 10px 12px;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+}
+
+.lecturer-second-section {
+  margin-top: 30px;
+}
+
+.lecturer-menu {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.lecturer-nav-item {
+  width: 100%;
+  min-height: 46px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 0 13px;
+
+  color: var(--text-secondary);
+  background: transparent;
+
+  border: none;
+  border-radius: 11px;
+
+  font-size: 14px;
+  font-weight: 550;
+
+  text-align: left;
+
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.lecturer-nav-item svg {
+  color: #8b95a7;
+
+  flex-shrink: 0;
+}
+
+.lecturer-nav-item:hover {
+  color: #4f63e7;
+
+  background: #f2f5ff;
+
+  transform: translateX(2px);
+}
+
+.lecturer-nav-item:hover svg {
+  color: #4f63e7;
+}
+
+.lecturer-nav-active {
+  color: #4f63e7;
+
+  background:
+    linear-gradient(
+      90deg,
+      #eef2ff,
+      #f6f7ff
+    );
+
+  font-weight: 650;
+}
+
+.lecturer-nav-active svg {
+  color: #4f63e7;
+}
+
+
+/* =========================================
+   SIDEBAR BOTTOM
+========================================= */
+
+.lecturer-sidebar-bottom {
+  padding-top: 17px;
+
+  border-top:
+    1px solid var(--border-light);
+}
+
+.lecturer-logout {
+  width: 100%;
+  min-height: 44px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 0 13px;
+
+  margin-bottom: 16px;
+
+  color: var(--danger);
+  background: transparent;
+
+  border: none;
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.lecturer-logout:hover {
+  background: var(--danger-soft);
+}
+
+.lecturer-user-card {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 11px;
+
+  background: var(--surface-secondary);
+
+  border-radius: 13px;
+}
+
+.lecturer-avatar {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #6366f1
+    );
+
+  border-radius: 11px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.lecturer-user-card strong {
+  display: block;
+
+  color: var(--text-primary);
+
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.lecturer-user-card span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   MAIN
+========================================= */
+
+.lecturer-main {
+  width:
+    calc(
+      100% - var(--sidebar-width)
+    );
+
+  min-height: 100vh;
+
+  margin-left:
+    var(--sidebar-width);
+}
+
+
+/* =========================================
+   TOPBAR
+========================================= */
+
+.lecturer-topbar {
+  height: var(--topbar-height);
+
+  position: sticky;
+  top: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 0 34px;
+
+  background:
+    rgba(255, 255, 255, 0.93);
+
+  backdrop-filter: blur(12px);
+
+  border-bottom:
+    1px solid var(--border-light);
+
+  z-index: 90;
+}
+
+
+/* SEARCH */
+
+.lecturer-search {
+  width: min(430px, 45vw);
+
+  position: relative;
+}
+
+.lecturer-search svg {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  color: #9ca6b6;
+}
+
+.lecturer-search input {
+  width: 100%;
+  height: 43px;
+
+  padding:
+    0
+    15px
+    0
+    43px;
+
+  color: var(--text-primary);
+  background: #f8f9fc;
+
+  border: 1px solid transparent;
+  border-radius: 12px;
+
+  outline: none;
+
+  font-size: 13px;
+}
+
+.lecturer-search input:focus {
+  background: white;
+
+  border-color: #cfd8ff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(79, 99, 231, 0.07);
+}
+
+
+/* ACTIONS */
+
+.lecturer-topbar-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+.lecturer-create-button {
+  min-height: 39px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 0 14px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3f58df,
+      #6366f1
+    );
+
+  border: none;
+  border-radius: 10px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  box-shadow:
+    0 6px 16px
+    rgba(79, 99, 231, 0.2);
+}
+
+.lecturer-notification-button {
+  width: 41px;
+  height: 41px;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-secondary);
+  background: #f8f9fc;
+
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+}
+
+.lecturer-notification-button span {
+  min-width: 16px;
+  height: 16px;
+
+  position: absolute;
+
+  top: -5px;
+  right: -5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 4px;
+
+  color: white;
+  background: #ef5d75;
+
+  border: 2px solid white;
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+/* PROFILE */
+
+.lecturer-profile {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 5px 8px 5px 5px;
+
+  color: var(--text-primary);
+  background: transparent;
+
+  border: none;
+  border-radius: 11px;
+}
+
+.lecturer-profile:hover {
+  background: #f8f9fc;
+}
+
+.lecturer-top-avatar {
+  width: 39px;
+  height: 39px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #6366f1
+    );
+
+  border-radius: 11px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.lecturer-profile-details {
+  display: flex;
+  flex-direction: column;
+
+  text-align: left;
+}
+
+.lecturer-profile-details strong {
+  color: var(--text-primary);
+
+  font-size: 12px;
+}
+
+.lecturer-profile-details span {
+  margin-top: 2px;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.lecturer-content {
+  min-height:
+    calc(
+      100vh - var(--topbar-height)
+    );
+
+  background:
+    radial-gradient(
+      circle at 92% 0%,
+      rgba(79, 99, 231, 0.045),
+      transparent 27%
+    ),
+    var(--background);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1000px) {
+
+  :root {
+    --sidebar-width: 220px;
+  }
+
+  .lecturer-profile-details {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .lecturer-sidebar {
+    display: none;
+  }
+
+  .lecturer-main {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .lecturer-topbar {
+    padding: 0 18px;
+  }
+
+  .lecturer-create-button {
+    display: none;
+  }
+
+  .lecturer-search {
+    width: 60%;
+  }
+
+}
