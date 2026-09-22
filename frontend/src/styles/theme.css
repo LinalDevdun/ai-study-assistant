@@ -1,0 +1,86 @@
+:root {
+  /* =========================
+     BRAND COLORS
+  ========================== */
+  --primary: #6c5ce7;
+  --primary-hover: #5b4bd8;
+  --primary-soft: #f0edff;
+
+  --secondary: #3b82f6;
+  --secondary-soft: #eff6ff;
+
+  --success: #22c55e;
+  --success-soft: #ecfdf3;
+
+  --warning: #f59e0b;
+  --warning-soft: #fff8e6;
+
+  --danger: #ef4444;
+  --danger-soft: #fef2f2;
+
+  --pink: #ec4899;
+  --pink-soft: #fdf2f8;
+
+  --cyan: #06b6d4;
+  --cyan-soft: #ecfeff;
+
+
+  /* =========================
+     BACKGROUNDS
+  ========================== */
+  --background: #f7f8fc;
+  --surface: #ffffff;
+  --surface-secondary: #fafbff;
+
+  --sidebar-background: #ffffff;
+
+
+  /* =========================
+     TEXT
+  ========================== */
+  --text-primary: #172033;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --text-white: #ffffff;
+
+
+  /* =========================
+     BORDERS
+  ========================== */
+  --border: #e9ecf2;
+  --border-light: #f1f3f7;
+
+
+  /* =========================
+     BORDER RADIUS
+  ========================== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-full: 999px;
+
+
+  /* =========================
+     SHADOWS
+  ========================== */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.03);
+  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 8px 28px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.09);
+
+
+  /* =========================
+     LAYOUT
+  ========================== */
+  --sidebar-width: 268px;
+  --topbar-height: 78px;
+  --content-max-width: 1440px;
+
+
+  /* =========================
+     TRANSITIONS
+  ========================== */
+  --transition-fast: 0.18s ease;
+  --transition-normal: 0.25s ease;
+}
