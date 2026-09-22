@@ -1,136 +1,430 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import '../index.css';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import {
+  BookOpen,
+  Search,
+  GraduationCap,
+  Layers3,
+  CircleCheckBig,
+  ArrowRight,
+  LibraryBig,
+  CalendarDays,
+} from "lucide-react";
+
+import "../styles/myCourses.css";
+
 
 function MyCourses() {
-  const [courses, setCourses] = useState([]);
-  const [isProfileOpen, setIsProfileOpen] = useState(false); 
   const navigate = useNavigate();
+
+  const [courses, setCourses] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDegree, setSelectedDegree] = useState("All");
+  const [loading, setLoading] = useState(true);
+
+
+  /* ========================================
+     FETCH COURSES
+  ======================================== */
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
+
         if (!token) {
-          navigate('/login');
+          navigate("/login");
           return;
         }
-        const response = await axios.get('http://localhost:5000/courses', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+
+        const response = await axios.get(
+          "http://localhost:5000/courses",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         setCourses(response.data);
-      } catch (err) {
-        console.error('Error fetching courses:', err);
+      } catch (error) {
+        console.error(
+          "Error fetching courses:",
+          error
+        );
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchCourses();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
 
-  const menuItems = [
-    { name: 'Dashboard', icon: '🏠', path: '/dashboard' },
-    { name: 'My Courses', icon: '📚', path: '/courses', active: true }, // <-- Active state here!
-    { name: 'Learning Progress', icon: '📈', path: '/progress' },
-    { name: 'Assignments', icon: '📝', path: '/assignments' }, 
-    { name: 'Upcoming Deadlines', icon: '📅', path: '/deadlines' }, 
-    { name: 'AI Assistant', icon: '🤖', path: '/tutor' },
-    { name: 'Recent Grades', icon: '🏆', path: '/grades' }, 
+  /* ========================================
+     AVAILABLE DEGREE FILTERS
+  ======================================== */
+
+  const degreeOptions = useMemo(() => {
+    const degrees = courses
+      .map((course) => course.degree)
+      .filter(Boolean);
+
+    return [
+      "All",
+      ...new Set(degrees),
+    ];
+  }, [courses]);
+
+
+  /* ========================================
+     SEARCH + FILTER
+  ======================================== */
+
+  const filteredCourses = useMemo(() => {
+    return courses.filter((course) => {
+      const searchValue =
+        searchTerm.toLowerCase();
+
+      const matchesSearch =
+        course.title
+          ?.toLowerCase()
+          .includes(searchValue) ||
+        course.description
+          ?.toLowerCase()
+          .includes(searchValue) ||
+        course.degree
+          ?.toLowerCase()
+          .includes(searchValue);
+
+      const matchesDegree =
+        selectedDegree === "All" ||
+        course.degree === selectedDegree;
+
+      return matchesSearch && matchesDegree;
+    });
+  }, [
+    courses,
+    searchTerm,
+    selectedDegree,
+  ]);
+
+
+  /* ========================================
+     CARD THEMES
+  ======================================== */
+
+  const courseThemes = [
+    "course-theme-1",
+    "course-theme-2",
+    "course-theme-3",
+    "course-theme-4",
+    "course-theme-5",
+    "course-theme-6",
   ];
 
+
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, backgroundColor: '#F4F7FE', color: '#2B3674', fontFamily: 'sans-serif' }}>
-      
-      {/* 1. LEFT SIDEBAR */}
-      <aside style={{ width: '260px', backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
-        <div style={{ padding: '0 20px', marginBottom: '30px' }}>
-          <h2 style={{ margin: 0, color: '#111C44', fontSize: '24px' }}>🎓 LMS <span style={{ color: '#4318FF' }}>Pro</span></h2>
+    <div className="my-courses-page">
+
+      {/* ====================================
+          HEADER
+      ==================================== */}
+
+      <section className="my-courses-header">
+
+        <div>
+          <h1>My Courses</h1>
+
+          <p>
+            Access your enrolled modules,
+            learning materials and course content.
+          </p>
         </div>
 
-        <nav style={{ flex: 1, padding: '0 15px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-          {menuItems.map((item, index) => (
-            <Link key={index} to={item.path} style={{ textDecoration: 'none' }}>
-              <div style={{ 
-                display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 20px', 
-                borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
-                backgroundColor: item.active ? '#4318FF' : 'transparent',
-                color: item.active ? '#FFFFFF' : '#A3AED0',
-                transition: 'all 0.2s'
-              }}>
-                <span style={{ fontSize: '18px' }}>{item.icon}</span>
-                <span>{item.name}</span>
-              </div>
-            </Link>
-          ))}
-        </nav>
-      </aside>
 
-      {/* 2. MAIN CONTENT AREA */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-        
-        {/* Top Header */}
-        <header style={{ backgroundColor: '#FFFFFF', padding: '20px 30px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="courses-count-badge">
+          <BookOpen size={16} />
+
+          {courses.length} Courses
+        </div>
+
+      </section>
+
+
+      {/* ====================================
+          SUMMARY
+      ==================================== */}
+
+      <section className="courses-summary">
+
+        <div className="course-summary-card summary-purple">
+
+          <div className="course-summary-icon">
+            <LibraryBig size={22} />
+          </div>
+
           <div>
-            <h1 style={{ margin: 0, fontSize: '24px', color: '#111C44' }}>My Courses 📚</h1>
-            <p style={{ margin: '5px 0 0 0', color: '#A3AED0', fontSize: '14px' }}>Access your enrolled modules and start learning.</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            
-            <span onClick={() => navigate('/notifications')} style={{ fontSize: '20px', cursor: 'pointer' }}>🔔</span>
-            
-            <div style={{ position: 'relative' }}>
-              <div 
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#4318FF', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none' }}
-              >
-                ST
-              </div>
+            <strong>
+              {courses.length}
+            </strong>
 
-              {isProfileOpen && (
-                <div style={{ position: 'absolute', top: '50px', right: '0', backgroundColor: '#FFFFFF', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '200px', overflow: 'hidden', border: '1px solid #E2E8F0', zIndex: 100 }}>
-                  <div style={{ padding: '12px 20px', borderBottom: '1px solid #E2E8F0' }}>
-                    <p style={{ margin: 0, fontWeight: 'bold', color: '#111C44' }}>Student User</p>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#A3AED0' }}>student@lms.edu</p>
-                  </div>
-                  <div style={{ padding: '8px 0' }}>
-                    <div style={{ padding: '10px 20px', cursor: 'pointer', color: '#475569', display: 'flex', gap: '10px', alignItems: 'center' }} onClick={() => setIsProfileOpen(false)}>👤 My Profile</div>
-                    <div style={{ padding: '10px 20px', cursor: 'pointer', color: '#475569', display: 'flex', gap: '10px', alignItems: 'center' }} onClick={() => setIsProfileOpen(false)}>⚙️ Settings</div>
-                    <div style={{ padding: '10px 20px', cursor: 'pointer', color: '#475569', display: 'flex', gap: '10px', alignItems: 'center' }} onClick={() => setIsProfileOpen(false)}>🔒 Change Password</div>
-                  </div>
-                  <div style={{ borderTop: '1px solid #E2E8F0' }}>
-                    <div style={{ padding: '12px 20px', cursor: 'pointer', color: '#EF4444', fontWeight: 'bold', display: 'flex', gap: '10px', alignItems: 'center' }} onClick={handleLogout}>🚪 Log Out</div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <span>
+              Enrolled Courses
+            </span>
           </div>
-        </header>
 
-        {/* Courses Grid Content */}
-        <div style={{ padding: '30px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-            {courses.length === 0 ? (
-              <p style={{ color: '#A3AED0' }}>No courses found. Check back later!</p>
-            ) : (
-              courses.map(course => (
-                <div key={course.id} style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                  <h3 style={{ margin: '0 0 10px 0', color: '#111C44' }}>{course.title}</h3>
-                  <p style={{ margin: '0 0 20px 0', color: '#A3AED0', lineHeight: '1.5', fontSize: '14px' }}>{course.description}</p>
-                  <button 
-                    onClick={() => navigate(`/course/${course.id}`)} 
-                    style={{ width: '100%', padding: '12px', backgroundColor: '#4318FF', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-                    Open Course
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
         </div>
-      </main>
+
+
+        <div className="course-summary-card summary-blue">
+
+          <div className="course-summary-icon">
+            <Layers3 size={22} />
+          </div>
+
+          <div>
+            <strong>
+              {degreeOptions.length > 1
+                ? degreeOptions.length - 1
+                : 0}
+            </strong>
+
+            <span>
+              Study Programs
+            </span>
+          </div>
+
+        </div>
+
+
+        <div className="course-summary-card summary-green">
+
+          <div className="course-summary-icon">
+            <CircleCheckBig size={22} />
+          </div>
+
+          <div>
+            <strong>
+              Active
+            </strong>
+
+            <span>
+              Current Semester
+            </span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ====================================
+          SEARCH + FILTER
+      ==================================== */}
+
+      <section className="courses-toolbar">
+
+        <div className="course-search">
+
+          <Search size={17} />
+
+          <input
+            type="text"
+            placeholder="Search your courses..."
+            value={searchTerm}
+            onChange={(event) =>
+              setSearchTerm(event.target.value)
+            }
+          />
+
+        </div>
+
+
+        <select
+          className="course-filter"
+          value={selectedDegree}
+          onChange={(event) =>
+            setSelectedDegree(
+              event.target.value
+            )
+          }
+        >
+
+          {degreeOptions.map((degree) => (
+            <option
+              value={degree}
+              key={degree}
+            >
+              {degree === "All"
+                ? "All Programs"
+                : degree}
+            </option>
+          ))}
+
+        </select>
+
+      </section>
+
+
+      {/* ====================================
+          COURSE GRID
+      ==================================== */}
+
+      <section className="my-courses-grid">
+
+        {loading ? (
+
+          <div className="courses-empty-state">
+
+            <div className="courses-empty-icon">
+              <BookOpen size={26} />
+            </div>
+
+            <h3>
+              Loading your courses...
+            </h3>
+
+            <p>
+              Please wait a moment.
+            </p>
+
+          </div>
+
+        ) : filteredCourses.length === 0 ? (
+
+          <div className="courses-empty-state">
+
+            <div className="courses-empty-icon">
+              <BookOpen size={26} />
+            </div>
+
+            <h3>
+              No courses found
+            </h3>
+
+            <p>
+              Try changing your search or
+              filter options.
+            </p>
+
+          </div>
+
+        ) : (
+
+          filteredCourses.map(
+            (course, index) => {
+
+              const theme =
+                courseThemes[
+                  index %
+                    courseThemes.length
+                ];
+
+              return (
+                <article
+                  className="my-course-card"
+                  key={course.id}
+                >
+
+                  {/* COVER */}
+                  <div
+                    className={`my-course-cover ${theme}`}
+                  >
+
+                    <div className="my-course-icon">
+                      <GraduationCap
+                        size={27}
+                        strokeWidth={1.8}
+                      />
+                    </div>
+
+                  </div>
+
+
+                  {/* BODY */}
+                  <div className="my-course-body">
+
+                    <div className="my-course-meta">
+
+                      {course.degree && (
+                        <span className="course-meta-badge">
+                          <GraduationCap
+                            size={11}
+                          />
+
+                          {course.degree}
+                        </span>
+                      )}
+
+
+                      {course.batch && (
+                        <span className="course-meta-badge">
+                          <CalendarDays
+                            size={11}
+                          />
+
+                          Batch {course.batch}
+                        </span>
+                      )}
+
+                    </div>
+
+
+                    <h3>
+                      {course.title}
+                    </h3>
+
+
+                    <p className="my-course-description">
+
+                      {course.description ||
+                        "Course materials and learning resources are available for this module."}
+
+                    </p>
+
+
+                    <div className="my-course-footer">
+
+                      <div className="course-status">
+
+                        <span className="course-status-dot" />
+
+                        Active
+
+                      </div>
+
+
+                      <button
+                        className="open-course-button"
+                        onClick={() =>
+                          navigate(
+                            `/course/${course.id}`
+                          )
+                        }
+                      >
+                        Open Course
+
+                        <ArrowRight
+                          size={14}
+                        />
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </article>
+              );
+            }
+          )
+
+        )}
+
+      </section>
+
     </div>
   );
 }
