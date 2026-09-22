@@ -1,134 +1,515 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import '../index.css';
+import {
+  GraduationCap,
+  Award,
+  TrendingUp,
+  BookOpen,
+  Trophy,
+  BrainCircuit,
+  Database,
+  Code2,
+  Globe2,
+  CircleCheckBig,
+} from "lucide-react";
+
+import "../styles/grades.css";
+
 
 function Grades() {
-  const navigate = useNavigate();
-  const [grades, setGrades] = useState([]);
 
-  useEffect(() => {
-    const fetchGrades = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          navigate('/login');
-          return;
-        }
+  /*
+    TEMPORARY UI DATA
 
-        const response = await axios.get('http://localhost:5000/my-grades', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        setGrades(response.data);
-      } catch (err) {
-        console.error('Error fetching grades:', err);
-      }
-    };
+    Later we will replace this
+    with real backend/database data.
+  */
 
-    fetchGrades();
-  }, [navigate]);
+  const gpa = 3.7;
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/login');
+
+  const courseGrades = [
+    {
+      id: 1,
+      course:
+        "Artificial Intelligence & Machine Learning",
+      lecturer: "Dr. Sarah Johnson",
+      score: 86,
+      grade: "A",
+      icon: BrainCircuit,
+    },
+    {
+      id: 2,
+      course: "Database Systems",
+      lecturer: "Prof. Michael Brown",
+      score: 82,
+      grade: "A",
+      icon: Database,
+    },
+    {
+      id: 3,
+      course: "Software Engineering",
+      lecturer: "Dr. Emily Davis",
+      score: 74,
+      grade: "B",
+      icon: Code2,
+    },
+    {
+      id: 4,
+      course:
+        "Web Development Fundamentals",
+      lecturer: "Mr. David Wilson",
+      score: 78,
+      grade: "B",
+      icon: Globe2,
+    },
+  ];
+
+
+  const recentResults = [
+    {
+      assignment:
+        "Machine Learning Model Evaluation",
+      course:
+        "Artificial Intelligence",
+      marks: "87 / 100",
+      grade: "A",
+      feedback:
+        "Strong analysis and clear explanation.",
+    },
+    {
+      assignment:
+        "Database Normalization Exercise",
+      course: "Database Systems",
+      marks: "84 / 100",
+      grade: "A",
+      feedback:
+        "Well structured and technically accurate.",
+    },
+    {
+      assignment:
+        "Software Design Report",
+      course: "Software Engineering",
+      marks: "75 / 100",
+      grade: "B",
+      feedback:
+        "Good work. Improve design justification.",
+    },
+    {
+      assignment:
+        "Responsive Web Interface",
+      course: "Web Development",
+      marks: "78 / 100",
+      grade: "B",
+      feedback:
+        "Good implementation and clean interface.",
+    },
+  ];
+
+
+  const getGradeClass = (grade) => {
+
+    if (grade === "A") {
+      return "grade-a";
+    }
+
+    if (grade === "B") {
+      return "grade-b";
+    }
+
+    return "grade-c";
+
   };
 
-  // Helper function to format the database timestamp
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, backgroundColor: '#F4F7FE', fontFamily: 'sans-serif' }}>
-      
-      {/* Sidebar */}
-      <aside style={{ width: '260px', backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
-        <div style={{ padding: '0 20px', marginBottom: '30px' }}>
-          <h2 style={{ margin: 0, color: '#111C44', fontSize: '22px' }}>🎓 LMS <span style={{ color: '#4318FF' }}>Pro</span></h2>
+    <div className="grades-page">
+
+      {/* HEADER */}
+
+      <section className="grades-header">
+
+        <div>
+
+          <h1>
+            Grades
+          </h1>
+
+          <p>
+            Review your academic performance,
+            assignment results and lecturer
+            feedback.
+          </p>
+
         </div>
 
-        <nav style={{ flex: 1, padding: '0 15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div onClick={() => navigate('/dashboard')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📚 My Courses
-          </div>
-          <div onClick={() => navigate('/progress')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📈 Learning Progress
-          </div>
-          <div onClick={() => navigate('/assignments')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📝 Assignments
-          </div>
-          <div onClick={() => navigate('/deadlines')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📅 Upcoming Deadlines
-          </div>
-          <div onClick={() => navigate('/tutor')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🤖 AI Assistant
-          </div>
-          
-          {/* Active State for Grades */}
-          <div style={{ padding: '12px 20px', borderRadius: '8px', backgroundColor: '#4318FF', color: '#FFFFFF', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🏆 Recent Grades
-          </div>
-        </nav>
 
-        <div style={{ padding: '0 15px' }}>
-          <div onClick={handleLogout} style={{ padding: '12px 20px', color: '#EF4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🚪 Log Out
-          </div>
-        </div>
-      </aside>
+        <div className="grades-header-badge">
 
-      {/* Main Content */}
-      <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
-        <div style={{ marginBottom: '40px' }}>
-          <h1 style={{ color: '#111C44', margin: '0 0 10px 0', fontSize: '32px' }}>Recent Grades 🏆</h1>
-          <p style={{ color: '#A3AED0', margin: 0, fontSize: '16px' }}>Review your scores and feedback from your lecturers.</p>
+          <TrendingUp size={16} />
+
+          Good Standing
+
         </div>
 
-        {/* Grades List */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '25px', maxWidth: '1200px' }}>
-          
-          {grades.length === 0 ? (
-            <div style={{ gridColumn: '1 / -1', backgroundColor: '#FFFFFF', padding: '40px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ color: '#64748B', margin: 0 }}>No grades returned yet.</h3>
-              <p style={{ color: '#A3AED0', marginTop: '8px' }}>Your graded assignments will appear here once reviewed by your lecturer.</p>
-            </div>
-          ) : (
-            grades.map((item) => (
-              <div key={item.submission_id} style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                    <h3 style={{ margin: '0', color: '#111C44', fontSize: '18px', lineHeight: '1.4' }}>{item.assignment_title}</h3>
-                    <div style={{ backgroundColor: '#F0FDF4', color: '#10B981', padding: '8px 12px', borderRadius: '8px', fontWeight: '900', fontSize: '18px', border: '1px solid #A7F3D0' }}>
-                      {item.grade}
+      </section>
+
+
+      {/* SUMMARY */}
+
+      <section className="grades-summary">
+
+        <div className="grade-summary-card grade-purple">
+
+          <div className="grade-summary-icon">
+            <GraduationCap size={21} />
+          </div>
+
+          <div>
+
+            <strong>
+              {gpa}
+            </strong>
+
+            <span>
+              Current GPA
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div className="grade-summary-card grade-blue">
+
+          <div className="grade-summary-icon">
+            <BookOpen size={21} />
+          </div>
+
+          <div>
+
+            <strong>
+              6
+            </strong>
+
+            <span>
+              Graded Courses
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div className="grade-summary-card grade-green">
+
+          <div className="grade-summary-icon">
+            <CircleCheckBig size={21} />
+          </div>
+
+          <div>
+
+            <strong>
+              81%
+            </strong>
+
+            <span>
+              Average Score
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div className="grade-summary-card grade-orange">
+
+          <div className="grade-summary-icon">
+            <Award size={21} />
+          </div>
+
+          <div>
+
+            <strong>
+              2
+            </strong>
+
+            <span>
+              A Grades
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* MAIN */}
+
+      <section className="grades-main-grid">
+
+        {/* COURSE PERFORMANCE */}
+
+        <div className="grades-panel">
+
+          <div className="grades-panel-header">
+
+            <h2>
+              Course Performance
+            </h2>
+
+            <p>
+              Your current performance
+              across your modules.
+            </p>
+
+          </div>
+
+
+          <div className="course-grades-list">
+
+            {courseGrades.map(
+              (course) => {
+
+                const Icon =
+                  course.icon;
+
+
+                return (
+                  <article
+                    className="course-grade-card"
+                    key={course.id}
+                  >
+
+                    <div className="course-grade-icon">
+
+                      <Icon size={19} />
+
                     </div>
-                  </div>
-                  
-                  <p style={{ margin: '0 0 15px 0', color: '#64748B', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    📅 Submitted on {formatDate(item.submitted_at)}
-                  </p>
-                </div>
 
-                {item.feedback ? (
-                  <div style={{ backgroundColor: '#F8FAFC', padding: '15px', borderRadius: '8px', borderLeft: '4px solid #4318FF' }}>
-                    <p style={{ margin: '0 0 5px 0', fontSize: '12px', fontWeight: 'bold', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Lecturer Feedback</p>
-                    <p style={{ margin: 0, color: '#111C44', fontSize: '14px', fontStyle: 'italic' }}>"{item.feedback}"</p>
-                  </div>
-                ) : (
-                  <div style={{ backgroundColor: '#F8FAFC', padding: '15px', borderRadius: '8px', border: '1px dashed #CBD5E1' }}>
-                    <p style={{ margin: 0, color: '#94A3B8', fontSize: '13px', fontStyle: 'italic', textAlign: 'center' }}>No additional feedback provided.</p>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
+
+                    <div className="course-grade-info">
+
+                      <h3>
+                        {course.course}
+                      </h3>
+
+                      <p>
+                        {course.lecturer}
+                      </p>
+
+                    </div>
+
+
+                    <div className="course-grade-score">
+
+                      {course.score}%
+
+                    </div>
+
+
+                    <div
+                      className={`course-grade-letter ${getGradeClass(
+                        course.grade
+                      )}`}
+                    >
+
+                      {course.grade}
+
+                    </div>
+
+                  </article>
+                );
+
+              }
+            )}
+
+          </div>
 
         </div>
-      </main>
+
+
+        {/* GPA */}
+
+        <div className="grades-panel">
+
+          <div className="grades-panel-header">
+
+            <h2>
+              GPA Overview
+            </h2>
+
+            <p>
+              Current semester standing.
+            </p>
+
+          </div>
+
+
+          <div className="gpa-card">
+
+            <div className="gpa-circle">
+
+              <div className="gpa-circle-inner">
+
+                <strong>
+                  {gpa}
+                </strong>
+
+                <span>
+                  CURRENT GPA
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <p className="gpa-message">
+              Your academic performance
+              is currently strong. Keep
+              maintaining consistent
+              results across your modules.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* RECENT RESULTS */}
+
+      <section className="recent-results-section">
+
+        <h2>
+          Recent Results
+        </h2>
+
+
+        <div className="results-table-wrapper">
+
+          <table className="results-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Assignment
+                </th>
+
+                <th>
+                  Course
+                </th>
+
+                <th>
+                  Marks
+                </th>
+
+                <th>
+                  Grade
+                </th>
+
+                <th>
+                  Feedback
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              {recentResults.map(
+                (result, index) => (
+
+                  <tr key={index}>
+
+                    <td className="result-title">
+
+                      {result.assignment}
+
+                    </td>
+
+
+                    <td>
+
+                      {result.course}
+
+                    </td>
+
+
+                    <td>
+
+                      {result.marks}
+
+                    </td>
+
+
+                    <td>
+
+                      <span className="result-grade-badge">
+
+                        {result.grade}
+
+                      </span>
+
+                    </td>
+
+
+                    <td className="result-feedback">
+
+                      {result.feedback}
+
+                    </td>
+
+                  </tr>
+
+                )
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      {/* BANNER */}
+
+      <section className="grades-banner">
+
+        <div className="grades-banner-icon">
+
+          <Trophy size={24} />
+
+        </div>
+
+
+        <div className="grades-banner-content">
+
+          <h3>
+            Keep up the great work!
+          </h3>
+
+          <p>
+            Your current GPA is 3.7 and your
+            average performance is strong.
+            Stay consistent with your coursework
+            to maintain your results.
+          </p>
+
+        </div>
+
+      </section>
+
     </div>
   );
 }
+
 
 export default Grades;

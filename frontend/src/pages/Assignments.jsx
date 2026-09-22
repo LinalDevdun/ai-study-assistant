@@ -1,180 +1,861 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import '../index.css';
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import {
+  ClipboardList,
+  Search,
+  Clock3,
+  UploadCloud,
+  FileText,
+  CalendarDays,
+  GraduationCap,
+  CircleCheckBig,
+  Send,
+  RefreshCw,
+  Award,
+  Inbox,
+} from "lucide-react";
+
+import "../styles/assignments.css";
+
 
 function Assignments() {
   const navigate = useNavigate();
+
   const [assignments, setAssignments] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState({});
   const [submittedAssignments, setSubmittedAssignments] = useState([]);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+
+  /* ========================================
+     FETCH ASSIGNMENTS
+  ======================================== */
+
   useEffect(() => {
     const fetchAssignments = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
+
         if (!token) {
-          navigate('/login');
+          navigate("/login");
           return;
         }
 
-        const response = await axios.get('http://localhost:5000/assignments', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        setAssignments(response.data);
-      } catch (err) {
-        console.error('Error fetching assignments:', err);
+        const response = await axios.get(
+          "http://localhost:5000/assignments",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setAssignments(
+          Array.isArray(response.data)
+            ? response.data
+            : []
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Error fetching assignments:",
+          error
+        );
+
+      } finally {
+
+        setLoading(false);
+
       }
     };
 
+
     fetchAssignments();
+
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/login');
-  };
 
-  const handleFileChange = (assignmentId, file) => {
-    setSelectedFiles(prev => ({
-      ...prev,
-      [assignmentId]: file
+  /* ========================================
+     FILE SELECTION
+  ======================================== */
+
+  const handleFileChange = (
+    assignmentId,
+    file
+  ) => {
+
+    if (!file) return;
+
+    setSelectedFiles((previous) => ({
+      ...previous,
+      [assignmentId]: file,
     }));
   };
 
-  const handleSubmit = async (assignmentId) => {
-    const file = selectedFiles[assignmentId];
-    
+
+  /* ========================================
+     SUBMIT / RESUBMIT
+  ======================================== */
+
+  const handleSubmit = async (
+    assignmentId
+  ) => {
+
+    const file =
+      selectedFiles[assignmentId];
+
+
     if (!file) {
-      alert("Please select a file to upload first!");
+      alert(
+        "Please select a file to upload first."
+      );
+
       return;
     }
 
+
     const formData = new FormData();
-    formData.append('assignmentId', assignmentId);
-    formData.append('file', file);
+
+    formData.append(
+      "assignmentId",
+      assignmentId
+    );
+
+    formData.append(
+      "file",
+      file
+    );
+
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/submissions', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      alert(response.data.message); // Will say "Submitted" or "Resubmitted" based on backend
-      setSubmittedAssignments(prev => [...prev, assignmentId]);
-      
+
+      const token =
+        localStorage.getItem("token");
+
+
+      const response =
+        await axios.post(
+          "http://localhost:5000/submissions",
+          formData,
+          {
+            headers: {
+              "Content-Type":
+                "multipart/form-data",
+
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+
+      alert(response.data.message);
+
+
+      setSubmittedAssignments(
+        (previous) =>
+          previous.includes(
+            assignmentId
+          )
+            ? previous
+            : [
+                ...previous,
+                assignmentId,
+              ]
+      );
+
+
     } catch (error) {
-      console.error("Error submitting assignment:", error);
-      if (error.response && error.response.data.error) {
-        alert(error.response.data.error);
+
+      console.error(
+        "Error submitting assignment:",
+        error
+      );
+
+
+      if (
+        error.response &&
+        error.response.data.error
+      ) {
+
+        alert(
+          error.response.data.error
+        );
+
       } else {
-        alert("Failed to submit assignment. Make sure the backend is running!");
+
+        alert(
+          "Failed to submit assignment."
+        );
+
       }
     }
   };
 
-  const formatDueDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+
+  /* ========================================
+     DATE FORMAT
+  ======================================== */
+
+  const formatDueDate = (
+    dateString
+  ) => {
+
+    if (!dateString) {
+      return "No due date";
+    }
+
+
+    return new Date(
+      dateString
+    ).toLocaleString(
+      undefined,
+      {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
   };
 
+
+  /* ========================================
+     STATUS HELPERS
+  ======================================== */
+
+  const getAssignmentStatus = (
+    assignment
+  ) => {
+
+    if (assignment.is_graded) {
+      return "graded";
+    }
+
+
+    if (
+      assignment.is_submitted ||
+      submittedAssignments.includes(
+        assignment.id
+      )
+    ) {
+      return "submitted";
+    }
+
+
+    return "pending";
+  };
+
+
+  /* ========================================
+     COUNTS
+  ======================================== */
+
+  const totalAssignments =
+    assignments.length;
+
+
+  const pendingCount =
+    assignments.filter(
+      (assignment) =>
+        getAssignmentStatus(
+          assignment
+        ) === "pending"
+    ).length;
+
+
+  const submittedCount =
+    assignments.filter(
+      (assignment) =>
+        getAssignmentStatus(
+          assignment
+        ) === "submitted"
+    ).length;
+
+
+  const gradedCount =
+    assignments.filter(
+      (assignment) =>
+        getAssignmentStatus(
+          assignment
+        ) === "graded"
+    ).length;
+
+
+  /* ========================================
+     SEARCH + FILTER
+  ======================================== */
+
+  const filteredAssignments =
+    useMemo(() => {
+
+      return assignments.filter(
+        (assignment) => {
+
+          const search =
+            searchTerm.toLowerCase();
+
+
+          const matchesSearch =
+            assignment.title
+              ?.toLowerCase()
+              .includes(search) ||
+
+            assignment.description
+              ?.toLowerCase()
+              .includes(search) ||
+
+            assignment.degree
+              ?.toLowerCase()
+              .includes(search);
+
+
+          const status =
+            getAssignmentStatus(
+              assignment
+            );
+
+
+          const matchesStatus =
+            statusFilter === "all" ||
+            status === statusFilter;
+
+
+          return (
+            matchesSearch &&
+            matchesStatus
+          );
+        }
+      );
+
+    }, [
+      assignments,
+      searchTerm,
+      statusFilter,
+      submittedAssignments,
+    ]);
+
+
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, backgroundColor: '#F4F7FE', fontFamily: 'sans-serif' }}>
-      
-      {/* Sidebar */}
-      <aside style={{ width: '260px', backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
-        <div style={{ padding: '0 20px', marginBottom: '30px' }}>
-          <h2 style={{ margin: 0, color: '#111C44', fontSize: '22px' }}>🎓 LMS <span style={{ color: '#4318FF' }}>Pro</span></h2>
+    <div className="assignments-page">
+
+      {/* ====================================
+          HEADER
+      ==================================== */}
+
+      <section className="assignments-header">
+
+        <div>
+
+          <h1>
+            Assignments
+          </h1>
+
+          <p>
+            Review your coursework,
+            submit files and track your
+            assignment status.
+          </p>
+
         </div>
 
-        <nav style={{ flex: 1, padding: '0 15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div onClick={() => navigate('/dashboard')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>📚 My Courses</div>
-          <div onClick={() => navigate('/progress')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>📈 Learning Progress</div>
-          <div style={{ padding: '12px 20px', borderRadius: '8px', backgroundColor: '#4318FF', color: '#FFFFFF', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>📝 Assignments</div>
-          <div onClick={() => navigate('/deadlines')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>📅 Upcoming Deadlines</div>
-          <div onClick={() => navigate('/tutor')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>🤖 AI Assistant</div>
-          <div onClick={() => navigate('/grades')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>🏆 Recent Grades</div>
-        </nav>
 
-        <div style={{ padding: '0 15px' }}>
-          <div onClick={handleLogout} style={{ padding: '12px 20px', color: '#EF4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>🚪 Log Out</div>
-        </div>
-      </aside>
+        <div className="assignments-header-badge">
 
-      {/* Main Content */}
-      <main style={{ flex: 1, padding: '30px', overflowY: 'auto' }}>
-        
-        <div style={{ marginBottom: '30px' }}>
-          <h1 style={{ color: '#111C44', margin: '0 0 5px 0' }}>Course Assignments 📝</h1>
-          <p style={{ color: '#A3AED0', margin: 0 }}>Review, submit, and manage your coursework.</p>
+          <ClipboardList size={16} />
+
+          {totalAssignments} Assignments
+
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '900px', marginBottom: '50px' }}>
-          {assignments.length === 0 ? (
-            <div style={{ backgroundColor: '#FFFFFF', padding: '40px', borderRadius: '16px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-              <h3 style={{ color: '#64748B', margin: 0 }}>No assignments available! 🎉</h3>
-              <p style={{ color: '#A3AED0', marginTop: '8px' }}>You are all caught up.</p>
+      </section>
+
+
+      {/* ====================================
+          SUMMARY
+      ==================================== */}
+
+      <section className="assignments-summary">
+
+        <div className="assignment-summary-card summary-assignment-purple">
+
+          <div className="assignment-summary-icon">
+            <ClipboardList size={21} />
+          </div>
+
+          <div>
+            <strong>
+              {totalAssignments}
+            </strong>
+
+            <span>
+              Total Assignments
+            </span>
+          </div>
+
+        </div>
+
+
+        <div className="assignment-summary-card summary-assignment-orange">
+
+          <div className="assignment-summary-icon">
+            <Clock3 size={21} />
+          </div>
+
+          <div>
+            <strong>
+              {pendingCount}
+            </strong>
+
+            <span>
+              Pending
+            </span>
+          </div>
+
+        </div>
+
+
+        <div className="assignment-summary-card summary-assignment-blue">
+
+          <div className="assignment-summary-icon">
+            <Send size={21} />
+          </div>
+
+          <div>
+            <strong>
+              {submittedCount}
+            </strong>
+
+            <span>
+              Submitted
+            </span>
+          </div>
+
+        </div>
+
+
+        <div className="assignment-summary-card summary-assignment-green">
+
+          <div className="assignment-summary-icon">
+            <Award size={21} />
+          </div>
+
+          <div>
+            <strong>
+              {gradedCount}
+            </strong>
+
+            <span>
+              Graded
+            </span>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ====================================
+          SEARCH + FILTER
+      ==================================== */}
+
+      <section className="assignments-toolbar">
+
+        <div className="assignments-search">
+
+          <Search size={17} />
+
+          <input
+            type="text"
+            placeholder="Search assignments..."
+            value={searchTerm}
+            onChange={(event) =>
+              setSearchTerm(
+                event.target.value
+              )
+            }
+          />
+
+        </div>
+
+
+        <select
+          className="assignments-filter"
+          value={statusFilter}
+          onChange={(event) =>
+            setStatusFilter(
+              event.target.value
+            )
+          }
+        >
+
+          <option value="all">
+            All Assignments
+          </option>
+
+          <option value="pending">
+            Pending
+          </option>
+
+          <option value="submitted">
+            Submitted
+          </option>
+
+          <option value="graded">
+            Graded
+          </option>
+
+        </select>
+
+      </section>
+
+
+      {/* ====================================
+          ASSIGNMENT LIST
+      ==================================== */}
+
+      <section className="assignments-list">
+
+        {loading ? (
+
+          <div className="assignments-empty">
+
+            <div className="assignments-empty-icon">
+              <ClipboardList size={26} />
             </div>
-          ) : (
-            assignments.map((assignment) => {
-              const isGraded = assignment.is_graded;
-              const isSubmitted = assignment.is_submitted || submittedAssignments.includes(assignment.id);
+
+            <h3>
+              Loading assignments...
+            </h3>
+
+            <p>
+              Please wait a moment.
+            </p>
+
+          </div>
+
+        ) : filteredAssignments.length === 0 ? (
+
+          <div className="assignments-empty">
+
+            <div className="assignments-empty-icon">
+              <Inbox size={27} />
+            </div>
+
+            <h3>
+              No assignments found
+            </h3>
+
+            <p>
+              You're all caught up or
+              there are no assignments
+              matching this filter.
+            </p>
+
+          </div>
+
+        ) : (
+
+          filteredAssignments.map(
+            (assignment) => {
+
+              const status =
+                getAssignmentStatus(
+                  assignment
+                );
+
+
+              const selectedFile =
+                selectedFiles[
+                  assignment.id
+                ];
+
+
+              const briefUrl =
+                assignment.file_path
+                  ? `http://localhost:5000/${assignment.file_path.replace(
+                      /\\/g,
+                      "/"
+                    )}`
+                  : null;
+
 
               return (
-                <div key={assignment.id} style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '20px' }}>
-                  <div style={{ flex: 1, minWidth: '300px' }}>
-                    <h3 style={{ margin: '0 0 8px 0', color: '#111C44', fontSize: '20px' }}>{assignment.title}</h3>
-                    <p style={{ margin: '0 0 15px 0', color: '#64748B', fontSize: '15px', lineHeight: '1.5' }}>{assignment.description}</p>
-                    
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                      <span style={{ backgroundColor: '#FEF2F2', color: '#EF4444', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold' }}>🚨 Due: {formatDueDate(assignment.due_date)}</span>
-                      <span style={{ backgroundColor: '#F1F5F9', color: '#475569', padding: '6px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold' }}>Cohort: {assignment.degree} ({assignment.batch})</span>
+                <article
+                  className="assignment-card"
+                  key={assignment.id}
+                >
+
+                  {/* LEFT */}
+                  <div className="assignment-main">
+
+                    <div className="assignment-title-row">
+
+                      <div className="assignment-card-icon">
+                        <ClipboardList
+                          size={20}
+                        />
+                      </div>
+
+
+                      <div className="assignment-title-content">
+
+                        <h3>
+                          {assignment.title}
+                        </h3>
+
+
+                        <span
+                          className={`assignment-status assignment-status-${status}`}
+                        >
+
+                          {status ===
+                            "graded" && (
+                            <CircleCheckBig
+                              size={12}
+                            />
+                          )}
+
+                          {status ===
+                            "submitted" && (
+                            <Send
+                              size={12}
+                            />
+                          )}
+
+                          {status ===
+                            "pending" && (
+                            <Clock3
+                              size={12}
+                            />
+                          )}
+
+
+                          {status ===
+                            "graded"
+                            ? "Graded"
+                            : status ===
+                                "submitted"
+                              ? "Submitted"
+                              : "Pending"}
+
+                        </span>
+
+                      </div>
+
                     </div>
+
+
+                    <p className="assignment-description">
+
+                      {assignment.description ||
+                        "No assignment description has been added."}
+
+                    </p>
+
+
+                    <div className="assignment-meta">
+
+                      <span className="assignment-meta-item assignment-meta-due">
+
+                        <CalendarDays
+                          size={12}
+                        />
+
+                        Due:{" "}
+                        {formatDueDate(
+                          assignment.due_date
+                        )}
+
+                      </span>
+
+
+                      {assignment.degree && (
+                        <span className="assignment-meta-item">
+
+                          <GraduationCap
+                            size={12}
+                          />
+
+                          {assignment.degree}
+
+                        </span>
+                      )}
+
+
+                      {assignment.batch && (
+                        <span className="assignment-meta-item">
+
+                          Batch{" "}
+                          {assignment.batch}
+
+                        </span>
+                      )}
+
+                    </div>
+
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '240px' }}>
-                    {assignment.file_path && (
-                      <a href={`http://localhost:5000/${assignment.file_path.replace(/\\/g, '/')}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                        <button style={{ width: '100%', padding: '10px 20px', backgroundColor: '#F8FAFC', color: '#4318FF', border: '1px solid #E2E8F0', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s' }}>📄 Download Brief</button>
+
+                  {/* RIGHT */}
+                  <div className="assignment-actions">
+
+                    {briefUrl && (
+
+                      <a
+                        href={briefUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          textDecoration:
+                            "none",
+                        }}
+                      >
+
+                        <button className="assignment-brief-button">
+
+                          <FileText
+                            size={14}
+                          />
+
+                          Open Assignment Brief
+
+                        </button>
+
                       </a>
+
                     )}
-                    
-                    {/* UI LOGIC: Graded vs Submitted vs Pending */}
-                    {isGraded ? (
-                      <div style={{ padding: '12px', backgroundColor: '#F0FDF4', border: '1px solid #10B981', borderRadius: '8px', textAlign: 'center' }}>
-                        <p style={{ margin: 0, color: '#10B981', fontWeight: 'bold' }}>🏆 Graded & Locked</p>
-                        <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: '#64748B' }}>Check the Recent Grades tab</p>
+
+
+                    {status === "graded" ? (
+
+                      <div className="assignment-graded-box">
+
+                        <strong>
+                          Graded & Locked
+                        </strong>
+
+                        <span>
+                          Check your Grades page
+                          for results and feedback.
+                        </span>
+
                       </div>
-                    ) : isSubmitted ? (
-                      <div style={{ padding: '12px', backgroundColor: '#ECFDF5', border: '1px dashed #10B981', borderRadius: '8px', textAlign: 'center' }}>
-                        <p style={{ margin: '0 0 10px 0', color: '#10B981', fontWeight: 'bold' }}>✅ Submitted</p>
-                        <input type="file" onChange={(e) => handleFileChange(assignment.id, e.target.files[0])} style={{ border: '1px solid #E2E8F0', padding: '6px', borderRadius: '6px', fontSize: '12px', color: '#64748B', backgroundColor: '#FFFFFF', width: '100%', boxSizing: 'border-box', marginBottom: '8px' }} />
-                        <button onClick={() => handleSubmit(assignment.id)} style={{ width: '100%', padding: '8px', backgroundColor: '#F59E0B', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-                          🔄 Resubmit Work
-                        </button>
-                      </div>
+
                     ) : (
+
                       <>
-                        <input type="file" onChange={(e) => handleFileChange(assignment.id, e.target.files[0])} style={{ border: '1px solid #E2E8F0', padding: '8px', borderRadius: '6px', fontSize: '13px', color: '#64748B', backgroundColor: '#F8FAFC' }} />
-                        <button onClick={() => handleSubmit(assignment.id)} style={{ width: '100%', padding: '12px 24px', backgroundColor: '#4318FF', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 12px rgba(67, 24, 255, 0.2)' }}>
-                          Upload & Submit
+
+                        <div className="assignment-upload-box">
+
+                          <label
+                            className="assignment-file-label"
+                            htmlFor={`assignment-file-${assignment.id}`}
+                          >
+
+                            <UploadCloud
+                              size={15}
+                            />
+
+                            {selectedFile
+                              ? "Change file"
+                              : "Choose submission file"}
+
+                          </label>
+
+
+                          <input
+                            id={`assignment-file-${assignment.id}`}
+                            className="assignment-file-input"
+                            type="file"
+                            onChange={(
+                              event
+                            ) =>
+                              handleFileChange(
+                                assignment.id,
+                                event
+                                  .target
+                                  .files[0]
+                              )
+                            }
+                          />
+
+
+                          {selectedFile && (
+
+                            <p className="assignment-selected-file">
+
+                              Selected:{" "}
+                              {selectedFile.name}
+
+                            </p>
+
+                          )}
+
+                        </div>
+
+
+                        <button
+                          className={`assignment-submit-button ${
+                            status ===
+                            "submitted"
+                              ? "assignment-resubmit-button"
+                              : ""
+                          }`}
+                          onClick={() =>
+                            handleSubmit(
+                              assignment.id
+                            )
+                          }
+                        >
+
+                          {status ===
+                          "submitted" ? (
+
+                            <>
+                              <RefreshCw
+                                size={14}
+                              />
+
+                              Resubmit Work
+                            </>
+
+                          ) : (
+
+                            <>
+                              <UploadCloud
+                                size={14}
+                              />
+
+                              Upload & Submit
+                            </>
+
+                          )}
+
                         </button>
+
                       </>
+
                     )}
 
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
 
-      </main>
+                </article>
+              );
+            }
+          )
+
+        )}
+
+      </section>
+
     </div>
   );
 }
