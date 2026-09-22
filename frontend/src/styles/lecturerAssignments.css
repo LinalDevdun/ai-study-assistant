@@ -1,0 +1,585 @@
+/* =========================================
+   LECTURER ASSIGNMENTS
+========================================= */
+
+.lecturer-assignments-page {
+  width: 100%;
+  max-width: 1440px;
+
+  margin: 0 auto;
+
+  padding: 34px 36px 55px;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.la-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  gap: 20px;
+
+  margin-bottom: 27px;
+}
+
+.la-header h1 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 30px;
+  font-weight: 800;
+
+  letter-spacing: -0.8px;
+}
+
+.la-header p {
+  margin: 8px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+}
+
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+.la-summary {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 17px;
+
+  margin-bottom: 27px;
+}
+
+.la-summary-card {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 18px;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.la-summary-icon {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 13px;
+}
+
+.la-purple .la-summary-icon {
+  color: #7c4fe0;
+  background: #f3edff;
+}
+
+.la-blue .la-summary-icon {
+  color: #4058df;
+  background: #eef2ff;
+}
+
+.la-orange .la-summary-icon {
+  color: #d98300;
+  background: #fff7e6;
+}
+
+.la-green .la-summary-icon {
+  color: #16a34a;
+  background: #ecfdf3;
+}
+
+.la-summary-card strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.la-summary-card span {
+  color: var(--text-secondary);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   TOOLBAR
+========================================= */
+
+.la-toolbar {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 15px;
+
+  margin-bottom: 22px;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+
+  box-shadow: var(--shadow-xs);
+}
+
+.la-search {
+  width: min(440px, 100%);
+
+  position: relative;
+}
+
+.la-search svg {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: var(--text-muted);
+}
+
+.la-search input {
+  width: 100%;
+  height: 43px;
+
+  padding: 0 14px 0 42px;
+
+  color: var(--text-primary);
+  background: #f8f9fc;
+
+  border: 1px solid transparent;
+  border-radius: 11px;
+
+  outline: none;
+
+  font-size: 12px;
+}
+
+.la-search input:focus {
+  background: white;
+
+  border-color: #ccd5ff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(79, 99, 231, 0.07);
+}
+
+.la-filter {
+  min-width: 180px;
+  height: 43px;
+
+  padding: 0 13px;
+
+  color: var(--text-secondary);
+  background: #f8f9fc;
+
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+
+  outline: none;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   LIST
+========================================= */
+
+.la-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+.la-assignment-card {
+  display: grid;
+
+  grid-template-columns:
+    48px
+    minmax(0, 1fr)
+    auto;
+
+  gap: 15px;
+
+  align-items: flex-start;
+
+  padding: 20px;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 17px;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.la-assignment-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: var(--shadow-md);
+}
+
+.la-assignment-icon {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4058df;
+  background: #eef2ff;
+
+  border-radius: 13px;
+}
+
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.la-assignment-content {
+  min-width: 0;
+}
+
+.la-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 15px;
+
+  margin-bottom: 13px;
+}
+
+.la-title-row h3 {
+  margin: 0 0 5px;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.la-course-name {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 9px;
+}
+
+.la-status {
+  padding: 5px 8px;
+
+  border-radius: 7px;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.la-status-published {
+  color: #15803d;
+  background: #ecfdf3;
+}
+
+.la-status-draft {
+  color: #d97706;
+  background: #fff7e6;
+}
+
+
+/* META */
+
+.la-meta {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-bottom: 15px;
+}
+
+.la-meta span {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  padding: 6px 8px;
+
+  color: var(--text-secondary);
+  background: #f7f8fb;
+
+  border-radius: 7px;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   PROGRESS
+========================================= */
+
+.la-submission-progress {
+  max-width: 580px;
+}
+
+.la-progress-info {
+  display: flex;
+  justify-content: space-between;
+
+  margin-bottom: 6px;
+
+  color: var(--text-muted);
+
+  font-size: 8px;
+}
+
+.la-progress-info strong {
+  color: var(--text-secondary);
+}
+
+.la-progress-track {
+  width: 100%;
+  height: 6px;
+
+  overflow: hidden;
+
+  background: #edf0f5;
+
+  border-radius: 99px;
+}
+
+.la-progress-fill {
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #4058df,
+      #7280ef
+    );
+
+  border-radius: 99px;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.la-actions {
+  display: flex;
+
+  gap: 7px;
+}
+
+.la-review-button {
+  min-height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 0 12px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #6366f1
+    );
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.la-icon-button {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4058df;
+  background: #eef2ff;
+
+  border: none;
+  border-radius: 9px;
+}
+
+
+/* =========================================
+   MODAL
+========================================= */
+
+.la-modal {
+  width: min(620px, 100%);
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  padding: 24px;
+
+  background: white;
+
+  border-radius: 19px;
+
+  box-shadow:
+    0 25px 70px
+    rgba(15, 23, 42, 0.2);
+}
+
+
+/* =========================================
+   UPLOAD PLACEHOLDER
+========================================= */
+
+.la-upload-placeholder {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 14px;
+
+  color: #4058df;
+  background: #f5f7ff;
+
+  border:
+    1px dashed #c8d1ff;
+
+  border-radius: 11px;
+}
+
+.la-upload-placeholder svg {
+  flex-shrink: 0;
+}
+
+.la-upload-placeholder strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 10px;
+}
+
+.la-upload-placeholder span {
+  display: block;
+
+  color: var(--text-muted);
+
+  font-size: 9px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1050px) {
+
+  .la-summary {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .la-assignment-card {
+    grid-template-columns:
+      46px 1fr;
+  }
+
+  .la-actions {
+    grid-column: 1 / -1;
+
+    justify-content: flex-end;
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .lecturer-assignments-page {
+    padding: 24px 18px 40px;
+  }
+
+  .la-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .la-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .la-toolbar {
+    flex-direction: column;
+  }
+
+  .la-search,
+  .la-filter {
+    width: 100%;
+  }
+
+  .la-title-row {
+    flex-direction: column;
+  }
+
+}
