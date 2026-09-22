@@ -1,141 +1,562 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../index.css';
+import { useMemo, useState } from "react";
+
+import {
+  Bell,
+  Search,
+  ClipboardList,
+  GraduationCap,
+  BookOpen,
+  CalendarClock,
+  Info,
+  CircleCheck,
+  Clock3,
+  CheckCheck,
+  MailOpen,
+} from "lucide-react";
+
+import "../styles/notifications.css";
+
 
 function Notifications() {
-  const navigate = useNavigate();
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/login');
+  /*
+    Temporary frontend notifications.
+
+    Later these will come from the
+    backend/database.
+  */
+
+  const [notifications, setNotifications] =
+    useState([
+      {
+        id: 1,
+        type: "assignment",
+        title: "New Assignment Available",
+        message:
+          "A new assignment has been added for Artificial Intelligence & Machine Learning.",
+        time: "10 minutes ago",
+        category: "Assignment",
+        unread: true,
+      },
+      {
+        id: 2,
+        type: "grade",
+        title: "Assignment Graded",
+        message:
+          "Your Database Normalization Exercise has been graded. Visit the Grades page to view your result.",
+        time: "1 hour ago",
+        category: "Grade",
+        unread: true,
+      },
+      {
+        id: 3,
+        type: "deadline",
+        title: "Deadline Reminder",
+        message:
+          "Your Software Engineering report is due soon. Make sure your final submission is uploaded before the deadline.",
+        time: "3 hours ago",
+        category: "Deadline",
+        unread: true,
+      },
+      {
+        id: 4,
+        type: "course",
+        title: "New Course Material",
+        message:
+          "New learning material has been uploaded to Web Development Fundamentals.",
+        time: "Yesterday",
+        category: "Course",
+        unread: false,
+      },
+      {
+        id: 5,
+        type: "system",
+        title: "CampusLearn Update",
+        message:
+          "Your student learning portal has been updated with new progress and notification features.",
+        time: "2 days ago",
+        category: "System",
+        unread: false,
+      },
+    ]);
+
+
+  const [searchTerm, setSearchTerm] =
+    useState("");
+
+  const [filter, setFilter] =
+    useState("all");
+
+
+  /* ========================================
+     TYPE ICON
+  ======================================== */
+
+  const getTypeIcon = (type) => {
+
+    switch (type) {
+
+      case "assignment":
+        return ClipboardList;
+
+      case "grade":
+        return GraduationCap;
+
+      case "course":
+        return BookOpen;
+
+      case "deadline":
+        return CalendarClock;
+
+      default:
+        return Info;
+    }
+
   };
 
+
+  /* ========================================
+     MARK ONE AS READ
+  ======================================== */
+
+  const markAsRead = (id) => {
+
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === id
+          ? {
+              ...notification,
+              unread: false,
+            }
+          : notification
+      )
+    );
+
+  };
+
+
+  /* ========================================
+     MARK ALL AS READ
+  ======================================== */
+
+  const markAllAsRead = () => {
+
+    setNotifications(
+      notifications.map((notification) => ({
+        ...notification,
+        unread: false,
+      }))
+    );
+
+  };
+
+
+  /* ========================================
+     COUNTS
+  ======================================== */
+
+  const unreadCount =
+    notifications.filter(
+      (notification) =>
+        notification.unread
+    ).length;
+
+
+  const readCount =
+    notifications.length -
+    unreadCount;
+
+
+  /* ========================================
+     SEARCH + FILTER
+  ======================================== */
+
+  const filteredNotifications =
+    useMemo(() => {
+
+      return notifications.filter(
+        (notification) => {
+
+          const search =
+            searchTerm.toLowerCase();
+
+
+          const matchesSearch =
+            notification.title
+              .toLowerCase()
+              .includes(search) ||
+
+            notification.message
+              .toLowerCase()
+              .includes(search) ||
+
+            notification.category
+              .toLowerCase()
+              .includes(search);
+
+
+          let matchesFilter = true;
+
+
+          if (filter === "unread") {
+            matchesFilter =
+              notification.unread;
+          }
+
+
+          if (filter === "read") {
+            matchesFilter =
+              !notification.unread;
+          }
+
+
+          return (
+            matchesSearch &&
+            matchesFilter
+          );
+
+        }
+      );
+
+    }, [
+      notifications,
+      searchTerm,
+      filter,
+    ]);
+
+
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, backgroundColor: '#F4F7FE', fontFamily: 'sans-serif' }}>
-      
-      {/* Sidebar */}
-      <aside style={{ width: '260px', backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
-        <div style={{ padding: '0 20px', marginBottom: '30px' }}>
-          <h2 style={{ margin: 0, color: '#111C44', fontSize: '22px' }}>🎓 LMS <span style={{ color: '#4318FF' }}>Pro</span></h2>
+    <div className="notifications-page">
+
+      {/* ====================================
+          HEADER
+      ==================================== */}
+
+      <section className="notifications-header">
+
+        <div>
+
+          <h1>
+            Notifications
+          </h1>
+
+          <p>
+            Stay updated with assignments,
+            grades, course materials and
+            important academic reminders.
+          </p>
+
         </div>
 
-        <nav style={{ flex: 1, padding: '0 15px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div onClick={() => navigate('/dashboard')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📚 My Courses
+
+        <div className="notifications-header-actions">
+
+          <div className="notification-count-badge">
+
+            <Bell size={16} />
+
+            {unreadCount} Unread
+
           </div>
-          <div onClick={() => navigate('/progress')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📈 Learning Progress
-          </div>
-          <div onClick={() => navigate('/assignments')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📝 Upcoming Assignments
-          </div>
-          <div onClick={() => navigate('/deadlines')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            📅 Upcoming Deadlines
-          </div>
-          
-          {/* 🔔 Notifications HAS BEEN REMOVED FROM HERE! */}
-          
-          <div onClick={() => navigate('/tutor')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🤖 AI Assistant
-          </div>
-          <div onClick={() => navigate('/grades')} style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🏆 Recent Grades
-          </div>
-        </nav>
 
 
-      </aside>
+          {unreadCount > 0 && (
 
-      {/* Main Content */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-        
-        {/* Top Header with Bell and Dropdown */}
-        <header style={{ backgroundColor: '#FFFFFF', padding: '20px 30px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button
+              className="mark-all-button"
+              onClick={markAllAsRead}
+            >
+
+              <CheckCheck size={15} />
+
+              Mark all as read
+
+            </button>
+
+          )}
+
+        </div>
+
+      </section>
+
+
+      {/* ====================================
+          SUMMARY
+      ==================================== */}
+
+      <section className="notifications-summary">
+
+        <div className="notification-summary-card notification-purple">
+
+          <div className="notification-summary-icon">
+
+            <Bell size={21} />
+
+          </div>
+
+
           <div>
-            <h1 style={{ margin: 0, fontSize: '24px', color: '#111C44' }}>Notifications 🔔</h1>
-            <p style={{ margin: '5px 0 0 0', color: '#A3AED0', fontSize: '14px' }}>Stay updated with course announcements and alerts.</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <span onClick={() => navigate('/notifications')} style={{ fontSize: '20px', cursor: 'pointer' }}>🔔</span>
-            
-            {/* Profile Dropdown Container */}
-            <div style={{ position: 'relative' }}>
-              <div 
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#4318FF', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', cursor: 'pointer', userSelect: 'none' }}
-              >
-                ST
-              </div>
 
-              {isProfileOpen && (
-                <div style={{ position: 'absolute', top: '50px', right: '0', backgroundColor: '#FFFFFF', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '200px', overflow: 'hidden', border: '1px solid #E2E8F0', zIndex: 100 }}>
-                  <div style={{ padding: '12px 20px', borderBottom: '1px solid #E2E8F0' }}>
-                    <p style={{ margin: 0, fontWeight: 'bold', color: '#111C44' }}>Student User</p>
-                    <p style={{ margin: 0, fontSize: '12px', color: '#A3AED0' }}>student@lms.edu</p>
-                  </div>
-                  <div style={{ padding: '8px 0' }}>
-                    <div style={{ padding: '10px 20px', cursor: 'pointer', color: '#475569', display: 'flex', gap: '10px', alignItems: 'center' }} onClick={() => setIsProfileOpen(false)}>
-                      👤 My Profile
-                    </div>
-                    <div style={{ padding: '10px 20px', cursor: 'pointer', color: '#475569', display: 'flex', gap: '10px', alignItems: 'center' }} onClick={() => setIsProfileOpen(false)}>
-                      ⚙️ Settings
-                    </div>
-                    <div style={{ padding: '10px 20px', cursor: 'pointer', color: '#475569', display: 'flex', gap: '10px', alignItems: 'center' }} onClick={() => setIsProfileOpen(false)}>
-                      🔒 Change Password
-                    </div>
-                  </div>
-                  <div style={{ borderTop: '1px solid #E2E8F0' }}>
-                    <div style={{ padding: '12px 20px', cursor: 'pointer', color: '#EF4444', fontWeight: 'bold', display: 'flex', gap: '10px', alignItems: 'center' }} onClick={handleLogout}>
-                      🚪 Log Out
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
+            <strong>
+              {notifications.length}
+            </strong>
 
-        {/* Notifications Content */}
-        <div style={{ padding: '30px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '800px' }}>
-            
-            {/* New Grade Notification */}
-            <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: '12px', borderLeft: '6px solid #10B981', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
-              <div style={{ fontSize: '24px' }}>🎉</div>
-              <div>
-                <h3 style={{ margin: '0 0 5px 0', color: '#111C44', fontSize: '16px' }}>New Grade Posted</h3>
-                <p style={{ margin: 0, color: '#64748B', fontSize: '14px', lineHeight: '1.5' }}>Your assignment "React UI Refactoring" has been graded. You scored 100/100!</p>
-                <span style={{ display: 'inline-block', marginTop: '10px', color: '#A3AED0', fontSize: '12px' }}>2 hours ago</span>
-              </div>
-            </div>
-
-            {/* Course Announcement Notification */}
-            <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: '12px', borderLeft: '6px solid #4318FF', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
-              <div style={{ fontSize: '24px' }}>📢</div>
-              <div>
-                <h3 style={{ margin: '0 0 5px 0', color: '#111C44', fontSize: '16px' }}>New Course Material</h3>
-                <p style={{ margin: 0, color: '#64748B', fontSize: '14px', lineHeight: '1.5' }}>Prof. Smith uploaded a new lecture video for "Advanced Database Design".</p>
-                <span style={{ display: 'inline-block', marginTop: '10px', color: '#A3AED0', fontSize: '12px' }}>Yesterday</span>
-              </div>
-            </div>
-
-            {/* System Alert Notification */}
-            <div style={{ backgroundColor: '#FFFFFF', padding: '20px', borderRadius: '12px', borderLeft: '6px solid #3B82F6', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
-              <div style={{ fontSize: '24px' }}>⚙️</div>
-              <div>
-                <h3 style={{ margin: '0 0 5px 0', color: '#111C44', fontSize: '16px' }}>Scheduled Maintenance</h3>
-                <p style={{ margin: 0, color: '#64748B', fontSize: '14px', lineHeight: '1.5' }}>The LMS will be offline for 30 minutes this Sunday at 2:00 AM for a system upgrade.</p>
-                <span style={{ display: 'inline-block', marginTop: '10px', color: '#A3AED0', fontSize: '12px' }}>2 days ago</span>
-              </div>
-            </div>
+            <span>
+              All Notifications
+            </span>
 
           </div>
+
         </div>
-      </main>
+
+
+        <div className="notification-summary-card notification-blue">
+
+          <div className="notification-summary-icon">
+
+            <MailOpen size={21} />
+
+          </div>
+
+
+          <div>
+
+            <strong>
+              {unreadCount}
+            </strong>
+
+            <span>
+              Unread
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div className="notification-summary-card notification-green">
+
+          <div className="notification-summary-icon">
+
+            <CircleCheck size={21} />
+
+          </div>
+
+
+          <div>
+
+            <strong>
+              {readCount}
+            </strong>
+
+            <span>
+              Read
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* ====================================
+          TOOLBAR
+      ==================================== */}
+
+      <section className="notifications-toolbar">
+
+        <div className="notification-search">
+
+          <Search size={17} />
+
+          <input
+            type="text"
+            placeholder="Search notifications..."
+            value={searchTerm}
+            onChange={(event) =>
+              setSearchTerm(
+                event.target.value
+              )
+            }
+          />
+
+        </div>
+
+
+        <select
+          className="notification-filter"
+          value={filter}
+          onChange={(event) =>
+            setFilter(
+              event.target.value
+            )
+          }
+        >
+
+          <option value="all">
+            All Notifications
+          </option>
+
+          <option value="unread">
+            Unread
+          </option>
+
+          <option value="read">
+            Read
+          </option>
+
+        </select>
+
+      </section>
+
+
+      {/* ====================================
+          LIST
+      ==================================== */}
+
+      <section className="notifications-list">
+
+        {filteredNotifications.length === 0 ? (
+
+          <div className="notifications-empty">
+
+            <div className="notifications-empty-icon">
+
+              <Bell size={27} />
+
+            </div>
+
+
+            <h3>
+              No notifications found
+            </h3>
+
+
+            <p>
+              There are no notifications
+              matching your current filter.
+            </p>
+
+          </div>
+
+        ) : (
+
+          filteredNotifications.map(
+            (notification) => {
+
+              const Icon =
+                getTypeIcon(
+                  notification.type
+                );
+
+
+              return (
+                <article
+                  key={notification.id}
+                  className={`notification-item ${
+                    notification.unread
+                      ? "notification-item-unread"
+                      : ""
+                  }`}
+                >
+
+                  {/* ICON */}
+                  <div
+                    className={`notification-item-icon notification-type-${notification.type}`}
+                  >
+
+                    <Icon size={20} />
+
+                  </div>
+
+
+                  {/* CONTENT */}
+                  <div className="notification-item-content">
+
+                    <div className="notification-title-row">
+
+                      <h3>
+                        {notification.title}
+                      </h3>
+
+
+                      {notification.unread && (
+
+                        <span className="notification-unread-dot" />
+
+                      )}
+
+                    </div>
+
+
+                    <p className="notification-message">
+
+                      {notification.message}
+
+                    </p>
+
+
+                    <div className="notification-meta">
+
+                      <span>
+
+                        <Clock3 size={11} />
+
+                        {notification.time}
+
+                      </span>
+
+
+                      <span>
+
+                        {notification.category}
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+
+                  {/* ACTION */}
+                  <div className="notification-item-action">
+
+                    {notification.unread && (
+
+                      <button
+                        className="notification-read-button"
+                        title="Mark as read"
+                        onClick={() =>
+                          markAsRead(
+                            notification.id
+                          )
+                        }
+                      >
+
+                        <CircleCheck
+                          size={17}
+                        />
+
+                      </button>
+
+                    )}
+
+                  </div>
+
+                </article>
+              );
+
+            }
+          )
+
+        )}
+
+      </section>
+
     </div>
   );
 }
+
 
 export default Notifications;

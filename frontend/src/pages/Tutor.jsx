@@ -1,152 +1,589 @@
-import { useState } from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import axios from 'axios';
-import '../index.css';
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
+
+import {
+  Sparkles,
+  Bot,
+  User,
+  Send,
+  Lightbulb,
+  BookOpen,
+  FileText,
+  BrainCircuit,
+  RotateCcw,
+  GraduationCap,
+} from "lucide-react";
+
+import "../styles/tutor.css";
+
 
 function Tutor() {
+
   const location = useLocation();
-  
-  const lessonContext = location.state?.lessonContext || '';
-  const lessonTitle = location.state?.lessonTitle || '';
 
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleAskAI = async (e) => {
-    e.preventDefault();
+  /* ========================================
+     LESSON CONTEXT
+  ======================================== */
+
+  const lessonContext =
+    location.state?.lessonContext || "";
+
+  const lessonTitle =
+    location.state?.lessonTitle || "";
+
+
+  /* ========================================
+     STATE
+  ======================================== */
+
+  const [question, setQuestion] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [messages, setMessages] =
+    useState([]);
+
+
+  /* ========================================
+     SUGGESTED QUESTIONS
+  ======================================== */
+
+  const suggestions = [
+    {
+      icon: Lightbulb,
+      text:
+        "Explain this concept in very simple words.",
+    },
+    {
+      icon: FileText,
+      text:
+        "Summarize the important points for my exam.",
+    },
+    {
+      icon: BrainCircuit,
+      text:
+        "Give me a simple example to understand this topic.",
+    },
+    {
+      icon: BookOpen,
+      text:
+        "Create 5 practice questions for me.",
+    },
+  ];
+
+
+  /* ========================================
+     ASK AI
+  ======================================== */
+
+  const handleAskAI = async (event) => {
+
+    event.preventDefault();
+
+
+    const trimmedQuestion =
+      question.trim();
+
+
+    if (!trimmedQuestion || loading) {
+      return;
+    }
+
+
+    const userMessage = {
+      id: `${Date.now()}-user`,
+      role: "user",
+      content: trimmedQuestion,
+    };
+
+
+    setMessages((previous) => [
+      ...previous,
+      userMessage,
+    ]);
+
+
+    setQuestion("");
+
     setLoading(true);
-    setAnswer('');
+
 
     try {
-      const token = localStorage.getItem('token');
-      
-      const response = await axios.post('http://localhost:5000/tutor', 
-        { question, context: lessonContext },
-        { headers: { Authorization: `Bearer ${token}` } }
+
+      const token =
+        localStorage.getItem("token");
+
+
+      const response =
+        await axios.post(
+          "http://localhost:5000/tutor",
+
+          {
+            question: trimmedQuestion,
+            context: lessonContext,
+          },
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+
+      const aiMessage = {
+        id: `${Date.now()}-assistant`,
+        role: "assistant",
+        content:
+          response.data.answer ||
+          "I couldn't generate an answer.",
+      };
+
+
+      setMessages((previous) => [
+        ...previous,
+        aiMessage,
+      ]);
+
+
+    } catch (error) {
+
+      console.error(
+        "Tutor API Error:",
+        error.response
+          ? error.response.data
+          : error.message
       );
-      
-      setAnswer(response.data.answer);
-    } catch (err) {
-      setAnswer('The AI encountered an error. Please try again.');
+
+
+      const errorMessage = {
+        id: `${Date.now()}-error`,
+        role: "error",
+        content:
+          "The AI tutor couldn't respond right now. We'll connect and fix the AI service during the backend phase.",
+      };
+
+
+      setMessages((previous) => [
+        ...previous,
+        errorMessage,
+      ]);
+
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
+
+  /* ========================================
+     CLEAR CHAT
+  ======================================== */
+
+  const clearChat = () => {
+
+    setMessages([]);
+    setQuestion("");
+
+  };
+
+
   return (
-    // 1. Fixed the background color and allowed scrolling for long AI answers
-    <div style={{ 
-      minHeight: '100vh', 
-      width: '100vw', 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      backgroundColor: '#F4F7FE', 
-      fontFamily: 'sans-serif',
-      overflowY: 'auto',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '40px 20px',
-      boxSizing: 'border-box'
-    }}>
-      
-      {/* 2. Container to keep everything centered and readable */}
-      <div style={{ width: '100%', maxWidth: '900px' }}>
-        
-        {/* Header Section */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <h1 style={{ color: '#111C44', margin: 0, fontSize: '28px' }}>🤖 AI Study Tutor</h1>
-          <Link to="/dashboard" style={{ textDecoration: 'none' }}>
-            <button style={{ 
-              backgroundColor: '#FFFFFF', 
-              color: '#4318FF', 
-              padding: '10px 20px', 
-              borderRadius: '8px', 
-              border: '1px solid #E2E8F0', 
-              fontWeight: 'bold', 
-              cursor: 'pointer',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
-            }}>
-              ← Back to Dashboard
-            </button>
-          </Link>
+    <div className="tutor-page">
+
+      {/* ====================================
+          PAGE HEADER
+      ==================================== */}
+
+      <section className="tutor-page-header">
+
+        <div>
+
+          <h1>
+            AI Study Tutor
+          </h1>
+
+          <p>
+            Ask questions, understand difficult
+            concepts and get support while you
+            study.
+          </p>
+
         </div>
 
-        {/* 3. The Modern Card */}
-        <div style={{ 
-          backgroundColor: '#FFFFFF', 
-          padding: '40px', 
-          borderRadius: '16px', 
-          boxShadow: '0 10px 30px rgba(0,0,0,0.05)', 
-          width: '100%', 
-          boxSizing: 'border-box' 
-        }}>
-          
-          {/* Context Banner */}
-          {lessonTitle && (
-            <div style={{ backgroundColor: '#E0E7FF', color: '#4318FF', padding: '15px', borderRadius: '8px', marginBottom: '25px', fontWeight: 'bold', border: '1px solid #C7D2FE', textAlign: 'left' }}>
-              🧠 Context Active: Assisting with "{lessonTitle}"
+
+        <div className="tutor-status">
+
+          <span className="tutor-status-dot" />
+
+          AI Assistant
+
+        </div>
+
+      </section>
+
+
+      {/* ====================================
+          WORKSPACE
+      ==================================== */}
+
+      <section className="tutor-workspace">
+
+
+        {/* ==================================
+            LEFT PANEL
+        ================================== */}
+
+        <aside className="tutor-side-panel">
+
+          <div className="tutor-ai-brand">
+
+            <div className="tutor-ai-icon">
+
+              <Sparkles size={23} />
+
             </div>
+
+
+            <h3>
+              CampusLearn AI
+            </h3>
+
+
+            <p>
+              Your personal study assistant
+              for explanations, revision and
+              practice.
+            </p>
+
+          </div>
+
+
+          <p className="tutor-suggestion-title">
+            Try asking
+          </p>
+
+
+          <div className="tutor-suggestions">
+
+            {suggestions.map(
+              (suggestion, index) => {
+
+                const Icon =
+                  suggestion.icon;
+
+
+                return (
+                  <button
+                    className="tutor-suggestion"
+                    key={index}
+                    onClick={() =>
+                      setQuestion(
+                        suggestion.text
+                      )
+                    }
+                  >
+
+                    <Icon size={15} />
+
+                    <span>
+                      {suggestion.text}
+                    </span>
+
+                  </button>
+                );
+
+              }
+            )}
+
+          </div>
+
+
+          <div className="tutor-side-note">
+
+            <strong>
+              Study tip:
+            </strong>
+
+            <br />
+
+            Ask one clear question at a
+            time and request examples when
+            a topic feels difficult.
+
+          </div>
+
+        </aside>
+
+
+        {/* ==================================
+            CHAT
+        ================================== */}
+
+        <div className="tutor-chat">
+
+
+          {/* CHAT HEADER */}
+
+          <div className="tutor-chat-header">
+
+            <div className="tutor-chat-profile">
+
+              <div className="tutor-chat-avatar">
+
+                <Bot size={21} />
+
+              </div>
+
+
+              <div>
+
+                <h3>
+                  Study Assistant
+                </h3>
+
+                <span>
+                  Ready to help you learn
+                </span>
+
+              </div>
+
+            </div>
+
+
+            {messages.length > 0 && (
+
+              <button
+                className="tutor-clear-button"
+                title="Clear conversation"
+                onClick={clearChat}
+              >
+
+                <RotateCcw size={16} />
+
+              </button>
+
+            )}
+
+          </div>
+
+
+          {/* LESSON CONTEXT */}
+
+          {lessonTitle && (
+
+            <div className="tutor-context">
+
+              <GraduationCap size={15} />
+
+              Studying:
+              {" "}
+              <strong>
+                {lessonTitle}
+              </strong>
+
+            </div>
+
           )}
 
-          {/* Input Form */}
-          <form onSubmit={handleAskAI} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
-            <input 
-              type="text" 
-              placeholder={lessonTitle ? `Ask a question about ${lessonTitle}...` : "Ask me to explain a concept..."}
-              value={question} 
-              onChange={(e) => setQuestion(e.target.value)} 
-              required 
-              style={{ 
-                width: '100%', 
-                padding: '16px', 
-                fontSize: '16px', 
-                borderRadius: '8px', 
-                border: '1px solid #E2E8F0',
-                backgroundColor: '#F8FAFC',
-                color: '#111C44',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-            <button type="submit" style={{ 
-              padding: '16px', 
-              backgroundColor: '#4318FF', 
-              color: '#FFFFFF', 
-              border: 'none', 
-              borderRadius: '8px', 
-              fontWeight: 'bold', 
-              fontSize: '18px', 
-              cursor: 'pointer', 
-              boxShadow: '0 4px 12px rgba(67, 24, 255, 0.2)' 
-            }}>
-              {loading ? 'Thinking...' : 'Ask AI'}
-            </button>
+
+          {/* =================================
+              MESSAGES
+          ================================= */}
+
+          <div className="tutor-messages">
+
+            {messages.length === 0 ? (
+
+              <div className="tutor-empty">
+
+                <div className="tutor-empty-icon">
+
+                  <Sparkles size={31} />
+
+                </div>
+
+
+                <h2>
+                  What can I help you learn?
+                </h2>
+
+
+                <p>
+
+                  Ask me to explain a difficult
+                  concept, summarize a lesson,
+                  create revision questions or
+                  help you prepare for an exam.
+
+                  {lessonTitle && (
+                    <>
+                      {" "}
+                      I already have context
+                      from your lesson
+                      {" "}
+                      <strong>
+                        {lessonTitle}
+                      </strong>.
+                    </>
+                  )}
+
+                </p>
+
+              </div>
+
+            ) : (
+
+              messages.map((message) => {
+
+                const isUser =
+                  message.role ===
+                  "user";
+
+
+                const isError =
+                  message.role ===
+                  "error";
+
+
+                return (
+                  <div
+                    key={message.id}
+                    className={`tutor-message ${
+                      isUser
+                        ? "tutor-message-user"
+                        : "tutor-message-ai"
+                    } ${
+                      isError
+                        ? "tutor-message-error"
+                        : ""
+                    }`}
+                  >
+
+                    <div className="tutor-message-avatar">
+
+                      {isUser ? (
+                        <User size={16} />
+                      ) : (
+                        <Bot size={16} />
+                      )}
+
+                    </div>
+
+
+                    <div className="tutor-message-body">
+
+                      {message.content}
+
+                    </div>
+
+                  </div>
+                );
+
+              })
+
+            )}
+
+
+            {/* THINKING */}
+
+            {loading && (
+
+              <div className="tutor-message tutor-message-ai">
+
+                <div className="tutor-message-avatar">
+
+                  <Bot size={16} />
+
+                </div>
+
+
+                <div className="tutor-message-body">
+
+                  <div className="tutor-thinking">
+
+                    <span />
+                    <span />
+                    <span />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            )}
+
+          </div>
+
+
+          {/* =================================
+              INPUT
+          ================================= */}
+
+          <form
+            className="tutor-composer"
+            onSubmit={handleAskAI}
+          >
+
+            <div className="tutor-input-wrapper">
+
+              <textarea
+                rows="1"
+                value={question}
+                onChange={(event) =>
+                  setQuestion(
+                    event.target.value
+                  )
+                }
+                placeholder={
+                  lessonTitle
+                    ? `Ask something about ${lessonTitle}...`
+                    : "Ask your study question..."
+                }
+              />
+
+
+              <button
+                className="tutor-send-button"
+                type="submit"
+                disabled={
+                  loading ||
+                  !question.trim()
+                }
+              >
+
+                <Send size={17} />
+
+              </button>
+
+            </div>
+
+
+            <p className="tutor-composer-note">
+              AI-generated answers can make
+              mistakes. Check important academic
+              information with your course
+              materials.
+            </p>
+
           </form>
 
-          {/* AI Answer Display */}
-          {answer && (
-            <div style={{ 
-              marginTop: '30px', 
-              padding: '25px', 
-              backgroundColor: '#F8FAFC', 
-              border: '1px solid #E2E8F0',
-              borderLeft: '5px solid #4318FF', 
-              borderRadius: '8px', 
-              textAlign: 'left'
-            }}>
-              <h4 style={{ margin: '0 0 15px 0', color: '#111C44', fontSize: '18px' }}>Tutor's Explanation:</h4>
-              <p style={{ margin: '0', color: '#4B5563', lineHeight: '1.8', whiteSpace: 'pre-wrap', fontSize: '16px' }}>
-                {answer}
-              </p>
-            </div>
-          )}
         </div>
-      </div>
+
+      </section>
+
     </div>
   );
 }
+
 
 export default Tutor;
