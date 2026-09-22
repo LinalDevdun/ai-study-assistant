@@ -1,0 +1,899 @@
+/* =========================================
+   LECTURER STUDENTS PAGE
+========================================= */
+
+.lecturer-students-page {
+  width: 100%;
+  max-width: 1440px;
+
+  margin: 0 auto;
+
+  padding: 34px 36px 55px;
+}
+
+
+/* HEADER */
+
+.lst-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  gap: 20px;
+
+  margin-bottom: 27px;
+}
+
+.lst-header h1 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 30px;
+  font-weight: 800;
+
+  letter-spacing: -0.8px;
+}
+
+.lst-header p {
+  margin: 8px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+}
+
+.lst-header-badge {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 10px 14px;
+
+  color: #4058df;
+  background: #eef2ff;
+
+  border: 1px solid #dce2ff;
+  border-radius: 11px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+.lst-summary {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 17px;
+
+  margin-bottom: 27px;
+}
+
+.lst-summary-card {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 18px;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.lst-summary-icon {
+  width: 46px;
+  height: 46px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+}
+
+.lst-blue .lst-summary-icon {
+  color: #4058df;
+  background: #eef2ff;
+}
+
+.lst-green .lst-summary-icon {
+  color: #16a34a;
+  background: #ecfdf3;
+}
+
+.lst-purple .lst-summary-icon {
+  color: #7c4fe0;
+  background: #f3edff;
+}
+
+.lst-orange .lst-summary-icon {
+  color: #d98300;
+  background: #fff7e6;
+}
+
+.lst-summary-card strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.lst-summary-card span {
+  color: var(--text-secondary);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   TOOLBAR
+========================================= */
+
+.lst-toolbar {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 15px;
+
+  margin-bottom: 22px;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+
+  box-shadow: var(--shadow-xs);
+}
+
+.lst-search {
+  width: min(470px, 100%);
+
+  position: relative;
+}
+
+.lst-search svg {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: var(--text-muted);
+}
+
+.lst-search input {
+  width: 100%;
+  height: 43px;
+
+  padding: 0 14px 0 42px;
+
+  color: var(--text-primary);
+  background: #f8f9fc;
+
+  border: 1px solid transparent;
+  border-radius: 11px;
+
+  outline: none;
+
+  font-size: 12px;
+}
+
+.lst-search input:focus {
+  background: white;
+
+  border-color: #ccd5ff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(79, 99, 231, 0.07);
+}
+
+.lst-filter {
+  min-width: 175px;
+  height: 43px;
+
+  padding: 0 13px;
+
+  color: var(--text-secondary);
+  background: #f8f9fc;
+
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+
+  outline: none;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   STUDENT GRID
+========================================= */
+
+.lst-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+.lst-student-card {
+  padding: 19px;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 17px;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.lst-student-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: var(--shadow-md);
+}
+
+.lst-student-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  margin-bottom: 13px;
+}
+
+.lst-avatar {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #7479ef
+    );
+
+  border-radius: 13px;
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.lst-active-badge {
+  padding: 5px 8px;
+
+  color: #15803d;
+  background: #ecfdf3;
+
+  border-radius: 7px;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.lst-student-card h3 {
+  margin: 0 0 3px;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.lst-student-id {
+  margin: 0 0 15px;
+
+  color: var(--text-muted);
+
+  font-size: 9px;
+}
+
+
+/* DETAILS */
+
+.lst-student-details {
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  padding-bottom: 15px;
+
+  border-bottom:
+    1px solid var(--border-light);
+}
+
+.lst-student-details div {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  color: var(--text-secondary);
+
+  font-size: 9px;
+}
+
+.lst-student-details svg {
+  flex-shrink: 0;
+
+  color: #7e8da4;
+}
+
+
+/* PROGRESS */
+
+.lst-progress {
+  margin: 15px 0;
+}
+
+.lst-progress-info {
+  display: flex;
+  justify-content: space-between;
+
+  margin-bottom: 7px;
+
+  color: var(--text-muted);
+
+  font-size: 8px;
+}
+
+.lst-progress-info strong {
+  color: var(--text-primary);
+}
+
+.lst-progress-track {
+  width: 100%;
+  height: 6px;
+
+  overflow: hidden;
+
+  background: #edf0f5;
+
+  border-radius: 99px;
+}
+
+.lst-progress-fill {
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #4058df,
+      #7480ee
+    );
+
+  border-radius: 99px;
+}
+
+
+/* PERFORMANCE */
+
+.lst-performance {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 8px;
+
+  margin-bottom: 15px;
+}
+
+.lst-performance div {
+  padding: 9px 5px;
+
+  text-align: center;
+
+  background: #fafbfe;
+
+  border-radius: 9px;
+}
+
+.lst-performance strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 11px;
+}
+
+.lst-performance span {
+  color: var(--text-muted);
+
+  font-size: 7px;
+}
+
+
+/* BUTTON */
+
+.lst-view-button {
+  width: 100%;
+  min-height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  color: #4058df;
+  background: #eef2ff;
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.lst-view-button:hover {
+  background: #e4e9ff;
+}
+
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.lst-empty {
+  padding: 70px 20px;
+
+  text-align: center;
+
+  color: var(--text-muted);
+  background: white;
+
+  border: 1px dashed #d7ddea;
+  border-radius: 17px;
+}
+
+.lst-empty svg {
+  color: #4058df;
+}
+
+.lst-empty h3 {
+  margin: 12px 0 5px;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+}
+
+.lst-empty p {
+  margin: 0;
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   MODAL
+========================================= */
+
+.lst-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1200;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(15, 23, 42, 0.44);
+
+  backdrop-filter: blur(5px);
+}
+
+.lst-modal {
+  width: min(680px, 100%);
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  padding: 25px;
+
+  background: white;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 25px 70px
+    rgba(15, 23, 42, 0.23);
+}
+
+.lst-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 20px;
+
+  margin-bottom: 20px;
+}
+
+.lst-modal-header h2 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.lst-modal-header p {
+  margin: 6px 0 0;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+}
+
+.lst-modal-header button {
+  width: 35px;
+  height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-secondary);
+  background: #f7f8fb;
+
+  border: none;
+  border-radius: 9px;
+}
+
+
+/* PROFILE */
+
+.lst-modal-profile {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 15px;
+
+  margin-bottom: 17px;
+
+  background: #f5f7ff;
+
+  border-radius: 13px;
+}
+
+.lst-modal-avatar {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #7479ef
+    );
+
+  border-radius: 13px;
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.lst-modal-profile div:nth-child(2) {
+  flex: 1;
+}
+
+.lst-modal-profile h3 {
+  margin: 0 0 3px;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+}
+
+.lst-modal-profile p {
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 9px;
+}
+
+.lst-modal-profile > span {
+  padding: 5px 8px;
+
+  color: #15803d;
+  background: #ecfdf3;
+
+  border-radius: 7px;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+
+/* INFO GRID */
+
+.lst-modal-info-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 11px;
+
+  margin-bottom: 17px;
+}
+
+.lst-info-card {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  padding: 13px;
+
+  background: #fafbfe;
+
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+}
+
+.lst-info-card svg {
+  flex-shrink: 0;
+
+  color: #4058df;
+}
+
+.lst-info-card span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-muted);
+
+  font-size: 8px;
+}
+
+.lst-info-card strong {
+  color: var(--text-primary);
+
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+
+/* MODAL PROGRESS */
+
+.lst-modal-progress {
+  padding: 15px;
+
+  margin-bottom: 17px;
+
+  background: #fafbfe;
+
+  border-radius: 12px;
+}
+
+.lst-modal-progress-header {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 11px;
+}
+
+.lst-modal-progress-header h3 {
+  margin: 0 0 3px;
+
+  color: var(--text-primary);
+
+  font-size: 12px;
+}
+
+.lst-modal-progress-header p {
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 8px;
+}
+
+.lst-modal-progress-header > strong {
+  color: #4058df;
+
+  font-size: 17px;
+}
+
+.lst-modal-progress-track {
+  height: 7px;
+
+  overflow: hidden;
+
+  background: #eaedf4;
+
+  border-radius: 99px;
+}
+
+.lst-modal-progress-track div {
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #4058df,
+      #7479ef
+    );
+
+  border-radius: 99px;
+}
+
+
+/* STATS */
+
+.lst-modal-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 10px;
+
+  margin-bottom: 18px;
+}
+
+.lst-modal-stats > div {
+  padding: 14px;
+
+  text-align: center;
+
+  background: #f7f9ff;
+
+  border-radius: 11px;
+}
+
+.lst-modal-stats svg {
+  margin-bottom: 7px;
+
+  color: #4058df;
+}
+
+.lst-modal-stats strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+}
+
+.lst-modal-stats span {
+  color: var(--text-muted);
+
+  font-size: 8px;
+}
+
+
+/* FOOTER */
+
+.lst-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lst-modal-footer button {
+  min-height: 40px;
+
+  padding: 0 15px;
+
+  color: var(--text-secondary);
+  background: white;
+
+  border: 1px solid var(--border);
+  border-radius: 9px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1100px) {
+
+  .lst-summary {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .lst-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 760px) {
+
+  .lecturer-students-page {
+    padding: 24px 18px 40px;
+  }
+
+  .lst-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lst-summary,
+  .lst-grid,
+  .lst-modal-info-grid,
+  .lst-modal-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .lst-toolbar {
+    flex-direction: column;
+  }
+
+  .lst-search,
+  .lst-filter {
+    width: 100%;
+  }
+
+}
