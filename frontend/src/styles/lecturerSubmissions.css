@@ -1,0 +1,723 @@
+/* =========================================
+   LECTURER SUBMISSIONS
+========================================= */
+
+.lecturer-submissions-page {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 34px 36px 55px;
+}
+
+
+/* HEADER */
+
+.ls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 27px;
+}
+
+.ls-header h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.ls-header p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.ls-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  color: #d97706;
+  background: #fff7e6;
+  border: 1px solid #fde7b0;
+  border-radius: 11px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+.ls-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 17px;
+  margin-bottom: 27px;
+}
+
+.ls-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.ls-summary-icon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+}
+
+.ls-blue .ls-summary-icon {
+  color: #4058df;
+  background: #eef2ff;
+}
+
+.ls-orange .ls-summary-icon {
+  color: #d98300;
+  background: #fff7e6;
+}
+
+.ls-green .ls-summary-icon {
+  color: #16a34a;
+  background: #ecfdf3;
+}
+
+.ls-purple .ls-summary-icon {
+  color: #7c4fe0;
+  background: #f3edff;
+}
+
+.ls-summary-card strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--text-primary);
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.ls-summary-card span {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   TOOLBAR
+========================================= */
+
+.ls-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 22px;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xs);
+}
+
+.ls-search {
+  width: min(480px, 100%);
+  position: relative;
+}
+
+.ls-search svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.ls-search input {
+  width: 100%;
+  height: 43px;
+  padding: 0 14px 0 42px;
+  color: var(--text-primary);
+  background: #f8f9fc;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  outline: none;
+  font-size: 12px;
+}
+
+.ls-search input:focus {
+  background: white;
+  border-color: #ccd5ff;
+  box-shadow:
+    0 0 0 4px rgba(79, 99, 231, 0.07);
+}
+
+.ls-filter {
+  min-width: 175px;
+  height: 43px;
+  padding: 0 13px;
+  color: var(--text-secondary);
+  background: #f8f9fc;
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+  outline: none;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   TABLE
+========================================= */
+
+.ls-table-container {
+  overflow-x: auto;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.ls-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1050px;
+}
+
+.ls-table th {
+  padding: 14px 16px;
+  color: var(--text-muted);
+  background: #fafbfe;
+  font-size: 9px;
+  font-weight: 750;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ls-table td {
+  padding: 15px 16px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-light);
+  font-size: 10px;
+}
+
+.ls-table tbody tr {
+  transition: background var(--transition-fast);
+}
+
+.ls-table tbody tr:hover {
+  background: #fcfcff;
+}
+
+
+/* STUDENT */
+
+.ls-student {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ls-student-avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #7479ef
+    );
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.ls-student strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 10px;
+}
+
+.ls-student span {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.ls-primary-text {
+  color: var(--text-primary) !important;
+  font-weight: 700;
+}
+
+.ls-course,
+.ls-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+
+/* STATUS */
+
+.ls-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.ls-status-pending {
+  color: #d97706;
+  background: #fff7e6;
+}
+
+.ls-status-graded {
+  color: #15803d;
+  background: #ecfdf3;
+}
+
+.ls-mark {
+  color: #15803d;
+}
+
+.ls-no-mark {
+  color: var(--text-muted);
+}
+
+
+/* BUTTON */
+
+.ls-review-button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 11px;
+  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #6366f1
+    );
+  border: none;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* EMPTY */
+
+.ls-empty {
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.ls-empty svg {
+  color: #4058df;
+}
+
+.ls-empty h3 {
+  margin: 12px 0 5px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.ls-empty p {
+  margin: 0;
+  font-size: 10px;
+}
+
+
+/* =========================================
+   REVIEW MODAL
+========================================= */
+
+.ls-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(15, 23, 42, 0.44);
+
+  backdrop-filter: blur(5px);
+}
+
+.ls-review-modal {
+  width: min(650px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  padding: 25px;
+
+  background: white;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 25px 70px rgba(15, 23, 42, 0.23);
+}
+
+.ls-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 20px;
+
+  margin-bottom: 22px;
+}
+
+.ls-modal-header h2 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.ls-modal-header p {
+  margin: 6px 0 0;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+}
+
+.ls-modal-close {
+  width: 35px;
+  height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-secondary);
+  background: #f7f8fb;
+
+  border: none;
+  border-radius: 9px;
+}
+
+
+/* STUDENT PROFILE */
+
+.ls-review-student {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 15px;
+
+  margin-bottom: 18px;
+
+  background: #f7f9ff;
+
+  border-radius: 13px;
+}
+
+.ls-review-avatar {
+  width: 45px;
+  height: 45px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #7479ef
+    );
+
+  border-radius: 12px;
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.ls-review-student h3 {
+  margin: 0 0 3px;
+
+  color: var(--text-primary);
+
+  font-size: 13px;
+}
+
+.ls-review-student p {
+  margin: 0;
+
+  color: var(--text-muted);
+
+  font-size: 9px;
+}
+
+
+/* GRID */
+
+.ls-review-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 11px;
+
+  margin-bottom: 18px;
+}
+
+.ls-review-info {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  padding: 13px;
+
+  background: #fafbfe;
+
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+}
+
+.ls-review-info svg {
+  flex-shrink: 0;
+
+  color: #4058df;
+}
+
+.ls-review-info span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-muted);
+
+  font-size: 8px;
+}
+
+.ls-review-info strong {
+  display: block;
+
+  color: var(--text-primary);
+
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+
+/* FILE */
+
+.ls-file-card {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 14px;
+
+  margin-bottom: 18px;
+
+  background: #f6f8ff;
+
+  border: 1px solid #dde3ff;
+  border-radius: 12px;
+}
+
+.ls-file-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: #4058df;
+
+  background: #e8edff;
+
+  border-radius: 11px;
+}
+
+.ls-file-card > div:nth-child(2) {
+  flex: 1;
+}
+
+.ls-file-card strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 10px;
+}
+
+.ls-file-card span {
+  color: var(--text-muted);
+
+  font-size: 8px;
+}
+
+.ls-file-card button {
+  min-height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 0 11px;
+
+  color: #4058df;
+  background: white;
+
+  border: 1px solid #d8def8;
+  border-radius: 8px;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* RESULT */
+
+.ls-result-box {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 13px;
+
+  margin-bottom: 18px;
+
+  color: #15803d;
+  background: #ecfdf3;
+
+  border-radius: 11px;
+}
+
+.ls-result-box strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  font-size: 10px;
+}
+
+.ls-result-box span {
+  font-size: 9px;
+}
+
+
+/* ACTIONS */
+
+.ls-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 9px;
+
+  padding-top: 5px;
+}
+
+.ls-secondary-button {
+  min-height: 41px;
+
+  padding: 0 15px;
+
+  color: var(--text-secondary);
+  background: white;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1050px) {
+
+  .ls-summary {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .lecturer-submissions-page {
+    padding: 24px 18px 40px;
+  }
+
+  .ls-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ls-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .ls-toolbar {
+    flex-direction: column;
+  }
+
+  .ls-search,
+  .ls-filter {
+    width: 100%;
+  }
+
+  .ls-review-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
