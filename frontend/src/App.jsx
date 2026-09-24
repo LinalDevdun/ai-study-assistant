@@ -47,7 +47,10 @@ import LecturerStudents from "./pages/LecturerStudents";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminUsers from "./pages/AdminUsers";
-
+import AdminStudents from "./pages/AdminStudents";
+import AdminCourses from "./pages/AdminCourses";
+import AdminReports from "./pages/AdminReports";
+import AdminSettings from "./pages/AdminSettings";
 
 /* =========================================
    PROTECTION + LAYOUTS
@@ -57,6 +60,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import StudentLayout from "./components/layout/StudentLayout";
 import LecturerLayout from "./components/layout/LecturerLayout";
+import AdminLayout from "./components/layout/AdminLayout";
 
 
 function App() {
@@ -78,12 +82,10 @@ function App() {
           element={<Splash />}
         />
 
-
         <Route
           path="/login"
           element={<Login />}
         />
-
 
         <Route
           path="/register"
@@ -96,25 +98,19 @@ function App() {
             STUDENT ROUTES
         ======================================== */}
 
-        {/* STUDENT DASHBOARD */}
-
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute
               allowedRoles={["STUDENT"]}
             >
-
               <StudentLayout>
                 <Dashboard />
               </StudentLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* MY COURSES */}
 
         <Route
           path="/courses"
@@ -122,17 +118,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["STUDENT"]}
             >
-
               <StudentLayout>
                 <MyCourses />
               </StudentLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* LEARNING PROGRESS */}
 
         <Route
           path="/progress"
@@ -140,17 +132,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["STUDENT"]}
             >
-
               <StudentLayout>
                 <Progress />
               </StudentLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* ASSIGNMENTS */}
 
         <Route
           path="/assignments"
@@ -158,17 +146,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["STUDENT"]}
             >
-
               <StudentLayout>
                 <Assignments />
               </StudentLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* DEADLINES */}
 
         <Route
           path="/deadlines"
@@ -176,17 +160,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["STUDENT"]}
             >
-
               <StudentLayout>
                 <Deadlines />
               </StudentLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* NOTIFICATIONS */}
 
         <Route
           path="/notifications"
@@ -194,17 +174,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["STUDENT"]}
             >
-
               <StudentLayout>
                 <Notifications />
               </StudentLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* GRADES */}
 
         <Route
           path="/grades"
@@ -212,11 +188,9 @@ function App() {
             <ProtectedRoute
               allowedRoles={["STUDENT"]}
             >
-
               <StudentLayout>
                 <Grades />
               </StudentLayout>
-
             </ProtectedRoute>
           }
         />
@@ -227,25 +201,19 @@ function App() {
             LECTURER ROUTES
         ======================================== */}
 
-        {/* LECTURER DASHBOARD */}
-
         <Route
           path="/lecturer-dashboard"
           element={
             <ProtectedRoute
               allowedRoles={["LECTURER"]}
             >
-
               <LecturerLayout>
                 <LecturerDashboard />
               </LecturerLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* LECTURER COURSES */}
 
         <Route
           path="/lecturer/courses"
@@ -253,17 +221,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["LECTURER"]}
             >
-
               <LecturerLayout>
                 <LecturerCourses />
               </LecturerLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* LECTURER ASSIGNMENTS */}
 
         <Route
           path="/lecturer/assignments"
@@ -271,17 +235,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["LECTURER"]}
             >
-
               <LecturerLayout>
                 <LecturerAssignments />
               </LecturerLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* LECTURER SUBMISSIONS */}
 
         <Route
           path="/lecturer/submissions"
@@ -289,17 +249,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["LECTURER"]}
             >
-
               <LecturerLayout>
                 <LecturerSubmissions />
               </LecturerLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* LECTURER GRADING */}
 
         <Route
           path="/lecturer/grading"
@@ -307,17 +263,13 @@ function App() {
             <ProtectedRoute
               allowedRoles={["LECTURER"]}
             >
-
               <LecturerLayout>
                 <LecturerGrading />
               </LecturerLayout>
-
             </ProtectedRoute>
           }
         />
 
-
-        {/* LECTURER STUDENTS */}
 
         <Route
           path="/lecturer/students"
@@ -325,11 +277,9 @@ function App() {
             <ProtectedRoute
               allowedRoles={["LECTURER"]}
             >
-
               <LecturerLayout>
                 <LecturerStudents />
               </LecturerLayout>
-
             </ProtectedRoute>
           }
         />
@@ -348,9 +298,9 @@ function App() {
             <ProtectedRoute
               allowedRoles={["ADMIN"]}
             >
-
-              <AdminDashboard />
-
+              <AdminLayout>
+                <AdminDashboard />
+              </AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -364,9 +314,63 @@ function App() {
             <ProtectedRoute
               allowedRoles={["ADMIN"]}
             >
+              <AdminLayout>
+                <AdminUsers />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
 
-              <AdminUsers />
+        <Route
+          path="/admin/students"
+          element={
+            <ProtectedRoute
+              allowedRoles={["ADMIN"]}
+            >
+              <AdminLayout>
+                <AdminStudents />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/admin/courses"
+          element={
+            <ProtectedRoute
+              allowedRoles={["ADMIN"]}
+            >
+              <AdminLayout>
+                <AdminCourses />
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/reports"
+          element={
+            <ProtectedRoute
+              allowedRoles={["ADMIN"]}
+            >
+              <AdminLayout>
+
+                <AdminReports />
+
+              </AdminLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute
+              allowedRoles={["ADMIN"]}
+            >
+              <AdminLayout>
+                <AdminSettings />
+              </AdminLayout>
             </ProtectedRoute>
           }
         />
@@ -376,8 +380,6 @@ function App() {
         {/* ========================================
             SHARED ROUTES
         ======================================== */}
-
-        {/* COURSE DETAILS */}
 
         <Route
           path="/course/:id"
