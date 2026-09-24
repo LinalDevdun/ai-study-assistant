@@ -1,139 +1,698 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import '../index.css';
+import {
+  Users,
+  GraduationCap,
+  BookOpen,
+  ShieldCheck,
+  UserPlus,
+  BarChart3,
+  Settings,
+  CalendarDays,
+  Database,
+  Server,
+  CircleCheckBig,
+  ArrowRight,
+} from "lucide-react";
+
+import "../styles/adminDashboard.css";
+
 
 function AdminDashboard() {
-  const [users, setUsers] = useState([]);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Fetch users just so we can calculate the stats on the dashboard
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/admin/users', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setUsers(response.data);
-      } catch (error) {
-        console.error('Error fetching users:', error);
+  /*
+    Temporary Admin Dashboard data.
+    Later we will load this from PostgreSQL.
+  */
+
+  const stats = [
+    {
+      label: "Total Users",
+      value: "326",
+      icon: Users,
+      className: "ad-stat-teal",
+    },
+    {
+      label: "Students",
+      value: "248",
+      icon: GraduationCap,
+      className: "ad-stat-purple",
+    },
+    {
+      label: "Lecturers",
+      value: "32",
+      icon: Users,
+      className: "ad-stat-blue",
+    },
+    {
+      label: "Active Courses",
+      value: "18",
+      icon: BookOpen,
+      className: "ad-stat-orange",
+    },
+  ];
+
+
+  const userDistribution = [
+    {
+      label: "Students",
+      count: 248,
+      description: "Registered student accounts",
+      icon: GraduationCap,
+      className: "ad-role-student",
+    },
+    {
+      label: "Lecturers",
+      count: 32,
+      description: "Teaching staff accounts",
+      icon: Users,
+      className: "ad-role-lecturer",
+    },
+    {
+      label: "Administrators",
+      count: 4,
+      description: "System administrator accounts",
+      icon: ShieldCheck,
+      className: "ad-role-admin",
+    },
+  ];
+
+
+  const recentUsers = [
+    {
+      name: "Movinya Perera",
+      initials: "MP",
+      email: "movinya@example.com",
+      role: "Student",
+      joined: "Sep 23, 2026",
+    },
+    {
+      name: "Hasith Witharama",
+      initials: "HW",
+      email: "hasith@example.com",
+      role: "Lecturer",
+      joined: "Sep 22, 2026",
+    },
+    {
+      name: "Amaya Silva",
+      initials: "AS",
+      email: "amaya@example.com",
+      role: "Student",
+      joined: "Sep 21, 2026",
+    },
+    {
+      name: "System Administrator",
+      initials: "AD",
+      email: "admin@campuslearn.lk",
+      role: "Admin",
+      joined: "Sep 20, 2026",
+    },
+  ];
+
+
+  const currentDate =
+    new Date().toLocaleDateString(
+      "en-US",
+      {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
       }
-    };
-    fetchUsers();
-  }, []);
+    );
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    navigate('/login');
-  };
-
-  const studentCount = users.filter(u => u.role === 'STUDENT').length;
-  const lecturerCount = users.filter(u => u.role === 'LECTURER').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', position: 'fixed', top: 0, left: 0, backgroundColor: '#F4F7FE', color: '#2B3674', fontFamily: 'sans-serif' }}>
-      
-      {/* TOP NAVBAR */}
-      <header style={{ height: '70px', backgroundColor: '#FFFFFF', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 30px', zIndex: 10 }}>
-        <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#111C44', letterSpacing: '0.5px' }}>
-          LMS Pro Admin
+    <div className="admin-dashboard-page">
+
+
+      {/* ====================================
+          HEADER
+      ==================================== */}
+
+      <section className="ad-header">
+
+        <div>
+
+          <h1>
+            Admin Control Center
+          </h1>
+
+          <p>
+            Monitor users, courses and
+            system activity across CampusLearn.
+          </p>
+
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
-          <span style={{ fontSize: '20px', cursor: 'pointer' }}>🔔</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', color: '#111C44', cursor: 'pointer' }}>
-            Admin <span style={{ backgroundColor: '#F4F7FE', padding: '8px', borderRadius: '50%', fontSize: '16px' }}>👤</span>
-          </div>
+
+
+        <div className="ad-date">
+
+          <CalendarDays size={15} />
+
+          {currentDate}
+
         </div>
-      </header>
 
-      {/* LOWER BODY */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        
-        {/* SIDEBAR */}
-        <aside style={{ width: '250px', backgroundColor: '#FFFFFF', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', padding: '20px 0' }}>
-          <nav style={{ flex: 1, padding: '0 15px', display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
-            
-            {/* ACTIVE: Dashboard */}
-            <div style={{ padding: '12px 20px', borderRadius: '8px', backgroundColor: '#4318FF', color: '#FFFFFF', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              🏠 Dashboard
+      </section>
+
+
+
+      {/* ====================================
+          STATS
+      ==================================== */}
+
+      <section className="ad-stats">
+
+        {stats.map((stat) => {
+
+          const Icon = stat.icon;
+
+          return (
+            <div
+              className={`ad-stat-card ${stat.className}`}
+              key={stat.label}
+            >
+
+              <div className="ad-stat-icon">
+
+                <Icon size={22} />
+
+              </div>
+
+
+              <div>
+
+                <strong>
+                  {stat.value}
+                </strong>
+
+                <span>
+                  {stat.label}
+                </span>
+
+              </div>
+
             </div>
-            
-            {/* INACTIVE: Users (Navigates to AdminUsers.jsx) */}
-            <div onClick={() => navigate('/admin-users')} style={{ padding: '12px 20px', borderRadius: '8px', backgroundColor: 'transparent', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', transition: '0.2s' }}>
-              👥 Users
+          );
+
+        })}
+
+      </section>
+
+
+
+      {/* ====================================
+          OVERVIEW
+      ==================================== */}
+
+      <section className="ad-main-grid">
+
+
+        {/* USER DISTRIBUTION */}
+
+        <div className="ad-panel">
+
+          <div className="ad-panel-header">
+
+            <div>
+
+              <h2>
+                User Distribution
+              </h2>
+
+              <p>
+                Overview of registered
+                CampusLearn users.
+              </p>
+
             </div>
-            
-            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>📚 Courses</div>
-            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>📋 Enrollment</div>
-            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>📊 Analytics</div>
-            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>🔔 Announce.</div>
-            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>🛡️ Activity</div>
-            <div style={{ padding: '12px 20px', color: '#A3AED0', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}>⚙️ Settings</div>
-          </nav>
-          
-          <div style={{ padding: '15px', borderTop: '1px solid #E2E8F0', marginTop: 'auto' }}>
-            <div onClick={handleLogout} style={{ padding: '12px 20px', color: '#EF4444', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              🚪 Log Out
-            </div>
+
+
+            <button className="ad-panel-link">
+
+              Manage Users
+
+              <ArrowRight size={13} />
+
+            </button>
+
           </div>
-        </aside>
 
-        {/* MAIN CONTENT AREA */}
-        <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '1000px' }}>
-            <h1 style={{ color: '#111C44', margin: '0 0 30px 0', fontSize: '28px' }}>Welcome, Administrator</h1>
-            
-            {/* 4 Stat Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '40px' }}>
-              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
-                <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '32px' }}>{studentCount || 1248}</h2>
-                <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold', fontSize: '14px' }}>Students</p>
-              </div>
-              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
-                <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '32px' }}>{lecturerCount || 86}</h2>
-                <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold', fontSize: '14px' }}>Lecturers</p>
-              </div>
-              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
-                <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '32px' }}>74</h2>
-                <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold', fontSize: '14px' }}>Courses</p>
-              </div>
-              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
-                <h2 style={{ margin: '0 0 10px 0', color: '#111C44', fontSize: '32px' }}>892</h2>
-                <p style={{ margin: 0, color: '#A3AED0', fontWeight: 'bold', fontSize: '14px' }}>Active</p>
-              </div>
-            </div>
 
-            {/* Bottom 2 Columns */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-              
-              {/* Recent Activity */}
-              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
-                <h3 style={{ margin: '0 0 20px 0', color: '#111C44', borderBottom: '2px solid #F4F7FE', paddingBottom: '10px' }}>Recent Activity</h3>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#4B5563', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <li>🟢 New user registered</li>
-                  <li>✅ Course approved</li>
-                  <li>🔄 Role changed</li>
-                </ul>
-              </div>
+          <div className="ad-user-distribution">
 
-              {/* Course Statistics */}
-              <div style={{ backgroundColor: '#FFFFFF', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #E2E8F0' }}>
-                <h3 style={{ margin: '0 0 20px 0', color: '#111C44', borderBottom: '2px solid #F4F7FE', paddingBottom: '10px' }}>Course Statistics</h3>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#4B5563', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <li style={{ display: 'flex', justifyContent: 'space-between' }}><span>AI & ML</span> <strong>85%</strong></li>
-                  <li style={{ display: 'flex', justifyContent: 'space-between' }}><span>Database</span> <strong>72%</strong></li>
-                  <li style={{ display: 'flex', justifyContent: 'space-between' }}><span>Software</span> <strong>61%</strong></li>
-                </ul>
-              </div>
+            {userDistribution.map(
+              (role) => {
 
-            </div>
+                const Icon = role.icon;
+
+                return (
+                  <div
+                    className="ad-role-row"
+                    key={role.label}
+                  >
+
+                    <div
+                      className={`ad-role-icon ${role.className}`}
+                    >
+
+                      <Icon size={18} />
+
+                    </div>
+
+
+                    <div className="ad-role-info">
+
+                      <strong>
+                        {role.label}
+                      </strong>
+
+                      <span>
+                        {role.description}
+                      </span>
+
+                    </div>
+
+
+                    <div className="ad-role-count">
+
+                      {role.count}
+
+                    </div>
+
+                  </div>
+                );
+
+              }
+            )}
+
           </div>
-        </main>
-      </div>
+
+        </div>
+
+
+
+        {/* SYSTEM STATUS */}
+
+        <div className="ad-panel">
+
+          <div className="ad-panel-header">
+
+            <div>
+
+              <h2>
+                System Status
+              </h2>
+
+              <p>
+                Current CampusLearn
+                service availability.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="ad-system-list">
+
+
+            <div className="ad-system-item">
+
+              <div className="ad-system-left">
+
+                <div className="ad-system-icon">
+
+                  <Database size={17} />
+
+                </div>
+
+
+                <div>
+
+                  <strong>
+                    PostgreSQL Database
+                  </strong>
+
+                  <span>
+                    Primary application database
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <span className="ad-status-online">
+
+                Online
+
+              </span>
+
+            </div>
+
+
+
+            <div className="ad-system-item">
+
+              <div className="ad-system-left">
+
+                <div className="ad-system-icon">
+
+                  <Server size={17} />
+
+                </div>
+
+
+                <div>
+
+                  <strong>
+                    Backend API
+                  </strong>
+
+                  <span>
+                    Node.js / Express service
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <span className="ad-status-online">
+
+                Online
+
+              </span>
+
+            </div>
+
+
+
+            <div className="ad-system-item">
+
+              <div className="ad-system-left">
+
+                <div className="ad-system-icon">
+
+                  <CircleCheckBig
+                    size={17}
+                  />
+
+                </div>
+
+
+                <div>
+
+                  <strong>
+                    Authentication
+                  </strong>
+
+                  <span>
+                    User login and role access
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              <span className="ad-status-online">
+
+                Online
+
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      {/* ====================================
+          QUICK ACTIONS
+      ==================================== */}
+
+      <section className="ad-section">
+
+        <div className="ad-section-header">
+
+          <h2>
+            Quick Actions
+          </h2>
+
+          <p>
+            Frequently used administrator tools.
+          </p>
+
+        </div>
+
+
+        <div className="ad-quick-actions">
+
+
+          <button className="ad-action-card ad-action-teal">
+
+            <div className="ad-action-icon">
+
+              <UserPlus size={20} />
+
+            </div>
+
+
+            <div>
+
+              <h3>
+                Add User
+              </h3>
+
+              <p>
+                Create a new student,
+                lecturer or administrator.
+              </p>
+
+            </div>
+
+          </button>
+
+
+
+          <button className="ad-action-card ad-action-blue">
+
+            <div className="ad-action-icon">
+
+              <BookOpen size={20} />
+
+            </div>
+
+
+            <div>
+
+              <h3>
+                Manage Courses
+              </h3>
+
+              <p>
+                Review courses and
+                academic modules.
+              </p>
+
+            </div>
+
+          </button>
+
+
+
+          <button className="ad-action-card ad-action-purple">
+
+            <div className="ad-action-icon">
+
+              <BarChart3 size={20} />
+
+            </div>
+
+
+            <div>
+
+              <h3>
+                View Reports
+              </h3>
+
+              <p>
+                Monitor platform and
+                academic statistics.
+              </p>
+
+            </div>
+
+          </button>
+
+
+
+          <button className="ad-action-card ad-action-orange">
+
+            <div className="ad-action-icon">
+
+              <Settings size={20} />
+
+            </div>
+
+
+            <div>
+
+              <h3>
+                System Settings
+              </h3>
+
+              <p>
+                Configure CampusLearn
+                system preferences.
+              </p>
+
+            </div>
+
+          </button>
+
+        </div>
+
+      </section>
+
+
+
+      {/* ====================================
+          RECENT USERS
+      ==================================== */}
+
+      <section className="ad-section">
+
+        <div className="ad-section-header">
+
+          <h2>
+            Recently Added Users
+          </h2>
+
+          <p>
+            Latest accounts registered
+            in CampusLearn.
+          </p>
+
+        </div>
+
+
+        <div className="ad-table-wrapper">
+
+          <table className="ad-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  User
+                </th>
+
+                <th>
+                  Role
+                </th>
+
+                <th>
+                  Joined
+                </th>
+
+                <th>
+                  Status
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              {recentUsers.map(
+                (user, index) => (
+
+                  <tr key={index}>
+
+                    <td>
+
+                      <div className="ad-user-table-profile">
+
+                        <div className="ad-table-avatar">
+
+                          {user.initials}
+
+                        </div>
+
+
+                        <div>
+
+                          <strong>
+                            {user.name}
+                          </strong>
+
+                          <span>
+                            {user.email}
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    </td>
+
+
+                    <td>
+
+                      <span
+                        className={`ad-role-badge ad-role-badge-${user.role.toLowerCase()}`}
+                      >
+
+                        {user.role}
+
+                      </span>
+
+                    </td>
+
+
+                    <td>
+                      {user.joined}
+                    </td>
+
+
+                    <td>
+
+                      <span className="ad-active-badge">
+
+                        <CircleCheckBig
+                          size={10}
+                        />
+
+                        Active
+
+                      </span>
+
+                    </td>
+
+                  </tr>
+
+                )
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
     </div>
   );
 }
+
 
 export default AdminDashboard;
