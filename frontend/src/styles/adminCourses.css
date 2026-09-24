@@ -1,0 +1,478 @@
+.admin-courses-page {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 34px 36px 55px;
+}
+
+
+/* HEADER */
+
+.ac-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 27px;
+}
+
+.ac-header h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.ac-header p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.ac-create-button {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 15px;
+  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #0f8f83,
+      #14b8a6
+    );
+  border: none;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  box-shadow:
+    0 7px 18px
+    rgba(20, 184, 166, 0.22);
+}
+
+
+/* SUMMARY */
+
+.ac-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 17px;
+  margin-bottom: 27px;
+}
+
+.ac-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.ac-summary-icon {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+}
+
+.ac-teal .ac-summary-icon {
+  color: #0f8f83;
+  background: #e9f9f6;
+}
+
+.ac-purple .ac-summary-icon {
+  color: #7c4fe0;
+  background: #f3edff;
+}
+
+.ac-blue .ac-summary-icon {
+  color: #4058df;
+  background: #eef2ff;
+}
+
+.ac-orange .ac-summary-icon {
+  color: #d98300;
+  background: #fff7e6;
+}
+
+.ac-summary-card strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--text-primary);
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.ac-summary-card span {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+
+/* TOOLBAR */
+
+.ac-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 22px;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+}
+
+.ac-search {
+  width: min(470px, 100%);
+  position: relative;
+}
+
+.ac-search svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.ac-search input {
+  width: 100%;
+  height: 43px;
+  padding: 0 14px 0 42px;
+  background: #f8f9fc;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  outline: none;
+}
+
+.ac-toolbar select {
+  min-width: 210px;
+  padding: 0 12px;
+  background: #f8f9fc;
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+}
+
+
+/* GRID */
+
+.ac-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.ac-card {
+  padding: 19px;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 17px;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+
+.ac-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.ac-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.ac-course-icon {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f8f83;
+  background: #e9f9f6;
+  border-radius: 13px;
+}
+
+.ac-active-badge {
+  padding: 5px 8px;
+  color: #15803d;
+  background: #ecfdf3;
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.ac-course-code {
+  color: #0f8f83;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.ac-card h3 {
+  margin: 6px 0 7px;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.ac-program {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 15px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.ac-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.ac-info-list div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+.ac-info-list svg {
+  color: #8290a5;
+}
+
+.ac-batch {
+  margin: 14px 0;
+  padding: 7px 9px;
+  color: #0f8f83;
+  background: #f0faf8;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.ac-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ac-edit-button {
+  flex: 1;
+  min-height: 37px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #0f8f83;
+  background: #e9f9f6;
+  border: none;
+  border-radius: 9px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.ac-delete-button {
+  width: 38px;
+  min-height: 37px;
+  color: #dc2626;
+  background: #fef2f2;
+  border: none;
+  border-radius: 9px;
+}
+
+
+/* EMPTY */
+
+.ac-empty {
+  margin-top: 18px;
+  padding: 60px;
+  color: var(--text-muted);
+  background: white;
+  border: 1px dashed var(--border);
+  border-radius: 17px;
+  text-align: center;
+}
+
+.ac-empty h3 {
+  color: var(--text-primary);
+}
+
+
+/* MODAL */
+
+.ac-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.44);
+  backdrop-filter: blur(5px);
+}
+
+.ac-modal {
+  width: min(610px, 100%);
+  padding: 25px;
+  background: white;
+  border-radius: 20px;
+  box-shadow:
+    0 25px 70px
+    rgba(15, 23, 42, 0.23);
+}
+
+.ac-modal-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.ac-modal-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 20px;
+}
+
+.ac-modal-header p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.ac-modal-header button {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 9px;
+}
+
+.ac-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ac-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ac-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.ac-form-group label {
+  color: var(--text-primary);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ac-form-group input,
+.ac-form-group select {
+  width: 100%;
+  height: 44px;
+  padding: 0 13px;
+  background: #fafbfe;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+}
+
+.ac-form-group input:focus,
+.ac-form-group select:focus {
+  background: white;
+  border-color: #bce7e1;
+  box-shadow:
+    0 0 0 4px
+    rgba(20, 184, 166, 0.07);
+}
+
+.ac-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 7px;
+}
+
+.ac-cancel-button,
+.ac-save-button {
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ac-cancel-button {
+  background: white;
+  border: 1px solid var(--border);
+}
+
+.ac-save-button {
+  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #0f8f83,
+      #14b8a6
+    );
+  border: none;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+
+  .ac-summary {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .ac-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 760px) {
+
+  .admin-courses-page {
+    padding: 24px 18px 40px;
+  }
+
+  .ac-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ac-summary,
+  .ac-grid,
+  .ac-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ac-toolbar {
+    flex-direction: column;
+  }
+
+}
