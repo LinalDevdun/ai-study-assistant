@@ -1,0 +1,394 @@
+.admin-students-page {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 34px 36px 55px;
+}
+
+.ast-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 27px;
+}
+
+.ast-header h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+
+.ast-header p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.ast-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  color: #0f8f83;
+  background: #e9f9f6;
+  border: 1px solid #cceee8;
+  border-radius: 11px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ast-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 17px;
+  margin-bottom: 27px;
+}
+
+.ast-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.ast-summary-icon {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+}
+
+.ast-teal .ast-summary-icon {
+  color: #0f8f83;
+  background: #e9f9f6;
+}
+
+.ast-purple .ast-summary-icon {
+  color: #7c4fe0;
+  background: #f3edff;
+}
+
+.ast-blue .ast-summary-icon {
+  color: #4058df;
+  background: #eef2ff;
+}
+
+.ast-orange .ast-summary-icon {
+  color: #d98300;
+  background: #fff7e6;
+}
+
+.ast-summary strong {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--text-primary);
+  font-size: 21px;
+}
+
+.ast-summary span {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.ast-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px;
+  margin-bottom: 22px;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+}
+
+.ast-search {
+  width: min(470px, 100%);
+  position: relative;
+}
+
+.ast-search svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+}
+
+.ast-search input {
+  width: 100%;
+  height: 43px;
+  padding: 0 14px 0 42px;
+  background: #f8f9fc;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  outline: none;
+}
+
+.ast-toolbar select {
+  min-width: 170px;
+  padding: 0 12px;
+  background: #f8f9fc;
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+}
+
+.ast-table-container {
+  overflow-x: auto;
+  background: white;
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.ast-table {
+  width: 100%;
+  min-width: 1000px;
+  border-collapse: collapse;
+}
+
+.ast-table th {
+  padding: 14px 16px;
+  background: #fafbfe;
+  color: var(--text-muted);
+  font-size: 9px;
+  text-align: left;
+}
+
+.ast-table td {
+  padding: 15px 16px;
+  border-top: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.ast-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ast-avatar {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(
+    135deg,
+    #0f8f83,
+    #14b8a6
+  );
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.ast-profile strong {
+  display: block;
+  color: var(--text-primary);
+}
+
+.ast-profile span {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.ast-progress {
+  min-width: 100px;
+}
+
+.ast-progress > span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.ast-progress > div {
+  height: 5px;
+  overflow: hidden;
+  background: #edf0f5;
+  border-radius: 99px;
+}
+
+.ast-progress i {
+  display: block;
+  height: 100%;
+  background: #14b8a6;
+  border-radius: 99px;
+}
+
+.ast-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  color: #15803d;
+  background: #ecfdf3;
+  border-radius: 7px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.ast-view-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  color: #0f8f83;
+  background: #e9f9f6;
+  border: none;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.ast-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.44);
+  backdrop-filter: blur(5px);
+}
+
+.ast-modal {
+  width: min(620px, 90%);
+  padding: 25px;
+  background: white;
+  border-radius: 20px;
+}
+
+.ast-modal-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ast-modal-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.ast-modal-header p {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.ast-modal-header button {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 9px;
+}
+
+.ast-modal-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  margin-bottom: 17px;
+  background: #eefaf8;
+  border-radius: 13px;
+}
+
+.ast-modal-avatar {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: #0f8f83;
+  border-radius: 13px;
+}
+
+.ast-modal-profile h3,
+.ast-modal-profile p {
+  margin: 0;
+}
+
+.ast-modal-profile p {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.ast-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 11px;
+}
+
+.ast-modal-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 13px;
+  background: #fafbfe;
+  border-radius: 11px;
+}
+
+.ast-modal-grid svg {
+  color: #0f8f83;
+}
+
+.ast-modal-grid span {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.ast-modal-grid strong {
+  font-size: 9px;
+}
+
+.ast-modal-results {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 17px;
+}
+
+.ast-modal-results div {
+  padding: 14px;
+  background: #f4fbfa;
+  border-radius: 11px;
+}
+
+.ast-modal-results span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.ast-modal-results strong {
+  display: block;
+  margin-top: 5px;
+  color: #0f8f83;
+  font-size: 18px;
+}
+
+.ast-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.ast-modal-footer button {
+  padding: 9px 15px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}

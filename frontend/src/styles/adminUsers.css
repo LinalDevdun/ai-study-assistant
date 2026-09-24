@@ -1,0 +1,713 @@
+/* =========================================
+   ADMIN USERS
+========================================= */
+
+.admin-users-page {
+  width: 100%;
+  max-width: 1440px;
+
+  margin: 0 auto;
+
+  padding: 34px 36px 55px;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.au-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  gap: 20px;
+
+  margin-bottom: 27px;
+}
+
+.au-header h1 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 30px;
+  font-weight: 800;
+
+  letter-spacing: -0.8px;
+}
+
+.au-header p {
+  margin: 8px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+}
+
+.au-add-button {
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 0 15px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f8f83,
+      #14b8a6
+    );
+
+  border: none;
+  border-radius: 10px;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  box-shadow:
+    0 7px 18px
+    rgba(20, 184, 166, 0.22);
+}
+
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+.au-summary {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 17px;
+
+  margin-bottom: 27px;
+}
+
+.au-summary-card {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 18px;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.au-summary-icon {
+  width: 46px;
+  height: 46px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 13px;
+}
+
+.au-teal .au-summary-icon {
+  color: #0f8f83;
+  background: #e9f9f6;
+}
+
+.au-purple .au-summary-icon {
+  color: #7c4fe0;
+  background: #f3edff;
+}
+
+.au-blue .au-summary-icon {
+  color: #4058df;
+  background: #eef2ff;
+}
+
+.au-orange .au-summary-icon {
+  color: #d98300;
+  background: #fff7e6;
+}
+
+.au-summary-card strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.au-summary-card span {
+  color: var(--text-secondary);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   TOOLBAR
+========================================= */
+
+.au-toolbar {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 15px;
+
+  margin-bottom: 22px;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+
+  box-shadow: var(--shadow-xs);
+}
+
+.au-search {
+  width: min(470px, 100%);
+
+  position: relative;
+}
+
+.au-search svg {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: var(--text-muted);
+}
+
+.au-search input {
+  width: 100%;
+  height: 43px;
+
+  padding: 0 14px 0 42px;
+
+  color: var(--text-primary);
+  background: #f8f9fc;
+
+  border: 1px solid transparent;
+  border-radius: 11px;
+
+  outline: none;
+
+  font-size: 11px;
+}
+
+.au-search input:focus {
+  background: white;
+
+  border-color: #bce7e1;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(20, 184, 166, 0.07);
+}
+
+.au-filters {
+  display: flex;
+
+  gap: 10px;
+}
+
+.au-filters select {
+  min-width: 150px;
+  height: 43px;
+
+  padding: 0 12px;
+
+  color: var(--text-secondary);
+  background: #f8f9fc;
+
+  border: 1px solid var(--border-light);
+  border-radius: 11px;
+
+  outline: none;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   TABLE
+========================================= */
+
+.au-table-container {
+  overflow-x: auto;
+
+  background: white;
+
+  border: 1px solid var(--border-light);
+  border-radius: 18px;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.au-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  min-width: 850px;
+}
+
+.au-table th {
+  padding: 14px 17px;
+
+  color: var(--text-muted);
+  background: #fafbfe;
+
+  font-size: 9px;
+  font-weight: 750;
+
+  text-align: left;
+  text-transform: uppercase;
+
+  letter-spacing: 0.5px;
+}
+
+.au-table td {
+  padding: 15px 17px;
+
+  color: var(--text-secondary);
+
+  border-top:
+    1px solid var(--border-light);
+
+  font-size: 10px;
+}
+
+
+/* USER */
+
+.au-user-profile {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+.au-avatar {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f8f83,
+      #14b8a6
+    );
+
+  border-radius: 10px;
+
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.au-user-profile strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: var(--text-primary);
+
+  font-size: 10px;
+}
+
+.au-user-profile span {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  color: var(--text-muted);
+
+  font-size: 8px;
+}
+
+
+/* =========================================
+   ROLE
+========================================= */
+
+.au-role {
+  display: inline-flex;
+
+  padding: 5px 8px;
+
+  border-radius: 7px;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.au-role-student {
+  color: #7c4fe0;
+  background: #f3edff;
+}
+
+.au-role-lecturer {
+  color: #4058df;
+  background: #eef2ff;
+}
+
+.au-role-admin {
+  color: #0f8f83;
+  background: #e9f9f6;
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
+
+.au-status {
+  display: inline-flex;
+
+  padding: 5px 8px;
+
+  border-radius: 7px;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.au-status-active {
+  color: #15803d;
+  background: #ecfdf3;
+}
+
+.au-status-disabled {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.au-actions {
+  display: flex;
+
+  gap: 6px;
+}
+
+.au-action-button {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 8px;
+}
+
+.au-edit {
+  color: #4058df;
+  background: #eef2ff;
+}
+
+.au-toggle {
+  color: #d98300;
+  background: #fff7e6;
+}
+
+.au-delete {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.au-empty {
+  padding: 60px 20px;
+
+  text-align: center;
+
+  color: var(--text-muted);
+}
+
+.au-empty svg {
+  color: #0f8f83;
+}
+
+.au-empty h3 {
+  margin: 12px 0 5px;
+
+  color: var(--text-primary);
+
+  font-size: 14px;
+}
+
+.au-empty p {
+  margin: 0;
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   MODAL
+========================================= */
+
+.au-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1200;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(15, 23, 42, 0.44);
+
+  backdrop-filter: blur(5px);
+}
+
+.au-modal {
+  width: min(560px, 100%);
+
+  padding: 25px;
+
+  background: white;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 25px 70px
+    rgba(15, 23, 42, 0.23);
+}
+
+.au-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 20px;
+
+  margin-bottom: 22px;
+}
+
+.au-modal-header h2 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.au-modal-header p {
+  margin: 6px 0 0;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+}
+
+.au-modal-header button {
+  width: 35px;
+  height: 35px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--text-secondary);
+  background: #f7f8fb;
+
+  border: none;
+  border-radius: 9px;
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.au-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+.au-form-group {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.au-form-group label {
+  color: var(--text-primary);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.au-form-group input,
+.au-form-group select {
+  width: 100%;
+  height: 44px;
+
+  padding: 0 13px;
+
+  color: var(--text-primary);
+  background: #fafbfe;
+
+  border: 1px solid var(--border);
+  border-radius: 10px;
+
+  outline: none;
+
+  font-family: inherit;
+  font-size: 10px;
+}
+
+.au-form-group input:focus,
+.au-form-group select:focus {
+  background: white;
+
+  border-color: #bce7e1;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(20, 184, 166, 0.07);
+}
+
+
+/* =========================================
+   MODAL ACTIONS
+========================================= */
+
+.au-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 9px;
+
+  margin-top: 7px;
+}
+
+.au-cancel-button,
+.au-save-button {
+  min-height: 40px;
+
+  padding: 0 15px;
+
+  border-radius: 9px;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.au-cancel-button {
+  color: var(--text-secondary);
+  background: white;
+
+  border: 1px solid var(--border);
+}
+
+.au-save-button {
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f8f83,
+      #14b8a6
+    );
+
+  border: none;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1050px) {
+
+  .au-summary {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 760px) {
+
+  .admin-users-page {
+    padding: 24px 18px 40px;
+  }
+
+  .au-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .au-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .au-toolbar {
+    flex-direction: column;
+  }
+
+  .au-search {
+    width: 100%;
+  }
+
+  .au-filters {
+    width: 100%;
+  }
+
+  .au-filters select {
+    flex: 1;
+  }
+
+}
