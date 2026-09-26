@@ -1,4 +1,13 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import axios from "axios";
 
 import {
   Settings,
@@ -10,15 +19,27 @@ import {
   School,
   CalendarDays,
   LockKeyhole,
+  KeyRound,
 } from "lucide-react";
 
 import "../styles/adminSettings.css";
 
 
 function AdminSettings() {
-  const [settings, setSettings] = useState({
-    systemName: "CampusLearn",
-    email: "admin@campuslearn.lk",
+  const navigate =
+    useNavigate();
+
+
+  /* ========================================
+     SYSTEM SETTINGS
+  ======================================== */
+
+  const [
+    settings,
+    setSettings,
+  ] = useState({
+    systemName: "",
+    contactEmail: "",
     semester: "Semester 1",
     academicYear: "2026",
     emailNotifications: true,
@@ -27,33 +48,762 @@ function AdminSettings() {
   });
 
 
-  const handleChange = (event) => {
-    const {
-      name,
-      value,
-      type,
-      checked,
-    } = event.target;
+  /* ========================================
+     PASSWORD FORM
+  ======================================== */
 
-    setSettings({
-      ...settings,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : value,
-    });
-  };
+  const [
+    passwordForm,
+    setPasswordForm,
+  ] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
 
-  const handleSave = () => {
-    alert("Settings saved successfully!");
-  };
+  /* ========================================
+     PAGE STATE
+  ======================================== */
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
+
+
+  const [
+    changingPassword,
+    setChangingPassword,
+  ] = useState(false);
+
+
+  const [
+    message,
+    setMessage,
+  ] = useState("");
+
+
+  const [
+    messageType,
+    setMessageType,
+  ] = useState("success");
+
+
+  const [
+    passwordMessage,
+    setPasswordMessage,
+  ] = useState("");
+
+
+  const [
+    passwordMessageType,
+    setPasswordMessageType,
+  ] = useState("success");
+
+
+  /* ========================================
+     LOAD SETTINGS
+  ======================================== */
+
+  useEffect(() => {
+
+    const loadSettings =
+      async () => {
+
+        try {
+
+          setLoading(true);
+
+          setMessage("");
+
+
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/admin/settings",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          const data =
+            response.data;
+
+
+          setSettings({
+
+            systemName:
+              data.system_name ||
+              "",
+
+            contactEmail:
+              data.contact_email ||
+              "",
+
+            semester:
+              data.current_semester ||
+              "Semester 1",
+
+            academicYear:
+              data.academic_year ||
+              "2026",
+
+            emailNotifications:
+              data.email_notifications ===
+              true,
+
+            assignmentAlerts:
+              data.assignment_alerts ===
+              true,
+
+            maintenanceMode:
+              data.maintenance_mode ===
+              true,
+
+          });
+
+
+        } catch (error) {
+
+          console.error(
+            "Load Settings Error:",
+            error
+          );
+
+
+          if (
+            error.response?.status ===
+              401 ||
+            error.response?.status ===
+              403
+          ) {
+
+            localStorage.removeItem(
+              "token"
+            );
+
+            localStorage.removeItem(
+              "role"
+            );
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          setMessageType(
+            "error"
+          );
+
+
+          setMessage(
+            error.response?.data
+              ?.error ||
+            "Failed to load system settings."
+          );
+
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      };
+
+
+    loadSettings();
+
+  }, [navigate]);
+
+
+  /* ========================================
+     SETTINGS INPUT CHANGE
+  ======================================== */
+
+  const handleChange =
+    (event) => {
+
+      const {
+        name,
+        value,
+        type,
+        checked,
+      } = event.target;
+
+
+      setSettings(
+        (previousSettings) => ({
+          ...previousSettings,
+
+          [name]:
+            type ===
+            "checkbox"
+              ? checked
+              : value,
+        })
+      );
+
+
+      setMessage("");
+
+    };
+
+
+  /* ========================================
+     PASSWORD INPUT CHANGE
+  ======================================== */
+
+  const handlePasswordChange =
+    (event) => {
+
+      const {
+        name,
+        value,
+      } = event.target;
+
+
+      setPasswordForm(
+        (previousForm) => ({
+          ...previousForm,
+          [name]: value,
+        })
+      );
+
+
+      setPasswordMessage("");
+
+    };
+
+
+  /* ========================================
+     SAVE SYSTEM SETTINGS
+  ======================================== */
+
+  const handleSave =
+    async () => {
+
+      if (
+        !settings.systemName.trim()
+      ) {
+
+        setMessageType(
+          "error"
+        );
+
+        setMessage(
+          "System name is required."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !settings.contactEmail.trim()
+      ) {
+
+        setMessageType(
+          "error"
+        );
+
+        setMessage(
+          "System contact email is required."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !settings.semester
+      ) {
+
+        setMessageType(
+          "error"
+        );
+
+        setMessage(
+          "Please select a semester."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !settings.academicYear
+      ) {
+
+        setMessageType(
+          "error"
+        );
+
+        setMessage(
+          "Please select an academic year."
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        setSaving(true);
+
+        setMessage("");
+
+
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.put(
+            "http://localhost:5000/admin/settings",
+
+            {
+              systemName:
+                settings.systemName,
+
+              contactEmail:
+                settings.contactEmail,
+
+              semester:
+                settings.semester,
+
+              academicYear:
+                settings.academicYear,
+
+              emailNotifications:
+                settings.emailNotifications,
+
+              assignmentAlerts:
+                settings.assignmentAlerts,
+
+              maintenanceMode:
+                settings.maintenanceMode,
+            },
+
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        const saved =
+          response.data.settings;
+
+
+        setSettings({
+
+          systemName:
+            saved.system_name,
+
+          contactEmail:
+            saved.contact_email,
+
+          semester:
+            saved.current_semester,
+
+          academicYear:
+            saved.academic_year,
+
+          emailNotifications:
+            saved.email_notifications ===
+            true,
+
+          assignmentAlerts:
+            saved.assignment_alerts ===
+            true,
+
+          maintenanceMode:
+            saved.maintenance_mode ===
+            true,
+
+        });
+
+
+        setMessageType(
+          "success"
+        );
+
+
+        setMessage(
+          "Settings saved successfully!"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Save Settings Error:",
+          error
+        );
+
+
+        if (
+          error.response?.status ===
+            401 ||
+          error.response?.status ===
+            403
+        ) {
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        setMessageType(
+          "error"
+        );
+
+
+        setMessage(
+          error.response?.data
+            ?.error ||
+          "Failed to save system settings."
+        );
+
+
+      } finally {
+
+        setSaving(false);
+
+      }
+
+    };
+
+
+  /* ========================================
+     CHANGE ADMIN PASSWORD
+  ======================================== */
+
+  const handleChangePassword =
+    async (event) => {
+
+      event.preventDefault();
+
+
+      if (
+        !passwordForm.currentPassword
+      ) {
+
+        setPasswordMessageType(
+          "error"
+        );
+
+        setPasswordMessage(
+          "Please enter your current password."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !passwordForm.newPassword
+      ) {
+
+        setPasswordMessageType(
+          "error"
+        );
+
+        setPasswordMessage(
+          "Please enter a new password."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        passwordForm.newPassword
+          .length < 6
+      ) {
+
+        setPasswordMessageType(
+          "error"
+        );
+
+        setPasswordMessage(
+          "New password must contain at least 6 characters."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        passwordForm.currentPassword ===
+        passwordForm.newPassword
+      ) {
+
+        setPasswordMessageType(
+          "error"
+        );
+
+        setPasswordMessage(
+          "New password must be different from your current password."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        passwordForm.newPassword !==
+        passwordForm.confirmPassword
+      ) {
+
+        setPasswordMessageType(
+          "error"
+        );
+
+        setPasswordMessage(
+          "New password and confirm password do not match."
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        setChangingPassword(
+          true
+        );
+
+        setPasswordMessage("");
+
+
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        await axios.put(
+          "http://localhost:5000/admin/change-password",
+
+          {
+            currentPassword:
+              passwordForm.currentPassword,
+
+            newPassword:
+              passwordForm.newPassword,
+          },
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+
+        setPasswordForm({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+
+
+        setPasswordMessageType(
+          "success"
+        );
+
+
+        setPasswordMessage(
+          "Password changed successfully! Redirecting to login..."
+        );
+
+
+        /*
+          Log the Admin out after
+          changing the password.
+        */
+
+        setTimeout(() => {
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          localStorage.removeItem(
+            "user"
+          );
+
+          navigate("/login");
+
+        }, 1500);
+
+
+      } catch (error) {
+
+        console.error(
+          "Change Password Error:",
+          error
+        );
+
+
+        if (
+          error.response?.status ===
+            401 ||
+          error.response?.status ===
+            403
+        ) {
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        setPasswordMessageType(
+          "error"
+        );
+
+
+        setPasswordMessage(
+          error.response?.data
+            ?.error ||
+          "Failed to change password."
+        );
+
+
+      } finally {
+
+        setChangingPassword(
+          false
+        );
+
+      }
+
+    };
+
+
+  /* ========================================
+     LOADING
+  ======================================== */
+
+  if (loading) {
+
+    return (
+
+      <div className="admin-settings-page">
+
+        <section className="aset-card">
+
+          <h2>
+            Loading Settings...
+          </h2>
+
+          <p>
+            Getting system settings
+            from PostgreSQL.
+          </p>
+
+        </section>
+
+      </div>
+
+    );
+
+  }
 
 
   return (
+
     <div className="admin-settings-page">
 
-      {/* HEADER */}
+
+      {/* ====================================
+          HEADER
+      ==================================== */}
 
       <section className="aset-header">
 
@@ -73,12 +823,19 @@ function AdminSettings() {
 
         <button
           className="aset-save-top"
-          onClick={handleSave}
+          onClick={
+            handleSave
+          }
+          disabled={
+            saving
+          }
         >
 
           <Save size={16} />
 
-          Save Changes
+          {saving
+            ? "Saving..."
+            : "Save Changes"}
 
         </button>
 
@@ -86,10 +843,63 @@ function AdminSettings() {
 
 
 
+      {/* ====================================
+          SETTINGS MESSAGE
+      ==================================== */}
+
+      {message && (
+
+        <div
+          style={{
+            marginBottom:
+              "22px",
+
+            padding:
+              "13px 16px",
+
+            borderRadius:
+              "10px",
+
+            fontSize:
+              "14px",
+
+            fontWeight:
+              600,
+
+            backgroundColor:
+              messageType ===
+              "success"
+                ? "#ecfdf5"
+                : "#fef2f2",
+
+            color:
+              messageType ===
+              "success"
+                ? "#047857"
+                : "#dc2626",
+
+            border:
+              messageType ===
+              "success"
+                ? "1px solid #a7f3d0"
+                : "1px solid #fecaca",
+          }}
+        >
+
+          {message}
+
+        </div>
+
+      )}
+
+
+
       <div className="aset-grid">
 
 
-        {/* GENERAL SETTINGS */}
+        {/* ==================================
+            GENERAL SETTINGS
+        ================================== */}
 
         <section className="aset-card">
 
@@ -97,9 +907,12 @@ function AdminSettings() {
 
             <div className="aset-icon aset-teal">
 
-              <Settings size={20} />
+              <Settings
+                size={20}
+              />
 
             </div>
+
 
             <div>
 
@@ -123,18 +936,29 @@ function AdminSettings() {
               System Name
             </label>
 
+
             <div className="aset-input">
 
-              <School size={16} />
+              <School
+                size={16}
+              />
+
 
               <input
                 type="text"
+
                 name="systemName"
+
                 value={
                   settings.systemName
                 }
+
                 onChange={
                   handleChange
+                }
+
+                disabled={
+                  saving
                 }
               />
 
@@ -146,21 +970,32 @@ function AdminSettings() {
           <div className="aset-form-group">
 
             <label>
-              Administrator Email
+              System Contact Email
             </label>
+
 
             <div className="aset-input">
 
-              <Mail size={16} />
+              <Mail
+                size={16}
+              />
+
 
               <input
                 type="email"
-                name="email"
+
+                name="contactEmail"
+
                 value={
-                  settings.email
+                  settings.contactEmail
                 }
+
                 onChange={
                   handleChange
+                }
+
+                disabled={
+                  saving
                 }
               />
 
@@ -172,7 +1007,9 @@ function AdminSettings() {
 
 
 
-        {/* ACADEMIC SETTINGS */}
+        {/* ==================================
+            ACADEMIC SETTINGS
+        ================================== */}
 
         <section className="aset-card">
 
@@ -185,6 +1022,7 @@ function AdminSettings() {
               />
 
             </div>
+
 
             <div>
 
@@ -208,21 +1046,28 @@ function AdminSettings() {
               Current Semester
             </label>
 
+
             <select
               name="semester"
+
               value={
                 settings.semester
               }
+
               onChange={
                 handleChange
               }
+
+              disabled={
+                saving
+              }
             >
 
-              <option>
+              <option value="Semester 1">
                 Semester 1
               </option>
 
-              <option>
+              <option value="Semester 2">
                 Semester 2
               </option>
 
@@ -237,13 +1082,20 @@ function AdminSettings() {
               Academic Year
             </label>
 
+
             <select
               name="academicYear"
+
               value={
                 settings.academicYear
               }
+
               onChange={
                 handleChange
+              }
+
+              disabled={
+                saving
               }
             >
 
@@ -259,6 +1111,14 @@ function AdminSettings() {
                 2028
               </option>
 
+              <option value="2029">
+                2029
+              </option>
+
+              <option value="2030">
+                2030
+              </option>
+
             </select>
 
           </div>
@@ -267,7 +1127,9 @@ function AdminSettings() {
 
 
 
-        {/* NOTIFICATIONS */}
+        {/* ==================================
+            NOTIFICATIONS
+        ================================== */}
 
         <section className="aset-card">
 
@@ -278,6 +1140,7 @@ function AdminSettings() {
               <Bell size={20} />
 
             </div>
+
 
             <div>
 
@@ -315,12 +1178,20 @@ function AdminSettings() {
 
               <input
                 type="checkbox"
+
                 name="emailNotifications"
+
                 checked={
-                  settings.emailNotifications
+                  settings
+                    .emailNotifications
                 }
+
                 onChange={
                   handleChange
+                }
+
+                disabled={
+                  saving
                 }
               />
 
@@ -351,12 +1222,20 @@ function AdminSettings() {
 
               <input
                 type="checkbox"
+
                 name="assignmentAlerts"
+
                 checked={
-                  settings.assignmentAlerts
+                  settings
+                    .assignmentAlerts
                 }
+
                 onChange={
                   handleChange
+                }
+
+                disabled={
+                  saving
                 }
               />
 
@@ -370,7 +1249,9 @@ function AdminSettings() {
 
 
 
-        {/* SECURITY */}
+        {/* ==================================
+            SECURITY
+        ================================== */}
 
         <section className="aset-card">
 
@@ -383,6 +1264,7 @@ function AdminSettings() {
               />
 
             </div>
+
 
             <div>
 
@@ -405,6 +1287,7 @@ function AdminSettings() {
             <LockKeyhole
               size={18}
             />
+
 
             <div>
 
@@ -431,7 +1314,10 @@ function AdminSettings() {
 
           <div className="aset-security-item">
 
-            <Database size={18} />
+            <Database
+              size={18}
+            />
+
 
             <div>
 
@@ -461,7 +1347,266 @@ function AdminSettings() {
 
 
 
-      {/* MAINTENANCE */}
+      {/* ====================================
+          CHANGE PASSWORD
+      ==================================== */}
+
+      <section
+        className="aset-card"
+        style={{
+          marginTop: "24px",
+        }}
+      >
+
+        <div className="aset-card-header">
+
+          <div className="aset-icon aset-orange">
+
+            <KeyRound
+              size={20}
+            />
+
+          </div>
+
+
+          <div>
+
+            <h2>
+              Change Password
+            </h2>
+
+            <p>
+              Update the password for
+              your administrator account.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        {passwordMessage && (
+
+          <div
+            style={{
+              marginBottom:
+                "18px",
+
+              padding:
+                "12px 14px",
+
+              borderRadius:
+                "10px",
+
+              fontSize:
+                "13px",
+
+              fontWeight:
+                600,
+
+              background:
+                passwordMessageType ===
+                "success"
+                  ? "#ecfdf5"
+                  : "#fef2f2",
+
+              color:
+                passwordMessageType ===
+                "success"
+                  ? "#047857"
+                  : "#dc2626",
+
+              border:
+                passwordMessageType ===
+                "success"
+                  ? "1px solid #a7f3d0"
+                  : "1px solid #fecaca",
+            }}
+          >
+
+            {passwordMessage}
+
+          </div>
+
+        )}
+
+
+        <form
+          onSubmit={
+            handleChangePassword
+          }
+        >
+
+          <div className="aset-form-group">
+
+            <label>
+              Current Password
+            </label>
+
+
+            <div className="aset-input">
+
+              <LockKeyhole
+                size={16}
+              />
+
+
+              <input
+                type="password"
+
+                name="currentPassword"
+
+                value={
+                  passwordForm
+                    .currentPassword
+                }
+
+                onChange={
+                  handlePasswordChange
+                }
+
+                placeholder="Enter current password"
+
+                autoComplete="current-password"
+
+                disabled={
+                  changingPassword
+                }
+              />
+
+            </div>
+
+          </div>
+
+
+
+          <div className="aset-form-group">
+
+            <label>
+              New Password
+            </label>
+
+
+            <div className="aset-input">
+
+              <KeyRound
+                size={16}
+              />
+
+
+              <input
+                type="password"
+
+                name="newPassword"
+
+                value={
+                  passwordForm
+                    .newPassword
+                }
+
+                onChange={
+                  handlePasswordChange
+                }
+
+                placeholder="Enter new password"
+
+                autoComplete="new-password"
+
+                disabled={
+                  changingPassword
+                }
+              />
+
+            </div>
+
+          </div>
+
+
+
+          <div className="aset-form-group">
+
+            <label>
+              Confirm New Password
+            </label>
+
+
+            <div className="aset-input">
+
+              <KeyRound
+                size={16}
+              />
+
+
+              <input
+                type="password"
+
+                name="confirmPassword"
+
+                value={
+                  passwordForm
+                    .confirmPassword
+                }
+
+                onChange={
+                  handlePasswordChange
+                }
+
+                placeholder="Re-enter new password"
+
+                autoComplete="new-password"
+
+                disabled={
+                  changingPassword
+                }
+              />
+
+            </div>
+
+          </div>
+
+
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent:
+                "flex-end",
+              marginTop: "18px",
+            }}
+          >
+
+            <button
+              type="submit"
+
+              className="aset-save-top"
+
+              disabled={
+                changingPassword
+              }
+            >
+
+              <KeyRound
+                size={16}
+              />
+
+
+              {changingPassword
+                ? "Changing..."
+                : "Change Password"}
+
+            </button>
+
+          </div>
+
+        </form>
+
+      </section>
+
+
+
+      {/* ====================================
+          MAINTENANCE MODE
+      ==================================== */}
 
       <section className="aset-maintenance">
 
@@ -483,12 +1628,20 @@ function AdminSettings() {
 
           <input
             type="checkbox"
+
             name="maintenanceMode"
+
             checked={
-              settings.maintenanceMode
+              settings
+                .maintenanceMode
             }
+
             onChange={
               handleChange
+            }
+
+            disabled={
+              saving
             }
           />
 
@@ -499,7 +1652,9 @@ function AdminSettings() {
       </section>
 
     </div>
+
   );
+
 }
 
 
