@@ -1,4 +1,12 @@
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import {
   Users,
   GraduationCap,
   BookOpen,
@@ -18,8 +26,90 @@ import "../styles/adminDashboard.css";
 
 function AdminDashboard() {
 
+  const navigate = useNavigate();
+
+
+  /* ========================================
+     LOGGED-IN ADMIN
+  ======================================== */
+
+  const [admin, setAdmin] = useState({
+    name: "Admin",
+    email: "",
+    role: "ADMIN",
+  });
+
+
+  /* ========================================
+     GET LOGGED-IN ADMIN
+  ======================================== */
+
+  useEffect(() => {
+
+    const fetchAdmin = async () => {
+
+      try {
+
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/me",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        setAdmin(response.data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load admin dashboard user:",
+          error
+        );
+
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+
+          navigate("/login");
+
+        }
+
+      }
+
+    };
+
+
+    fetchAdmin();
+
+  }, [navigate]);
+
+
   /*
     Temporary Admin Dashboard data.
+
     Later we will load this from PostgreSQL.
   */
 
@@ -55,21 +145,24 @@ function AdminDashboard() {
     {
       label: "Students",
       count: 248,
-      description: "Registered student accounts",
+      description:
+        "Registered student accounts",
       icon: GraduationCap,
       className: "ad-role-student",
     },
     {
       label: "Lecturers",
       count: 32,
-      description: "Teaching staff accounts",
+      description:
+        "Teaching staff accounts",
       icon: Users,
       className: "ad-role-lecturer",
     },
     {
       label: "Administrators",
       count: 4,
-      description: "System administrator accounts",
+      description:
+        "System administrator accounts",
       icon: ShieldCheck,
       className: "ad-role-admin",
     },
@@ -132,7 +225,7 @@ function AdminDashboard() {
         <div>
 
           <h1>
-            Admin Control Center
+            Welcome back, {admin.name} 👋
           </h1>
 
           <p>
@@ -226,7 +319,12 @@ function AdminDashboard() {
             </div>
 
 
-            <button className="ad-panel-link">
+            <button
+              className="ad-panel-link"
+              onClick={() =>
+                navigate("/admin-users")
+              }
+            >
 
               Manage Users
 
@@ -453,7 +551,12 @@ function AdminDashboard() {
         <div className="ad-quick-actions">
 
 
-          <button className="ad-action-card ad-action-teal">
+          <button
+            className="ad-action-card ad-action-teal"
+            onClick={() =>
+              navigate("/admin-users")
+            }
+          >
 
             <div className="ad-action-icon">
 
@@ -479,7 +582,12 @@ function AdminDashboard() {
 
 
 
-          <button className="ad-action-card ad-action-blue">
+          <button
+            className="ad-action-card ad-action-blue"
+            onClick={() =>
+              navigate("/admin/courses")
+            }
+          >
 
             <div className="ad-action-icon">
 
@@ -505,7 +613,12 @@ function AdminDashboard() {
 
 
 
-          <button className="ad-action-card ad-action-purple">
+          <button
+            className="ad-action-card ad-action-purple"
+            onClick={() =>
+              navigate("/admin/reports")
+            }
+          >
 
             <div className="ad-action-icon">
 
@@ -531,7 +644,12 @@ function AdminDashboard() {
 
 
 
-          <button className="ad-action-card ad-action-orange">
+          <button
+            className="ad-action-card ad-action-orange"
+            onClick={() =>
+              navigate("/admin/settings")
+            }
+          >
 
             <div className="ad-action-icon">
 

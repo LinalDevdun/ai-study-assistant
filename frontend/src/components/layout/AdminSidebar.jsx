@@ -1,7 +1,14 @@
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+
+import axios from "axios";
 
 import {
   LayoutDashboard,
@@ -16,8 +23,116 @@ import {
 
 
 function AdminSidebar() {
+
   const navigate = useNavigate();
   const location = useLocation();
+
+
+  /* ========================================
+     ADMIN DATA
+  ======================================== */
+
+  const [admin, setAdmin] = useState({
+    name: "Admin User",
+    email: "",
+    role: "ADMIN",
+  });
+
+
+  /* ========================================
+     GET LOGGED-IN ADMIN
+  ======================================== */
+
+  useEffect(() => {
+
+    const fetchAdmin = async () => {
+
+      try {
+
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/me",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        setAdmin(response.data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load admin:",
+          error
+        );
+
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+
+          navigate("/login");
+
+        }
+
+      }
+
+    };
+
+
+    fetchAdmin();
+
+  }, [navigate]);
+
+
+  /* ========================================
+     INITIALS
+  ======================================== */
+
+  const getInitials = (name) => {
+
+    if (!name) {
+      return "AD";
+    }
+
+
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map(
+        (word) =>
+          word.charAt(0)
+      )
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  };
+
+
+  const initials =
+    getInitials(admin.name);
 
 
   /* ========================================
@@ -51,9 +166,7 @@ function AdminSidebar() {
     <aside className="admin-sidebar">
 
 
-      {/* ====================================
-          LOGO
-      ==================================== */}
+      {/* LOGO */}
 
       <div className="admin-logo">
 
@@ -88,9 +201,7 @@ function AdminSidebar() {
 
 
 
-      {/* ====================================
-          NAVIGATION
-      ==================================== */}
+      {/* NAVIGATION */}
 
       <div className="admin-navigation">
 
@@ -199,9 +310,7 @@ function AdminSidebar() {
 
 
 
-        {/* ==================================
-            SYSTEM
-        ================================== */}
+        {/* SYSTEM */}
 
         <p className="admin-section-label admin-second-section">
 
@@ -263,9 +372,7 @@ function AdminSidebar() {
 
 
 
-      {/* ====================================
-          BOTTOM
-      ==================================== */}
+      {/* BOTTOM */}
 
       <div className="admin-sidebar-bottom">
 
@@ -293,7 +400,7 @@ function AdminSidebar() {
 
           <div className="admin-avatar">
 
-            AD
+            {initials}
 
           </div>
 
@@ -301,7 +408,7 @@ function AdminSidebar() {
           <div>
 
             <strong>
-              Admin User
+              {admin.name}
             </strong>
 
             <span>

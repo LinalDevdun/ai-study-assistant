@@ -1,4 +1,12 @@
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import {
   Bell,
   Search,
   ChevronDown,
@@ -8,13 +16,121 @@ import {
 
 function AdminTopbar() {
 
+  const navigate = useNavigate();
+
+
+  /* ========================================
+     ADMIN DATA
+  ======================================== */
+
+  const [admin, setAdmin] = useState({
+    name: "Admin User",
+    email: "",
+    role: "ADMIN",
+  });
+
+
+  /* ========================================
+     GET LOGGED-IN ADMIN
+  ======================================== */
+
+  useEffect(() => {
+
+    const fetchAdmin = async () => {
+
+      try {
+
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/me",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        setAdmin(response.data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load admin profile:",
+          error
+        );
+
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+
+          navigate("/login");
+
+        }
+
+      }
+
+    };
+
+
+    fetchAdmin();
+
+  }, [navigate]);
+
+
+  /* ========================================
+     INITIALS
+  ======================================== */
+
+  const getInitials = (name) => {
+
+    if (!name) {
+      return "AD";
+    }
+
+
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map(
+        (word) =>
+          word.charAt(0)
+      )
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  };
+
+
+  const initials =
+    getInitials(admin.name);
+
+
   return (
     <header className="admin-topbar">
 
 
-      {/* ====================================
-          SEARCH
-      ==================================== */}
+      {/* SEARCH */}
 
       <div className="admin-search">
 
@@ -29,9 +145,7 @@ function AdminTopbar() {
 
 
 
-      {/* ====================================
-          RIGHT SIDE
-      ==================================== */}
+      {/* RIGHT SIDE */}
 
       <div className="admin-topbar-actions">
 
@@ -68,7 +182,7 @@ function AdminTopbar() {
 
           <div className="admin-top-avatar">
 
-            AD
+            {initials}
 
           </div>
 
@@ -76,7 +190,7 @@ function AdminTopbar() {
           <div className="admin-profile-details">
 
             <strong>
-              Admin User
+              {admin.name}
             </strong>
 
             <span>
