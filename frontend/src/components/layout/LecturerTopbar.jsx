@@ -1,4 +1,12 @@
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import {
   Bell,
   Search,
   ChevronDown,
@@ -7,10 +15,131 @@ import {
 
 
 function LecturerTopbar() {
+
+  const navigate = useNavigate();
+
+
+  /* ========================================
+     LECTURER DATA
+  ======================================== */
+
+  const [lecturer, setLecturer] =
+    useState({
+      name: "Lecturer User",
+      email: "",
+      role: "LECTURER",
+    });
+
+
+  /* ========================================
+     GET LOGGED-IN LECTURER
+  ======================================== */
+
+  useEffect(() => {
+
+    const fetchLecturer = async () => {
+
+      try {
+
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/me",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        setLecturer(response.data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load lecturer profile:",
+          error
+        );
+
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+        }
+
+      }
+
+    };
+
+
+    fetchLecturer();
+
+  }, [navigate]);
+
+
+  /* ========================================
+     INITIALS
+  ======================================== */
+
+  const getInitials = (name) => {
+
+    if (!name) {
+      return "LE";
+    }
+
+
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map(
+        (word) =>
+          word.charAt(0)
+      )
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  };
+
+
+  const initials =
+    getInitials(lecturer.name);
+
+
   return (
     <header className="lecturer-topbar">
 
-      {/* SEARCH */}
+
+      {/* ====================================
+          SEARCH
+      ==================================== */}
+
       <div className="lecturer-search">
 
         <Search size={18} />
@@ -23,8 +152,15 @@ function LecturerTopbar() {
       </div>
 
 
-      {/* RIGHT */}
+
+      {/* ====================================
+          RIGHT SIDE
+      ==================================== */}
+
       <div className="lecturer-topbar-actions">
+
+
+        {/* CREATE */}
 
         <button className="lecturer-create-button">
 
@@ -34,6 +170,9 @@ function LecturerTopbar() {
 
         </button>
 
+
+
+        {/* NOTIFICATIONS */}
 
         <button className="lecturer-notification-button">
 
@@ -46,17 +185,25 @@ function LecturerTopbar() {
         </button>
 
 
+
+        {/* PROFILE */}
+
         <button className="lecturer-profile">
 
+
           <div className="lecturer-top-avatar">
-            LE
+
+            {initials}
+
           </div>
 
 
           <div className="lecturer-profile-details">
 
             <strong>
-              Lecturer User
+
+              {lecturer.name}
+
             </strong>
 
             <span>

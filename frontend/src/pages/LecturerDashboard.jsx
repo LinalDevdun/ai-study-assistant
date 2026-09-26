@@ -1,4 +1,12 @@
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+import {
   BookOpen,
   Users,
   ClipboardList,
@@ -16,6 +24,88 @@ import "../styles/lecturerDashboard.css";
 
 
 function LecturerDashboard() {
+
+  const navigate = useNavigate();
+
+
+  /* ========================================
+     LOGGED-IN LECTURER
+  ======================================== */
+
+  const [lecturer, setLecturer] =
+    useState({
+      name: "Lecturer",
+      email: "",
+      role: "LECTURER",
+    });
+
+
+  /* ========================================
+     GET LOGGED-IN LECTURER
+  ======================================== */
+
+  useEffect(() => {
+
+    const fetchLecturer = async () => {
+
+      try {
+
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/me",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        setLecturer(response.data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load lecturer dashboard user:",
+          error
+        );
+
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+
+          navigate("/login");
+
+        }
+
+      }
+
+    };
+
+
+    fetchLecturer();
+
+  }, [navigate]);
+
 
   /*
     Temporary UI data.
@@ -166,7 +256,7 @@ function LecturerDashboard() {
         <div>
 
           <h1>
-            Welcome back, Lecturer 👋
+            Welcome back, {lecturer.name} 👋
           </h1>
 
           <p>

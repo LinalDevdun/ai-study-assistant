@@ -1,7 +1,14 @@
 import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+
+import axios from "axios";
 
 import {
   LayoutDashboard,
@@ -16,8 +23,122 @@ import {
 
 
 function LecturerSidebar() {
+
   const navigate = useNavigate();
   const location = useLocation();
+
+
+  /* ========================================
+     LECTURER DATA
+  ======================================== */
+
+  const [lecturer, setLecturer] =
+    useState({
+      name: "Lecturer User",
+      email: "",
+      role: "LECTURER",
+    });
+
+
+  /* ========================================
+     GET LOGGED-IN LECTURER
+  ======================================== */
+
+  useEffect(() => {
+
+    const fetchLecturer = async () => {
+
+      try {
+
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/me",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        setLecturer(response.data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load lecturer:",
+          error
+        );
+
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+        }
+
+      }
+
+    };
+
+
+    fetchLecturer();
+
+  }, [navigate]);
+
+
+  /* ========================================
+     INITIALS
+  ======================================== */
+
+  const getInitials = (name) => {
+
+    if (!name) {
+      return "LE";
+    }
+
+
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map(
+        (word) =>
+          word.charAt(0)
+      )
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  };
+
+
+  const initials =
+    getInitials(lecturer.name);
 
 
   /* ========================================
@@ -25,27 +146,21 @@ function LecturerSidebar() {
   ======================================== */
 
   const handleLogout = () => {
+
     localStorage.removeItem("token");
+
     localStorage.removeItem("role");
 
     navigate("/login");
+
   };
 
 
   /* ========================================
      SCROLL TO DASHBOARD SECTION
-     Temporary for Grading + Students
   ======================================== */
 
   const scrollToSection = (sectionId) => {
-
-    /*
-      If already on the Lecturer Dashboard,
-      scroll directly to the section.
-
-      Otherwise go to the dashboard first
-      and then scroll.
-    */
 
     if (
       location.pathname ===
@@ -59,13 +174,16 @@ function LecturerSidebar() {
 
 
       if (section) {
+
         section.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
+
       }
 
       return;
+
     }
 
 
@@ -81,10 +199,12 @@ function LecturerSidebar() {
 
 
       if (section) {
+
         section.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
+
       }
 
     }, 150);
@@ -154,7 +274,9 @@ function LecturerSidebar() {
 
 
         <p className="lecturer-section-label">
+
           TEACHING
+
         </p>
 
 
@@ -255,39 +377,47 @@ function LecturerSidebar() {
 
           {/* GRADING */}
 
-        <button
-        className={getNavClass(
-            "/lecturer/grading"
-        )}
-        onClick={() =>
-            navigate(
-            "/lecturer/grading"
-            )
-        }
-        >
-        <GraduationCap size={19} />
+          <button
+            className={getNavClass(
+              "/lecturer/grading"
+            )}
+            onClick={() =>
+              navigate(
+                "/lecturer/grading"
+              )
+            }
+          >
 
-        Grading
-        </button>
+            <GraduationCap
+              size={19}
+            />
+
+            Grading
+
+          </button>
 
 
 
           {/* STUDENTS */}
 
-        <button
-        className={getNavClass(
-            "/lecturer/students"
-        )}
-        onClick={() =>
-            navigate(
-            "/lecturer/students"
-            )
-        }
-        >
-        <Users size={19} />
+          <button
+            className={getNavClass(
+              "/lecturer/students"
+            )}
+            onClick={() =>
+              navigate(
+                "/lecturer/students"
+              )
+            }
+          >
 
-        Students
-        </button>
+            <Users
+              size={19}
+            />
+
+            Students
+
+          </button>
 
         </nav>
 
@@ -298,7 +428,9 @@ function LecturerSidebar() {
         ================================== */}
 
         <p className="lecturer-section-label lecturer-second-section">
+
           TOOLS
+
         </p>
 
 
@@ -354,19 +486,24 @@ function LecturerSidebar() {
 
 
 
-        {/* USER CARD */}
+        {/* REAL LECTURER */}
 
         <div className="lecturer-user-card">
 
+
           <div className="lecturer-avatar">
-            LE
+
+            {initials}
+
           </div>
 
 
           <div>
 
             <strong>
-              Lecturer User
+
+              {lecturer.name}
+
             </strong>
 
             <span>
