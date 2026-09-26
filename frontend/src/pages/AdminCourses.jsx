@@ -1,118 +1,1042 @@
 import {
+  useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+
+import { useNavigate } from "react-router-dom";
+
+import axios from "axios";
 
 import {
   BookOpen,
   Search,
   Plus,
-  Users,
   GraduationCap,
   FileText,
+  Users,
+  X,
+  Upload,
   Pencil,
   Trash2,
-  X,
 } from "lucide-react";
 
 import "../styles/adminCourses.css";
 
 
 function AdminCourses() {
+  const navigate = useNavigate();
 
-  const [courses, setCourses] = useState([
-    {
-      id: 1,
-      title: "Software Engineering",
-      code: "SE301",
-      program: "BSc Software Engineering",
-      lecturer: "Hasith Witharama",
-      batch: "25.1",
-      students: 42,
-      materials: 8,
-      status: "Active",
-    },
 
-    {
-      id: 2,
-      title: "Database Systems",
-      code: "DB205",
-      program: "BSc Information Technology",
-      lecturer: "Michael Brown",
-      batch: "25.1",
-      students: 36,
-      materials: 11,
-      status: "Active",
-    },
+  /* ========================================
+     COURSES
+  ======================================== */
 
-    {
-      id: 3,
-      title: "Web Development",
-      code: "WD210",
-      program: "BSc Software Engineering",
-      lecturer: "Emily Davis",
-      batch: "25.2",
-      students: 38,
-      materials: 7,
-      status: "Active",
-    },
+  const [courses, setCourses] =
+    useState([]);
 
-    {
-      id: 4,
-      title: "Artificial Intelligence",
-      code: "AI320",
-      program: "BSc Data Science",
-      lecturer: "Sarah Johnson",
-      batch: "25.2",
-      students: 32,
-      materials: 10,
-      status: "Active",
-    },
-  ]);
+  const [loading, setLoading] =
+    useState(true);
 
+  const [error, setError] =
+    useState("");
+
+
+  /* ========================================
+     LECTURERS
+  ======================================== */
+
+  const [lecturers, setLecturers] =
+    useState([]);
+
+
+  /* ========================================
+     SEARCH + FILTER
+  ======================================== */
 
   const [searchTerm, setSearchTerm] =
     useState("");
 
-  const [programFilter, setProgramFilter] =
-    useState("ALL");
-
-  const [modalOpen, setModalOpen] =
-    useState(false);
-
-  const [editingCourse, setEditingCourse] =
-    useState(null);
-
-
-  const [formData, setFormData] =
-    useState({
-      title: "",
-      code: "",
-      program: "",
-      lecturer: "",
-      batch: "",
-    });
+  const [
+    programFilter,
+    setProgramFilter,
+  ] = useState("ALL");
 
 
   /* ========================================
-     FILTER
+     VIEW COURSE
+  ======================================== */
+
+  const [
+    selectedCourse,
+    setSelectedCourse,
+  ] = useState(null);
+
+
+  const [
+    courseLessons,
+    setCourseLessons,
+  ] = useState([]);
+
+
+  const [
+    lessonsLoading,
+    setLessonsLoading,
+  ] = useState(false);
+
+
+  const [
+    lessonsError,
+    setLessonsError,
+  ] = useState("");
+
+
+  /* ========================================
+     CREATE / EDIT COURSE MODAL
+  ======================================== */
+
+  const [
+    courseModalOpen,
+    setCourseModalOpen,
+  ] = useState(false);
+
+
+  const [
+    editingCourse,
+    setEditingCourse,
+  ] = useState(null);
+
+
+  const [
+    savingCourse,
+    setSavingCourse,
+  ] = useState(false);
+
+
+  const [
+    formError,
+    setFormError,
+  ] = useState("");
+
+
+  const [
+    courseForm,
+    setCourseForm,
+  ] = useState({
+    courseTitle: "",
+    degree: "",
+    batch: "",
+    lecturerId: "",
+    file: null,
+  });
+
+
+  /* ========================================
+     DELETE STATE
+  ======================================== */
+
+  const [
+    deletingCourseId,
+    setDeletingCourseId,
+  ] = useState(null);
+
+
+  /* ========================================
+     AUTH ERROR HELPER
+  ======================================== */
+
+  const handleAuthError =
+    useCallback(
+      (error) => {
+
+        if (
+          error.response?.status ===
+            401 ||
+          error.response?.status ===
+            403
+        ) {
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+          return true;
+
+        }
+
+
+        return false;
+
+      },
+      [navigate]
+    );
+
+
+  /* ========================================
+     LOAD COURSES
+  ======================================== */
+
+  const loadCourses =
+    useCallback(
+      async () => {
+
+        try {
+
+          setLoading(true);
+
+          setError("");
+
+
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/admin/courses/summary",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          const realCourses =
+            response.data.map(
+              (course) => ({
+
+                id:
+                  course.id,
+
+                title:
+                  course.title ||
+                  "Untitled Course",
+
+                program:
+                  course.degree ||
+                  "Not assigned",
+
+                batch:
+                  course.batch ||
+                  "Not assigned",
+
+                lecturerId:
+                  course.lecturer_id ||
+                  null,
+
+                lecturer:
+                  course.lecturer_name ||
+                  "Not assigned",
+
+                filePath:
+                  course.file_path ||
+                  null,
+
+                students:
+                  Number(
+                    course.student_count
+                  ) || 0,
+
+                lessons:
+                  Number(
+                    course.lesson_count
+                  ) || 0,
+
+                materials:
+                  Number(
+                    course.material_count
+                  ) || 0,
+
+                status:
+                  "Active",
+              })
+            );
+
+
+          setCourses(
+            realCourses
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Load Courses Error:",
+            error
+          );
+
+
+          if (
+            handleAuthError(
+              error
+            )
+          ) {
+            return;
+          }
+
+
+          setError(
+            error.response?.data
+              ?.error ||
+            "Failed to load courses."
+          );
+
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      },
+      [
+        navigate,
+        handleAuthError,
+      ]
+    );
+
+
+  /* ========================================
+     LOAD LECTURERS
+  ======================================== */
+
+  const loadLecturers =
+    useCallback(
+      async () => {
+
+        try {
+
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+            return;
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/admin/users",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          const lecturerUsers =
+            response.data.filter(
+              (user) =>
+                user.role ===
+                  "LECTURER" &&
+                user.is_active !==
+                  false
+            );
+
+
+          setLecturers(
+            lecturerUsers
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Load Lecturers Error:",
+            error
+          );
+
+
+          handleAuthError(
+            error
+          );
+
+        }
+
+      },
+      [handleAuthError]
+    );
+
+
+  /* ========================================
+     INITIAL LOAD
+  ======================================== */
+
+  useEffect(() => {
+
+    loadCourses();
+
+    loadLecturers();
+
+  }, [
+    loadCourses,
+    loadLecturers,
+  ]);
+
+
+  /* ========================================
+     CREATE COURSE MODAL
+  ======================================== */
+
+  const openCreateModal = () => {
+
+    setEditingCourse(null);
+
+    setFormError("");
+
+    setCourseForm({
+      courseTitle: "",
+      degree: "",
+      batch: "",
+      lecturerId: "",
+      file: null,
+    });
+
+    setCourseModalOpen(true);
+
+  };
+
+
+  /* ========================================
+     EDIT COURSE MODAL
+  ======================================== */
+
+  const openEditModal =
+    (course) => {
+
+      setEditingCourse(
+        course
+      );
+
+      setFormError("");
+
+      setCourseForm({
+
+        courseTitle:
+          course.title,
+
+        degree:
+          course.program ===
+          "Not assigned"
+            ? ""
+            : course.program,
+
+        batch:
+          course.batch ===
+          "Not assigned"
+            ? ""
+            : course.batch,
+
+        lecturerId:
+          course.lecturerId
+            ? String(
+                course.lecturerId
+              )
+            : "",
+
+        file:
+          null,
+      });
+
+
+      setCourseModalOpen(
+        true
+      );
+
+    };
+
+
+  /* ========================================
+     CLOSE COURSE FORM
+  ======================================== */
+
+  const closeCourseModal = () => {
+
+    if (savingCourse) {
+      return;
+    }
+
+
+    setCourseModalOpen(false);
+
+    setEditingCourse(null);
+
+    setFormError("");
+
+    setCourseForm({
+      courseTitle: "",
+      degree: "",
+      batch: "",
+      lecturerId: "",
+      file: null,
+    });
+
+  };
+
+
+  /* ========================================
+     CREATE / UPDATE COURSE
+  ======================================== */
+
+  const handleSaveCourse =
+    async (event) => {
+
+      event.preventDefault();
+
+
+      if (
+        !courseForm.courseTitle.trim()
+      ) {
+
+        setFormError(
+          "Please enter a course title."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !courseForm.degree.trim()
+      ) {
+
+        setFormError(
+          "Please enter a program / degree."
+        );
+
+        return;
+
+      }
+
+
+      if (
+        !courseForm.batch.trim()
+      ) {
+
+        setFormError(
+          "Please enter a batch."
+        );
+
+        return;
+
+      }
+
+
+      try {
+
+        setSavingCourse(true);
+
+        setFormError("");
+
+
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const formData =
+          new FormData();
+
+
+        formData.append(
+          "courseTitle",
+          courseForm.courseTitle.trim()
+        );
+
+
+        formData.append(
+          "degree",
+          courseForm.degree.trim()
+        );
+
+
+        formData.append(
+          "batch",
+          courseForm.batch.trim()
+        );
+
+
+        formData.append(
+          "lecturerId",
+          courseForm.lecturerId
+        );
+
+
+        if (
+          courseForm.file
+        ) {
+
+          formData.append(
+            "file",
+            courseForm.file
+          );
+
+        }
+
+
+        /* ==============================
+           EDIT
+        ============================== */
+
+        if (editingCourse) {
+
+          await axios.put(
+            `http://localhost:5000/admin/courses/${editingCourse.id}`,
+            formData,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+          alert(
+            "Course updated successfully!"
+          );
+
+        }
+
+
+        /* ==============================
+           CREATE
+        ============================== */
+
+        else {
+
+          await axios.post(
+            "http://localhost:5000/courses",
+            formData,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+          alert(
+            "Course created successfully!"
+          );
+
+        }
+
+
+        setCourseModalOpen(
+          false
+        );
+
+        setEditingCourse(
+          null
+        );
+
+
+        setCourseForm({
+          courseTitle: "",
+          degree: "",
+          batch: "",
+          lecturerId: "",
+          file: null,
+        });
+
+
+        await loadCourses();
+
+
+      } catch (error) {
+
+        console.error(
+          "Save Course Error:",
+          error
+        );
+
+
+        if (
+          handleAuthError(
+            error
+          )
+        ) {
+          return;
+        }
+
+
+        setFormError(
+          error.response?.data
+            ?.error ||
+          "Failed to save course."
+        );
+
+
+      } finally {
+
+        setSavingCourse(false);
+
+      }
+
+    };
+
+
+  /* ========================================
+     DELETE COURSE
+  ======================================== */
+
+  const deleteCourse =
+    async (course) => {
+
+      const confirmed =
+        window.confirm(
+          `Are you sure you want to delete "${course.title}"?\n\nThis action cannot be undone.`
+        );
+
+
+      if (!confirmed) {
+
+        return;
+
+      }
+
+
+      try {
+
+        setDeletingCourseId(
+          course.id
+        );
+
+
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        await axios.delete(
+          `http://localhost:5000/admin/courses/${course.id}`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+
+        alert(
+          "Course deleted successfully!"
+        );
+
+
+        await loadCourses();
+
+
+      } catch (error) {
+
+        console.error(
+          "Delete Course Error:",
+          error
+        );
+
+
+        if (
+          handleAuthError(
+            error
+          )
+        ) {
+          return;
+        }
+
+
+        alert(
+          error.response?.data
+            ?.error ||
+          "Failed to delete course."
+        );
+
+
+      } finally {
+
+        setDeletingCourseId(
+          null
+        );
+
+      }
+
+    };
+
+
+  /* ========================================
+     OPEN VIEW COURSE
+  ======================================== */
+
+  const openCourseDetails =
+    async (course) => {
+
+      setSelectedCourse(
+        course
+      );
+
+      setCourseLessons([]);
+
+      setLessonsError("");
+
+      setLessonsLoading(true);
+
+
+      try {
+
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            `http://localhost:5000/courses/${course.id}/lessons`,
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        setCourseLessons(
+          Array.isArray(
+            response.data
+          )
+            ? response.data
+            : []
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Load Lessons Error:",
+          error
+        );
+
+
+        if (
+          handleAuthError(
+            error
+          )
+        ) {
+          return;
+        }
+
+
+        setLessonsError(
+          error.response?.data
+            ?.error ||
+          "Failed to load lessons."
+        );
+
+
+      } finally {
+
+        setLessonsLoading(false);
+
+      }
+
+    };
+
+
+  /* ========================================
+     CLOSE VIEW COURSE
+  ======================================== */
+
+  const closeCourseDetails = () => {
+
+    setSelectedCourse(null);
+
+    setCourseLessons([]);
+
+    setLessonsError("");
+
+    setLessonsLoading(false);
+
+  };
+
+
+  /* ========================================
+     ESC KEY
+  ======================================== */
+
+  useEffect(() => {
+
+    const handleEscape =
+      (event) => {
+
+        if (
+          event.key !==
+          "Escape"
+        ) {
+          return;
+        }
+
+
+        if (selectedCourse) {
+
+          closeCourseDetails();
+
+        }
+
+
+        if (
+          courseModalOpen &&
+          !savingCourse
+        ) {
+
+          setCourseModalOpen(
+            false
+          );
+
+          setEditingCourse(
+            null
+          );
+
+          setFormError("");
+
+        }
+
+      };
+
+
+    window.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+
+    return () => {
+
+      window.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+
+    };
+
+  }, [
+    selectedCourse,
+    courseModalOpen,
+    savingCourse,
+  ]);
+
+
+  /* ========================================
+     PROGRAM OPTIONS
+  ======================================== */
+
+  const programOptions =
+    useMemo(() => {
+
+      const programs =
+        courses
+          .map(
+            (course) =>
+              course.program
+          )
+          .filter(
+            (program) =>
+              program &&
+              program !==
+                "Not assigned"
+          );
+
+
+      return [
+        ...new Set(programs),
+      ].sort();
+
+    }, [courses]);
+
+
+  /* ========================================
+     FILTER COURSES
   ======================================== */
 
   const filteredCourses =
     useMemo(() => {
 
       const search =
-        searchTerm.toLowerCase();
+        searchTerm
+          .toLowerCase()
+          .trim();
+
 
       return courses.filter(
         (course) => {
 
           const matchesSearch =
+
             course.title
               .toLowerCase()
               .includes(search) ||
 
-            course.code
+            course.program
+              .toLowerCase()
+              .includes(search) ||
+
+            course.batch
               .toLowerCase()
               .includes(search) ||
 
@@ -122,7 +1046,10 @@ function AdminCourses() {
 
 
           const matchesProgram =
-            programFilter === "ALL" ||
+
+            programFilter ===
+              "ALL" ||
+
             course.program ===
               programFilter;
 
@@ -143,162 +1070,62 @@ function AdminCourses() {
 
 
   /* ========================================
-     OPEN CREATE
+     SUMMARY
   ======================================== */
 
-  const openCreateModal = () => {
-
-    setEditingCourse(null);
-
-    setFormData({
-      title: "",
-      code: "",
-      program: "",
-      lecturer: "",
-      batch: "",
-    });
-
-    setModalOpen(true);
-
-  };
+  const totalCourses =
+    courses.length;
 
 
-  /* ========================================
-     OPEN EDIT
-  ======================================== */
-
-  const openEditModal = (course) => {
-
-    setEditingCourse(course);
-
-    setFormData({
-      title: course.title,
-      code: course.code,
-      program: course.program,
-      lecturer: course.lecturer,
-      batch: course.batch,
-    });
-
-    setModalOpen(true);
-
-  };
-
-
-  /* ========================================
-     SAVE
-  ======================================== */
-
-  const handleSaveCourse = (event) => {
-
-    event.preventDefault();
-
-
-    if (
-      !formData.title ||
-      !formData.code ||
-      !formData.program ||
-      !formData.lecturer ||
-      !formData.batch
-    ) {
-      return;
-    }
-
-
-    if (editingCourse) {
-
-      setCourses(
-        (previous) =>
-          previous.map(
-            (course) =>
-              course.id ===
-              editingCourse.id
-                ? {
-                    ...course,
-                    ...formData,
-                  }
-                : course
-          )
-      );
-
-    } else {
-
-      const newCourse = {
-        id: Date.now(),
-
-        ...formData,
-
-        students: 0,
-
-        materials: 0,
-
-        status: "Active",
-      };
-
-
-      setCourses(
-        (previous) => [
-          newCourse,
-          ...previous,
-        ]
-      );
-
-    }
-
-
-    setModalOpen(false);
-
-  };
-
-
-  /* ========================================
-     DELETE
-  ======================================== */
-
-  const deleteCourse = (id) => {
-
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to delete this course?"
-      );
-
-
-    if (!confirmed) {
-      return;
-    }
-
-
-    setCourses(
-      (previous) =>
-        previous.filter(
+  const studyPrograms =
+    new Set(
+      courses
+        .map(
           (course) =>
-            course.id !== id
+            course.program
         )
-    );
+        .filter(
+          (program) =>
+            program &&
+            program !==
+              "Not assigned"
+        )
+    ).size;
 
-  };
+
+  const batches =
+    new Set(
+      courses
+        .map(
+          (course) =>
+            course.batch
+        )
+        .filter(
+          (batch) =>
+            batch &&
+            batch !==
+              "Not assigned"
+        )
+    ).size;
 
 
-  const totalStudents =
+  const uploadedMaterials =
     courses.reduce(
       (total, course) =>
-        total + course.students,
-      0
-    );
-
-
-  const totalMaterials =
-    courses.reduce(
-      (total, course) =>
-        total + course.materials,
+        total +
+        course.materials,
       0
     );
 
 
   return (
+
     <div className="admin-courses-page">
 
 
-      {/* HEADER */}
+      {/* ====================================
+          HEADER
+      ==================================== */}
 
       <section className="ac-header">
 
@@ -318,7 +1145,9 @@ function AdminCourses() {
 
         <button
           className="ac-create-button"
-          onClick={openCreateModal}
+          onClick={
+            openCreateModal
+          }
         >
 
           <Plus size={16} />
@@ -331,7 +1160,9 @@ function AdminCourses() {
 
 
 
-      {/* SUMMARY */}
+      {/* ====================================
+          SUMMARY
+      ==================================== */}
 
       <section className="ac-summary">
 
@@ -347,7 +1178,7 @@ function AdminCourses() {
           <div>
 
             <strong>
-              {courses.length}
+              {totalCourses}
             </strong>
 
             <span>
@@ -357,6 +1188,7 @@ function AdminCourses() {
           </div>
 
         </div>
+
 
 
         <div className="ac-summary-card ac-purple">
@@ -372,7 +1204,7 @@ function AdminCourses() {
           <div>
 
             <strong>
-              3
+              {studyPrograms}
             </strong>
 
             <span>
@@ -382,6 +1214,7 @@ function AdminCourses() {
           </div>
 
         </div>
+
 
 
         <div className="ac-summary-card ac-blue">
@@ -395,16 +1228,17 @@ function AdminCourses() {
           <div>
 
             <strong>
-              {totalStudents}
+              {batches}
             </strong>
 
             <span>
-              Enrolled Students
+              Course Batches
             </span>
 
           </div>
 
         </div>
+
 
 
         <div className="ac-summary-card ac-orange">
@@ -418,7 +1252,7 @@ function AdminCourses() {
           <div>
 
             <strong>
-              {totalMaterials}
+              {uploadedMaterials}
             </strong>
 
             <span>
@@ -433,7 +1267,9 @@ function AdminCourses() {
 
 
 
-      {/* FILTERS */}
+      {/* ====================================
+          SEARCH + FILTER
+      ==================================== */}
 
       <section className="ac-toolbar">
 
@@ -468,17 +1304,21 @@ function AdminCourses() {
             All Programs
           </option>
 
-          <option value="BSc Software Engineering">
-            BSc Software Engineering
-          </option>
 
-          <option value="BSc Information Technology">
-            BSc Information Technology
-          </option>
+          {programOptions.map(
+            (program) => (
 
-          <option value="BSc Data Science">
-            BSc Data Science
-          </option>
+              <option
+                key={program}
+                value={program}
+              >
+
+                {program}
+
+              </option>
+
+            )
+          )}
 
         </select>
 
@@ -486,154 +1326,338 @@ function AdminCourses() {
 
 
 
-      {/* COURSE GRID */}
+      {/* ====================================
+          LOADING
+      ==================================== */}
 
-      <section className="ac-grid">
+      {loading && (
 
-        {filteredCourses.map(
-          (course) => (
+        <div className="ac-empty">
 
-            <article
-              className="ac-card"
-              key={course.id}
-            >
+          <BookOpen size={28} />
 
-              <div className="ac-card-header">
+          <h3>
+            Loading courses...
+          </h3>
 
-                <div className="ac-course-icon">
+          <p>
+            Getting course information
+            from PostgreSQL.
+          </p>
 
-                  <BookOpen
-                    size={22}
-                  />
+        </div>
+
+      )}
+
+
+
+      {/* ====================================
+          ERROR
+      ==================================== */}
+
+      {!loading && error && (
+
+        <div className="ac-empty">
+
+          <BookOpen size={28} />
+
+          <h3>
+            Unable to load courses
+          </h3>
+
+          <p>
+            {error}
+          </p>
+
+        </div>
+
+      )}
+
+
+
+      {/* ====================================
+          COURSE GRID
+      ==================================== */}
+
+      {!loading &&
+        !error && (
+
+        <section className="ac-grid">
+
+          {filteredCourses.map(
+            (course) => (
+
+              <article
+                className="ac-card"
+                key={course.id}
+              >
+
+
+                <div className="ac-card-header">
+
+                  <div className="ac-course-icon">
+
+                    <BookOpen
+                      size={22}
+                    />
+
+                  </div>
+
+
+                  <span className="ac-active-badge">
+
+                    {course.status}
+
+                  </span>
 
                 </div>
 
 
-                <span className="ac-active-badge">
 
-                  {course.status}
+                <span className="ac-course-code">
+
+                  COURSE #{course.id}
 
                 </span>
 
-              </div>
 
 
-              <span className="ac-course-code">
-
-                {course.code}
-
-              </span>
+                <h3>
+                  {course.title}
+                </h3>
 
 
-              <h3>
-                {course.title}
-              </h3>
 
-
-              <p className="ac-program">
-
-                <GraduationCap
-                  size={13}
-                />
-
-                {course.program}
-
-              </p>
-
-
-              <div className="ac-info-list">
-
-                <div>
-
-                  <Users size={13} />
-
-                  <span>
-                    {course.students}
-                    {" "}
-                    Students
-                  </span>
-
-                </div>
-
-
-                <div>
-
-                  <FileText size={13} />
-
-                  <span>
-                    {course.materials}
-                    {" "}
-                    Materials
-                  </span>
-
-                </div>
-
-
-                <div>
+                <p className="ac-program">
 
                   <GraduationCap
                     size={13}
                   />
 
-                  <span>
-                    {course.lecturer}
-                  </span>
+                  {course.program}
+
+                </p>
+
+
+
+                <div className="ac-info-list">
+
+
+                  <div>
+
+                    <Users size={13} />
+
+                    <span>
+
+                      {course.students}{" "}
+
+                      {course.students ===
+                      1
+                        ? "Student"
+                        : "Students"}
+
+                    </span>
+
+                  </div>
+
+
+
+                  <div>
+
+                    <FileText
+                      size={13}
+                    />
+
+                    <span>
+
+                      {course.materials}{" "}
+
+                      {course.materials ===
+                      1
+                        ? "Material"
+                        : "Materials"}
+
+                    </span>
+
+                  </div>
+
+
+
+                  <div>
+
+                    <GraduationCap
+                      size={13}
+                    />
+
+                    <span>
+                      {course.lecturer}
+                    </span>
+
+                  </div>
 
                 </div>
 
-              </div>
 
 
-              <div className="ac-batch">
+                <div className="ac-batch">
 
-                Batch {course.batch}
+                  {course.batch ===
+                  "Not assigned"
+                    ? "Batch not assigned"
+                    : `Batch ${course.batch}`}
 
-              </div>
+                </div>
 
 
-              <div className="ac-actions">
 
-                <button
-                  className="ac-edit-button"
-                  onClick={() =>
-                    openEditModal(course)
-                  }
+                {/* =================================
+                    ACTIONS
+                ================================= */}
+
+                <div
+                  className="ac-actions"
+
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "1fr auto auto",
+                    gap: "8px",
+                  }}
                 >
 
-                  <Pencil size={14} />
 
-                  Edit
+                  {/* VIEW */}
 
-                </button>
+                  <button
+                    className="ac-edit-button"
+                    onClick={() =>
+                      openCourseDetails(
+                        course
+                      )
+                    }
+                  >
+
+                    View Course
+
+                  </button>
 
 
-                <button
-                  className="ac-delete-button"
-                  onClick={() =>
-                    deleteCourse(
+
+                  {/* EDIT */}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openEditModal(
+                        course
+                      )
+                    }
+
+                    title="Edit Course"
+
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      border:
+                        "1px solid #dbeafe",
+                      borderRadius:
+                        "10px",
+                      background:
+                        "#eff6ff",
+                      color:
+                        "#2563eb",
+                      display: "flex",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "center",
+                      cursor:
+                        "pointer",
+                    }}
+                  >
+
+                    <Pencil
+                      size={17}
+                    />
+
+                  </button>
+
+
+
+                  {/* DELETE */}
+
+                  <button
+                    type="button"
+
+                    onClick={() =>
+                      deleteCourse(
+                        course
+                      )
+                    }
+
+                    disabled={
+                      deletingCourseId ===
                       course.id
-                    )
-                  }
-                >
+                    }
 
-                  <Trash2 size={14} />
+                    title="Delete Course"
 
-                </button>
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      border:
+                        "1px solid #fee2e2",
+                      borderRadius:
+                        "10px",
+                      background:
+                        "#fef2f2",
+                      color:
+                        "#ef4444",
+                      display: "flex",
+                      alignItems:
+                        "center",
+                      justifyContent:
+                        "center",
+                      cursor:
+                        deletingCourseId ===
+                        course.id
+                          ? "not-allowed"
+                          : "pointer",
+                      opacity:
+                        deletingCourseId ===
+                        course.id
+                          ? 0.6
+                          : 1,
+                    }}
+                  >
 
-              </div>
+                    <Trash2
+                      size={17}
+                    />
 
-            </article>
+                  </button>
 
-          )
-        )}
+                </div>
 
-      </section>
+              </article>
+
+            )
+          )}
+
+        </section>
+
+      )}
 
 
 
-      {/* EMPTY */}
+      {/* ====================================
+          EMPTY RESULT
+      ==================================== */}
 
-      {filteredCourses.length === 0 && (
+      {!loading &&
+        !error &&
+        filteredCourses.length ===
+          0 && (
 
         <div className="ac-empty">
 
@@ -654,16 +1678,70 @@ function AdminCourses() {
 
 
 
-      {/* MODAL */}
+      {/* ====================================
+          CREATE / EDIT MODAL
+      ==================================== */}
 
-      {modalOpen && (
+      {courseModalOpen && (
 
-        <div className="ac-modal-overlay">
+        <div
+          className="ac-modal-overlay"
 
-          <div className="ac-modal">
+          onClick={
+            closeCourseModal
+          }
+
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 10000,
+            display: "flex",
+            alignItems:
+              "flex-start",
+            justifyContent:
+              "center",
+            overflowY: "auto",
+            padding:
+              "24px 16px",
+            boxSizing:
+              "border-box",
+          }}
+        >
+
+          <div
+            className="ac-modal"
+
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+
+            style={{
+              width: "100%",
+              maxWidth: "680px",
+              maxHeight:
+                "calc(100vh - 48px)",
+              overflowY: "auto",
+              position:
+                "relative",
+            }}
+          >
 
 
-            <div className="ac-modal-header">
+            {/* HEADER */}
+
+            <div
+              className="ac-modal-header"
+
+              style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 20,
+                background:
+                  "#ffffff",
+                paddingBottom:
+                  "16px",
+              }}
+            >
 
               <div>
 
@@ -671,25 +1749,32 @@ function AdminCourses() {
 
                   {editingCourse
                     ? "Edit Course"
-                    : "Create New Course"}
+                    : "Create Course"}
 
                 </h2>
 
                 <p>
-                  Manage academic module
-                  information.
+
+                  {editingCourse
+                    ? "Update course information."
+                    : "Add a new course to CampusLearn."}
+
                 </p>
 
               </div>
 
 
               <button
-                onClick={() =>
-                  setModalOpen(false)
+                type="button"
+                onClick={
+                  closeCourseModal
+                }
+                disabled={
+                  savingCourse
                 }
               >
 
-                <X size={18} />
+                <X size={20} />
 
               </button>
 
@@ -705,6 +1790,35 @@ function AdminCourses() {
             >
 
 
+              {/* ERROR */}
+
+              {formError && (
+
+                <div
+                  style={{
+                    padding:
+                      "12px 14px",
+                    borderRadius:
+                      "10px",
+                    background:
+                      "#fef2f2",
+                    color:
+                      "#dc2626",
+                    fontSize:
+                      "13px",
+                  }}
+                >
+
+                  {formError}
+
+                </div>
+
+              )}
+
+
+
+              {/* TITLE */}
+
               <div className="ac-form-group">
 
                 <label>
@@ -713,137 +1827,95 @@ function AdminCourses() {
 
                 <input
                   type="text"
-                  placeholder="Example: Cloud Computing"
-                  value={
-                    formData.title
-                  }
-                  onChange={(event) =>
-                    setFormData({
-                      ...formData,
+                  placeholder="e.g. Cloud Computing"
 
-                      title:
+                  value={
+                    courseForm.courseTitle
+                  }
+
+                  onChange={(event) =>
+                    setCourseForm({
+                      ...courseForm,
+
+                      courseTitle:
                         event.target.value,
                     })
                   }
+
+                  required
                 />
 
               </div>
 
 
 
-              <div className="ac-form-row">
-
-
-                <div className="ac-form-group">
-
-                  <label>
-                    Course Code
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="CC301"
-                    value={
-                      formData.code
-                    }
-                    onChange={(event) =>
-                      setFormData({
-                        ...formData,
-
-                        code:
-                          event.target.value,
-                      })
-                    }
-                  />
-
-                </div>
-
-
-                <div className="ac-form-group">
-
-                  <label>
-                    Batch
-                  </label>
-
-                  <select
-                    value={
-                      formData.batch
-                    }
-                    onChange={(event) =>
-                      setFormData({
-                        ...formData,
-
-                        batch:
-                          event.target.value,
-                      })
-                    }
-                  >
-
-                    <option value="">
-                      Select batch
-                    </option>
-
-                    <option value="25.1">
-                      25.1
-                    </option>
-
-                    <option value="25.2">
-                      25.2
-                    </option>
-
-                    <option value="26.1">
-                      26.1
-                    </option>
-
-                  </select>
-
-                </div>
-
-              </div>
-
-
+              {/* PROGRAM */}
 
               <div className="ac-form-group">
 
                 <label>
-                  Program
+                  Program / Degree
                 </label>
 
-                <select
-                  value={
-                    formData.program
-                  }
-                  onChange={(event) =>
-                    setFormData({
-                      ...formData,
+                <input
+                  type="text"
 
-                      program:
+                  placeholder="e.g. BSc Computer Science"
+
+                  value={
+                    courseForm.degree
+                  }
+
+                  onChange={(event) =>
+                    setCourseForm({
+                      ...courseForm,
+
+                      degree:
                         event.target.value,
                     })
                   }
-                >
 
-                  <option value="">
-                    Select program
-                  </option>
-
-                  <option value="BSc Software Engineering">
-                    BSc Software Engineering
-                  </option>
-
-                  <option value="BSc Information Technology">
-                    BSc Information Technology
-                  </option>
-
-                  <option value="BSc Data Science">
-                    BSc Data Science
-                  </option>
-
-                </select>
+                  required
+                />
 
               </div>
 
 
+
+              {/* BATCH */}
+
+              <div className="ac-form-group">
+
+                <label>
+                  Batch
+                </label>
+
+                <input
+                  type="text"
+
+                  placeholder="e.g. 26.1"
+
+                  value={
+                    courseForm.batch
+                  }
+
+                  onChange={(event) =>
+                    setCourseForm({
+                      ...courseForm,
+
+                      batch:
+                        event.target.value,
+                    })
+                  }
+
+                  required
+                />
+
+              </div>
+
+
+
+              {/* LECTURER */}
 
               <div className="ac-form-group">
 
@@ -851,33 +1923,180 @@ function AdminCourses() {
                   Lecturer
                 </label>
 
-                <input
-                  type="text"
-                  placeholder="Enter lecturer name"
+                <select
                   value={
-                    formData.lecturer
+                    courseForm.lecturerId
                   }
-                  onChange={(event) =>
-                    setFormData({
-                      ...formData,
 
-                      lecturer:
+                  onChange={(event) =>
+                    setCourseForm({
+                      ...courseForm,
+
+                      lecturerId:
                         event.target.value,
                     })
                   }
-                />
+                >
+
+                  <option value="">
+                    Not assigned
+                  </option>
+
+
+                  {lecturers.map(
+                    (lecturer) => (
+
+                      <option
+                        key={
+                          lecturer.id
+                        }
+
+                        value={
+                          lecturer.id
+                        }
+                      >
+
+                        {lecturer.name}
+                        {" - "}
+                        {lecturer.email}
+
+                      </option>
+
+                    )
+                  )}
+
+                </select>
 
               </div>
 
 
+
+              {/* FILE */}
+
+              <div className="ac-form-group">
+
+                <label>
+
+                  {editingCourse
+                    ? "Replace Learning Material (Optional)"
+                    : "Learning Material (Optional)"}
+
+                </label>
+
+
+                {editingCourse &&
+                  editingCourse.filePath && (
+
+                  <div
+                    style={{
+                      padding:
+                        "10px 12px",
+                      marginBottom:
+                        "10px",
+                      borderRadius:
+                        "8px",
+                      background:
+                        "#ecfdf5",
+                      color:
+                        "#047857",
+                      fontSize:
+                        "12px",
+                    }}
+                  >
+
+                    Current course material
+                    is uploaded.
+
+                    If you do not choose
+                    another file, the
+                    existing material will
+                    remain unchanged.
+
+                  </div>
+
+                )}
+
+
+                <div
+                  style={{
+                    border:
+                      "1px dashed #cbd5e1",
+                    borderRadius:
+                      "12px",
+                    padding:
+                      "16px",
+                    background:
+                      "#f8fafc",
+                  }}
+                >
+
+                  <div
+                    style={{
+                      display:
+                        "flex",
+                      alignItems:
+                        "center",
+                      gap: "10px",
+                      marginBottom:
+                        "10px",
+                    }}
+                  >
+
+                    <Upload
+                      size={19}
+                    />
+
+                    <span
+                      style={{
+                        fontSize:
+                          "13px",
+                      }}
+                    >
+
+                      {editingCourse
+                        ? "Choose a new file only if you want to replace it"
+                        : "Upload course material"}
+
+                    </span>
+
+                  </div>
+
+
+                  <input
+                    type="file"
+
+                    onChange={(event) =>
+                      setCourseForm({
+                        ...courseForm,
+
+                        file:
+                          event.target
+                            .files?.[0] ||
+                          null,
+                      })
+                    }
+                  />
+
+                </div>
+
+              </div>
+
+
+
+              {/* BUTTONS */}
 
               <div className="ac-modal-actions">
 
                 <button
                   type="button"
                   className="ac-cancel-button"
-                  onClick={() =>
-                    setModalOpen(false)
+
+                  onClick={
+                    closeCourseModal
+                  }
+
+                  disabled={
+                    savingCourse
                   }
                 >
 
@@ -889,11 +2108,19 @@ function AdminCourses() {
                 <button
                   type="submit"
                   className="ac-save-button"
+
+                  disabled={
+                    savingCourse
+                  }
                 >
 
-                  {editingCourse
-                    ? "Save Changes"
-                    : "Create Course"}
+                  {savingCourse
+                    ? editingCourse
+                      ? "Saving..."
+                      : "Creating..."
+                    : editingCourse
+                      ? "Save Changes"
+                      : "Create Course"}
 
                 </button>
 
@@ -907,8 +2134,472 @@ function AdminCourses() {
 
       )}
 
+
+
+      {/* ====================================
+          VIEW COURSE MODAL
+      ==================================== */}
+
+      {selectedCourse && (
+
+        <div
+          className="ac-modal-overlay"
+
+          onClick={
+            closeCourseDetails
+          }
+
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            display: "flex",
+            alignItems:
+              "flex-start",
+            justifyContent:
+              "center",
+            overflowY: "auto",
+            padding:
+              "24px 16px",
+            boxSizing:
+              "border-box",
+          }}
+        >
+
+          <div
+            className="ac-modal"
+
+            onClick={(event) =>
+              event.stopPropagation()
+            }
+
+            style={{
+              width: "100%",
+              maxWidth: "720px",
+              maxHeight:
+                "calc(100vh - 48px)",
+              overflowY: "auto",
+              position:
+                "relative",
+            }}
+          >
+
+
+            <div
+              className="ac-modal-header"
+
+              style={{
+                position: "sticky",
+                top: 0,
+                zIndex: 20,
+                background:
+                  "#ffffff",
+                paddingBottom:
+                  "16px",
+              }}
+            >
+
+              <div>
+
+                <h2>
+                  Course Details
+                </h2>
+
+                <p>
+                  Course, lecturer and
+                  lesson information.
+                </p>
+
+              </div>
+
+
+              <button
+                type="button"
+
+                onClick={
+                  closeCourseDetails
+                }
+              >
+
+                <X size={20} />
+
+              </button>
+
+            </div>
+
+
+
+            <div className="ac-form">
+
+
+              <div className="ac-form-group">
+
+                <label>
+                  Course Title
+                </label>
+
+                <input
+                  value={
+                    selectedCourse.title
+                  }
+                  readOnly
+                />
+
+              </div>
+
+
+
+              <div className="ac-form-row">
+
+
+                <div className="ac-form-group">
+
+                  <label>
+                    Database Course ID
+                  </label>
+
+                  <input
+                    value={
+                      selectedCourse.id
+                    }
+                    readOnly
+                  />
+
+                </div>
+
+
+                <div className="ac-form-group">
+
+                  <label>
+                    Batch
+                  </label>
+
+                  <input
+                    value={
+                      selectedCourse.batch
+                    }
+                    readOnly
+                  />
+
+                </div>
+
+              </div>
+
+
+
+              <div className="ac-form-group">
+
+                <label>
+                  Program
+                </label>
+
+                <input
+                  value={
+                    selectedCourse.program
+                  }
+                  readOnly
+                />
+
+              </div>
+
+
+
+              <div className="ac-form-group">
+
+                <label>
+                  Lecturer
+                </label>
+
+                <input
+                  value={
+                    selectedCourse.lecturer
+                  }
+                  readOnly
+                />
+
+              </div>
+
+
+
+              <div className="ac-form-row">
+
+
+                <div className="ac-form-group">
+
+                  <label>
+                    Students
+                  </label>
+
+                  <input
+                    value={
+                      selectedCourse.students
+                    }
+                    readOnly
+                  />
+
+                </div>
+
+
+                <div className="ac-form-group">
+
+                  <label>
+                    Learning Materials
+                  </label>
+
+                  <input
+                    value={
+                      selectedCourse.materials
+                    }
+                    readOnly
+                  />
+
+                </div>
+
+              </div>
+
+
+
+              <div className="ac-form-group">
+
+                <label>
+                  Lessons
+                </label>
+
+                <input
+                  value={
+                    selectedCourse.lessons
+                  }
+                  readOnly
+                />
+
+              </div>
+
+
+
+              <div className="ac-form-group">
+
+                <label>
+                  Main Course Material
+                </label>
+
+                <input
+                  value={
+                    selectedCourse.filePath
+                      ? "Uploaded"
+                      : "Not uploaded"
+                  }
+                  readOnly
+                />
+
+              </div>
+
+
+
+              {/* =================================
+                  LESSONS
+              ================================= */}
+
+              <div className="ac-form-group">
+
+                <label>
+                  Course Lessons
+                </label>
+
+
+                {lessonsLoading && (
+
+                  <div
+                    style={{
+                      padding:
+                        "20px",
+                      textAlign:
+                        "center",
+                      border:
+                        "1px solid #e2e8f0",
+                      borderRadius:
+                        "12px",
+                    }}
+                  >
+
+                    Loading lessons...
+
+                  </div>
+
+                )}
+
+
+
+                {!lessonsLoading &&
+                  lessonsError && (
+
+                  <div
+                    style={{
+                      padding:
+                        "15px",
+                      color:
+                        "#dc2626",
+                    }}
+                  >
+
+                    {lessonsError}
+
+                  </div>
+
+                )}
+
+
+
+                {!lessonsLoading &&
+                  !lessonsError &&
+                  courseLessons.length ===
+                    0 && (
+
+                  <div
+                    style={{
+                      padding:
+                        "20px",
+                      textAlign:
+                        "center",
+                      border:
+                        "1px solid #e2e8f0",
+                      borderRadius:
+                        "12px",
+                      background:
+                        "#f8fafc",
+                    }}
+                  >
+
+                    <BookOpen
+                      size={22}
+                    />
+
+                    <p>
+                      No lessons have been
+                      added to this course
+                      yet.
+                    </p>
+
+                  </div>
+
+                )}
+
+
+
+                {!lessonsLoading &&
+                  !lessonsError &&
+                  courseLessons.length >
+                    0 && (
+
+                  <div
+                    style={{
+                      display:
+                        "flex",
+                      flexDirection:
+                        "column",
+                      gap: "10px",
+                    }}
+                  >
+
+                    {courseLessons.map(
+                      (
+                        lesson,
+                        index
+                      ) => (
+
+                        <div
+                          key={
+                            lesson.id ||
+                            index
+                          }
+
+                          style={{
+                            padding:
+                              "14px",
+                            border:
+                              "1px solid #e2e8f0",
+                            borderRadius:
+                              "12px",
+                            background:
+                              "#f8fafc",
+                          }}
+                        >
+
+                          <strong>
+
+                            Lesson{" "}
+
+                            {lesson.order_number ||
+                              index + 1}
+
+                            :{" "}
+
+                            {lesson.title ||
+                              `Lesson ${
+                                index + 1
+                              }`}
+
+                          </strong>
+
+
+                          {lesson.description && (
+
+                            <p
+                              style={{
+                                marginBottom:
+                                  0,
+                              }}
+                            >
+
+                              {
+                                lesson.description
+                              }
+
+                            </p>
+
+                          )}
+
+                        </div>
+
+                      )
+                    )}
+
+                  </div>
+
+                )}
+
+              </div>
+
+
+
+              <div className="ac-modal-actions">
+
+                <button
+                  type="button"
+                  className="ac-cancel-button"
+
+                  onClick={
+                    closeCourseDetails
+                  }
+                >
+
+                  Close
+
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
     </div>
+
   );
+
 }
 
 
