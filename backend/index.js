@@ -101,6 +101,11 @@ const upload =
    AUTHENTICATE TOKEN
 ========================================= */
 
+/* =========================================
+   AUTHENTICATE TOKEN
+   + MAINTENANCE MODE CHECK
+========================================= */
+
 const authenticateToken = (
     req,
     res,
@@ -131,7 +136,7 @@ const authenticateToken = (
     jwt.verify(
         token,
         process.env.JWT_SECRET,
-        (err, user) => {
+        async (err, user) => {
 
             if (err) {
 
@@ -145,9 +150,81 @@ const authenticateToken = (
             }
 
 
-            req.user = user;
+            try {
 
-            next();
+                /* =================================
+                   MAINTENANCE MODE
+
+                   ADMIN is always allowed.
+                ================================= */
+
+                if (
+                    user.role !==
+                    'ADMIN'
+                ) {
+
+                    const settings =
+                        await pool.query(
+                            `
+                            SELECT
+                                maintenance_mode
+                            FROM system_settings
+                            ORDER BY id ASC
+                            LIMIT 1
+                            `
+                        );
+
+
+                    const maintenanceMode =
+                        settings.rows.length >
+                            0 &&
+                        settings.rows[0]
+                            .maintenance_mode ===
+                            true;
+
+
+                    if (
+                        maintenanceMode
+                    ) {
+
+                        return res
+                            .status(503)
+                            .json({
+                                error:
+                                    'CampusLearn is currently under maintenance. Please try again later.',
+
+                                maintenanceMode:
+                                    true
+                            });
+
+                    }
+
+                }
+
+
+                req.user =
+                    user;
+
+
+                next();
+
+
+            } catch (error) {
+
+                console.error(
+                    'Maintenance Check Error:',
+                    error.message
+                );
+
+
+                return res
+                    .status(500)
+                    .json({
+                        error:
+                            'Server error while checking system availability.'
+                    });
+
+            }
 
         }
     );
@@ -390,6 +467,82 @@ app.post(
                     });
 
             }
+
+            if (!validPassword) {
+
+    return res
+        .status(401)
+        .json({
+            error:
+                'Invalid email or password'
+        });
+
+}
+
+
+/* =========================================
+   MAINTENANCE MODE LOGIN CHECK
+========================================= */
+
+if (
+    user.rows[0].role !==
+    'ADMIN'
+) {
+
+    const settings =
+        await pool.query(
+            `
+            SELECT
+                maintenance_mode
+            FROM system_settings
+            ORDER BY id ASC
+            LIMIT 1
+            `
+        );
+
+
+    const maintenanceMode =
+        settings.rows.length >
+            0 &&
+        settings.rows[0]
+            .maintenance_mode ===
+            true;
+
+
+    if (
+        maintenanceMode
+    ) {
+
+        return res
+            .status(503)
+            .json({
+                error:
+                    'CampusLearn is currently under maintenance. Please try again later.',
+
+                maintenanceMode:
+                    true
+            });
+
+    }
+
+}
+
+
+/* =========================================
+   UPDATE LAST LOGIN
+========================================= */
+
+await pool.query(
+    `
+    UPDATE users
+    SET last_login =
+        CURRENT_TIMESTAMP
+    WHERE id = $1
+    `,
+    [
+        user.rows[0].id
+    ]
+);
 
 
             await pool.query(
@@ -929,29 +1082,211 @@ app.post(
             const {
                 courseTitle,
                 degree,
-                batch
+                batch,
+                lecturerId
             } = req.body;
 
 
-            const file =
-                req.file;
+            /* =====================================
+               VALIDATION
+            ===================================== */
 
-
-            const lecturerId =
-                req.user.user_id;
-
-
-            if (!file) {
+            if (
+                !courseTitle ||
+                !courseTitle.trim()
+            ) {
 
                 return res
                     .status(400)
                     .json({
                         error:
-                            'Please upload a file'
+                            'Course title is required.'
                     });
 
             }
 
+
+            if (
+                !degree ||
+                !degree.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Degree / program is required.'
+                    });
+
+            }
+
+
+            if (
+                !batch ||
+                !batch.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Batch is required.'
+                    });
+
+            }
+
+
+            /* =====================================
+               OPTIONAL COURSE FILE
+            ===================================== */
+
+            const filePath =
+                req.file
+                    ? req.file.path
+                    : null;
+
+
+            /* =====================================
+               DETERMINE LECTURER
+            ===================================== */
+
+            let finalLecturerId =
+                null;
+
+
+            /*
+              Lecturer creates course:
+              automatically assign themselves.
+            */
+
+            if (
+                req.user.role ===
+                'LECTURER'
+            ) {
+
+                finalLecturerId =
+                    Number(
+                        req.user.user_id
+                    );
+
+            }
+
+
+            /*
+              Admin creates course:
+              use lecturer selected in frontend.
+            */
+
+            if (
+                req.user.role ===
+                'ADMIN'
+            ) {
+
+                finalLecturerId =
+                    lecturerId
+                        ? Number(
+                            lecturerId
+                          )
+                        : null;
+
+            }
+
+
+            /* =====================================
+               VALIDATE SELECTED LECTURER
+            ===================================== */
+
+            if (finalLecturerId) {
+
+                if (
+                    !Number.isInteger(
+                        finalLecturerId
+                    )
+                ) {
+
+                    return res
+                        .status(400)
+                        .json({
+                            error:
+                                'Invalid lecturer ID.'
+                        });
+
+                }
+
+
+                const lecturerCheck =
+                    await pool.query(
+                        `
+                        SELECT
+                            id,
+                            name,
+                            email,
+                            role,
+                            is_active
+                        FROM users
+                        WHERE id = $1
+                        `,
+                        [
+                            finalLecturerId
+                        ]
+                    );
+
+
+                if (
+                    lecturerCheck
+                        .rows.length ===
+                    0
+                ) {
+
+                    return res
+                        .status(404)
+                        .json({
+                            error:
+                                'Selected lecturer was not found.'
+                        });
+
+                }
+
+
+                if (
+                    lecturerCheck
+                        .rows[0]
+                        .role !==
+                    'LECTURER'
+                ) {
+
+                    return res
+                        .status(400)
+                        .json({
+                            error:
+                                'Selected user is not a lecturer.'
+                        });
+
+                }
+
+
+                if (
+                    lecturerCheck
+                        .rows[0]
+                        .is_active ===
+                    false
+                ) {
+
+                    return res
+                        .status(400)
+                        .json({
+                            error:
+                                'Selected lecturer account is disabled.'
+                        });
+
+                }
+
+            }
+
+
+            /* =====================================
+               CREATE COURSE
+            ===================================== */
 
             const newCourse =
                 await pool.query(
@@ -975,11 +1310,11 @@ app.post(
                     RETURNING *
                     `,
                     [
-                        courseTitle,
-                        degree,
-                        batch,
-                        file.path,
-                        lecturerId
+                        courseTitle.trim(),
+                        degree.trim(),
+                        batch.trim(),
+                        filePath,
+                        finalLecturerId
                     ]
                 );
 
@@ -988,7 +1323,7 @@ app.post(
                 .status(201)
                 .json({
                     message:
-                        'Module successfully uploaded and saved to database!',
+                        'Course created successfully!',
 
                     course:
                         newCourse.rows[0]
@@ -998,7 +1333,7 @@ app.post(
         } catch (error) {
 
             console.error(
-                'Database Upload Error:',
+                'Create Course Error:',
                 error.message
             );
 
@@ -1007,7 +1342,7 @@ app.post(
                 .status(500)
                 .json({
                     error:
-                        'Server error during upload to database'
+                        'Server error while creating course.'
                 });
 
         }
@@ -1235,6 +1570,653 @@ app.get(
                 .send(
                     'Server Error'
                 );
+
+        }
+
+    }
+);
+
+/* =========================================
+   UPDATE COURSE BY ADMIN
+========================================= */
+
+app.put(
+    '/admin/courses/:id',
+    authenticateToken,
+    authorizeRoles('ADMIN'),
+    upload.single('file'),
+    async (req, res) => {
+
+        try {
+
+            const {
+                id
+            } = req.params;
+
+
+            const {
+                courseTitle,
+                degree,
+                batch,
+                lecturerId
+            } = req.body;
+
+
+            /* ==============================
+               CHECK COURSE EXISTS
+            ============================== */
+
+            const existingCourse =
+                await pool.query(
+                    `
+                    SELECT *
+                    FROM courses
+                    WHERE id = $1
+                    `,
+                    [
+                        id
+                    ]
+                );
+
+
+            if (
+                existingCourse.rows.length ===
+                0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Course not found.'
+                    });
+
+            }
+
+
+            /* ==============================
+               VALIDATION
+            ============================== */
+
+            if (
+                !courseTitle ||
+                !courseTitle.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Course title is required.'
+                    });
+
+            }
+
+
+            if (
+                !degree ||
+                !degree.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Program is required.'
+                    });
+
+            }
+
+
+            if (
+                !batch ||
+                !batch.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Batch is required.'
+                    });
+
+            }
+
+
+            /* ==============================
+               LECTURER
+            ============================== */
+
+            let finalLecturerId =
+                lecturerId
+                    ? Number(
+                        lecturerId
+                      )
+                    : null;
+
+
+            if (finalLecturerId) {
+
+                const lecturerCheck =
+                    await pool.query(
+                        `
+                        SELECT
+                            id,
+                            role,
+                            is_active
+                        FROM users
+                        WHERE id = $1
+                        `,
+                        [
+                            finalLecturerId
+                        ]
+                    );
+
+
+                if (
+                    lecturerCheck.rows.length ===
+                    0
+                ) {
+
+                    return res
+                        .status(404)
+                        .json({
+                            error:
+                                'Selected lecturer was not found.'
+                        });
+
+                }
+
+
+                if (
+                    lecturerCheck.rows[0].role !==
+                    'LECTURER'
+                ) {
+
+                    return res
+                        .status(400)
+                        .json({
+                            error:
+                                'Selected user is not a lecturer.'
+                        });
+
+                }
+
+
+                if (
+                    lecturerCheck.rows[0]
+                        .is_active ===
+                    false
+                ) {
+
+                    return res
+                        .status(400)
+                        .json({
+                            error:
+                                'Selected lecturer is disabled.'
+                        });
+
+                }
+
+            }
+
+
+            /* ==============================
+               FILE
+
+               If admin uploads a new file,
+               replace old file path.
+
+               Otherwise keep old file.
+            ============================== */
+
+            let finalFilePath =
+                existingCourse
+                    .rows[0]
+                    .file_path;
+
+
+            if (req.file) {
+
+                finalFilePath =
+                    req.file.path;
+
+            }
+
+
+            /* ==============================
+               UPDATE COURSE
+            ============================== */
+
+            const updatedCourse =
+                await pool.query(
+                    `
+                    UPDATE courses
+
+                    SET
+                        title = $1,
+                        degree = $2,
+                        batch = $3,
+                        lecturer_id = $4,
+                        file_path = $5
+
+                    WHERE id = $6
+
+                    RETURNING *
+                    `,
+                    [
+                        courseTitle.trim(),
+                        degree.trim(),
+                        batch.trim(),
+                        finalLecturerId,
+                        finalFilePath,
+                        id
+                    ]
+                );
+
+
+            res.json({
+                message:
+                    'Course updated successfully!',
+
+                course:
+                    updatedCourse.rows[0]
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Update Course Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while updating course.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   DELETE COURSE BY ADMIN
+========================================= */
+
+/* =========================================
+   DELETE COURSE BY ADMIN
+========================================= */
+
+app.delete(
+    '/admin/courses/:id',
+    authenticateToken,
+    authorizeRoles('ADMIN'),
+    async (req, res) => {
+
+        const client =
+            await pool.connect();
+
+        try {
+
+            const {
+                id
+            } = req.params;
+
+
+            /* ==============================
+               START TRANSACTION
+            ============================== */
+
+            await client.query(
+                'BEGIN'
+            );
+
+
+            /* ==============================
+               CHECK COURSE EXISTS
+            ============================== */
+
+            const existingCourse =
+                await client.query(
+                    `
+                    SELECT *
+                    FROM courses
+                    WHERE id = $1
+                    `,
+                    [
+                        id
+                    ]
+                );
+
+
+            if (
+                existingCourse.rows.length ===
+                0
+            ) {
+
+                await client.query(
+                    'ROLLBACK'
+                );
+
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Course not found.'
+                    });
+
+            }
+
+
+            const course =
+                existingCourse.rows[0];
+
+
+            /* ==============================
+               DELETE COURSE LESSONS
+            ============================== */
+
+            await client.query(
+                `
+                DELETE FROM lessons
+                WHERE course_id = $1
+                `,
+                [
+                    id
+                ]
+            );
+
+
+            /* ==============================
+               DELETE COURSE
+            ============================== */
+
+            const deletedCourse =
+                await client.query(
+                    `
+                    DELETE FROM courses
+                    WHERE id = $1
+
+                    RETURNING *
+                    `,
+                    [
+                        id
+                    ]
+                );
+
+
+            /* ==============================
+               COMMIT
+            ============================== */
+
+            await client.query(
+                'COMMIT'
+            );
+
+
+            /* ==============================
+               DELETE MAIN COURSE FILE
+
+               Do this AFTER database delete.
+               A file problem should not stop
+               PostgreSQL from deleting course.
+            ============================== */
+
+            if (
+                course.file_path &&
+                fs.existsSync(
+                    course.file_path
+                )
+            ) {
+
+                try {
+
+                    fs.unlinkSync(
+                        course.file_path
+                    );
+
+                } catch (fileError) {
+
+                    console.error(
+                        'Course file cleanup warning:',
+                        fileError.message
+                    );
+
+                }
+
+            }
+
+
+            /* ==============================
+               SUCCESS
+            ============================== */
+
+            res.json({
+
+                message:
+                    'Course deleted successfully!',
+
+                course:
+                    deletedCourse.rows[0]
+
+            });
+
+
+        } catch (error) {
+
+            try {
+
+                await client.query(
+                    'ROLLBACK'
+                );
+
+            } catch (
+                rollbackError
+            ) {
+
+                console.error(
+                    'Rollback Error:',
+                    rollbackError.message
+                );
+
+            }
+
+
+            console.error(
+                'Delete Course Error:',
+                error.message
+            );
+
+            console.error(
+                'PostgreSQL Error Code:',
+                error.code
+            );
+
+
+            if (
+                error.code ===
+                '23503'
+            ) {
+
+                return res
+                    .status(409)
+                    .json({
+                        error:
+                            'This course has related records and cannot be deleted yet.'
+                    });
+
+            }
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while deleting course.'
+                });
+
+
+        } finally {
+
+            client.release();
+
+        }
+
+    }
+);
+
+/* =========================================
+   ADMIN COURSE SUMMARY
+========================================= */
+
+app.get(
+    '/admin/courses/summary',
+    authenticateToken,
+    authorizeRoles('ADMIN'),
+    async (req, res) => {
+
+        try {
+
+            const courses =
+                await pool.query(
+                    `
+                    SELECT
+                        c.id,
+                        c.title,
+                        c.degree,
+                        c.batch,
+                        c.file_path,
+                        c.lecturer_id,
+
+
+                        /* =====================
+                           LECTURER NAME
+                        ===================== */
+
+                        COALESCE(
+                            lecturer.name,
+                            'Not assigned'
+                        )
+                        AS lecturer_name,
+
+
+                        /* =====================
+                           MATCHING STUDENTS
+                        ===================== */
+
+                        (
+                            SELECT COUNT(*)
+
+                            FROM users student
+
+                            WHERE
+                                student.role = 'STUDENT'
+
+                                AND student.degree =
+                                    c.degree
+
+                                AND student.batch =
+                                    c.batch
+                        )::int
+                        AS student_count,
+
+
+                        /* =====================
+                           LESSONS
+                        ===================== */
+
+                        (
+                            SELECT COUNT(*)
+
+                            FROM lessons l
+
+                            WHERE
+                                l.course_id =
+                                    c.id
+                        )::int
+                        AS lesson_count,
+
+
+                        /* =====================
+                           TOTAL MATERIALS
+
+                           Course file = 1
+                           Each lesson = 1
+                        ===================== */
+
+                        (
+                            (
+                                CASE
+
+                                    WHEN
+                                        c.file_path
+                                        IS NOT NULL
+
+                                        AND
+                                        c.file_path <> ''
+
+                                    THEN 1
+
+                                    ELSE 0
+
+                                END
+                            )
+
+                            +
+
+                            (
+                                SELECT COUNT(*)
+
+                                FROM lessons l
+
+                                WHERE
+                                    l.course_id =
+                                        c.id
+                            )
+                        )::int
+                        AS material_count
+
+
+                    FROM courses c
+
+
+                    LEFT JOIN users lecturer
+
+                        ON lecturer.id =
+                           c.lecturer_id
+
+
+                    ORDER BY
+                        c.id ASC
+                    `
+                );
+
+
+            res.json(
+                courses.rows
+            );
+
+
+        } catch (err) {
+
+            console.error(
+                'Admin Course Summary Error:',
+                err.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server Error'
+                });
 
         }
 
@@ -2049,6 +3031,237 @@ app.get(
     }
 );
 
+/* =========================================
+   ADMIN STUDENT ACADEMIC SUMMARY
+========================================= */
+
+app.get(
+    '/admin/students/academic-summary',
+    authenticateToken,
+    authorizeRoles('ADMIN'),
+    async (req, res) => {
+
+        try {
+
+            const students =
+                await pool.query(
+                    `
+                    WITH student_stats AS (
+
+                        SELECT
+                            u.id,
+                            u.name,
+                            u.email,
+                            u.degree,
+                            u.batch,
+                            u.last_login,
+                            u.is_active,
+
+
+                            /* -------------------------
+                               MATCHING COURSES
+                            ------------------------- */
+
+                            (
+                                SELECT COUNT(*)
+
+                                FROM courses c
+
+                                WHERE
+                                    c.degree = u.degree
+                                    AND c.batch = u.batch
+                            )::int
+                            AS courses,
+
+
+                            /* -------------------------
+                               TOTAL ASSIGNMENTS
+                            ------------------------- */
+
+                            (
+                                SELECT COUNT(*)
+
+                                FROM assignments a
+
+                                WHERE
+                                    a.degree = u.degree
+                                    AND a.batch = u.batch
+                            )::int
+                            AS total_assignments,
+
+
+                            /* -------------------------
+                               SUBMITTED ASSIGNMENTS
+                            ------------------------- */
+
+                            (
+                                SELECT
+                                    COUNT(
+                                        DISTINCT s.assignment_id
+                                    )
+
+                                FROM submissions s
+
+                                JOIN assignments a
+                                    ON a.id =
+                                       s.assignment_id
+
+                                WHERE
+                                    s.student_id = u.id
+
+                                    AND a.degree =
+                                        u.degree
+
+                                    AND a.batch =
+                                        u.batch
+                            )::int
+                            AS submitted_assignments,
+
+
+                            /* -------------------------
+                               GRADED ASSIGNMENTS
+                            ------------------------- */
+
+                            (
+                                SELECT COUNT(*)
+
+                                FROM submissions s
+
+                                JOIN assignments a
+                                    ON a.id =
+                                       s.assignment_id
+
+                                WHERE
+                                    s.student_id = u.id
+
+                                    AND s.grade
+                                        IS NOT NULL
+
+                                    AND a.degree =
+                                        u.degree
+
+                                    AND a.batch =
+                                        u.batch
+                            )::int
+                            AS graded_assignments,
+
+
+                            /* -------------------------
+                               AVERAGE SCORE
+                            ------------------------- */
+
+                            COALESCE(
+
+                                (
+                                    SELECT
+                                        ROUND(
+                                            AVG(
+
+                                                CASE
+
+                                                    WHEN
+                                                        s.grade::text
+                                                        ~
+                                                        '^[0-9]+([.][0-9]+)?$'
+
+                                                    THEN
+                                                        s.grade::text::numeric
+
+                                                    ELSE NULL
+
+                                                END
+
+                                            ),
+                                            2
+                                        )
+
+                                    FROM submissions s
+
+                                    JOIN assignments a
+                                        ON a.id =
+                                           s.assignment_id
+
+                                    WHERE
+                                        s.student_id =
+                                            u.id
+
+                                        AND s.grade
+                                            IS NOT NULL
+
+                                        AND a.degree =
+                                            u.degree
+
+                                        AND a.batch =
+                                            u.batch
+                                ),
+
+                                0
+
+                            )::float
+                            AS average_score
+
+
+                        FROM users u
+
+                        WHERE
+                            u.role = 'STUDENT'
+                    )
+
+
+                    SELECT
+                        *,
+
+                        CASE
+
+                            WHEN
+                                total_assignments = 0
+
+                            THEN 0
+
+                            ELSE
+
+                                ROUND(
+                                    (
+                                        submitted_assignments::numeric
+                                        /
+                                        total_assignments
+                                    ) * 100
+                                )::int
+
+                        END
+                        AS progress
+
+                    FROM student_stats
+
+                    ORDER BY id ASC
+                    `
+                );
+
+
+            res.json(
+                students.rows
+            );
+
+
+        } catch (err) {
+
+            console.error(
+                'Admin Student Academic Summary Error:',
+                err.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server Error'
+                });
+
+        }
+
+    }
+);
 
 /* =========================================
    CREATE USER BY ADMIN
@@ -2805,6 +4018,1246 @@ app.delete(
     }
 );
 
+/* =========================================
+   ADMIN REPORTS & ANALYTICS
+========================================= */
+
+app.get(
+    '/admin/reports/overview',
+    authenticateToken,
+    authorizeRoles('ADMIN'),
+    async (req, res) => {
+
+        try {
+
+            /* =====================================
+               RUN REPORT QUERIES
+            ===================================== */
+
+            const [
+                userStatsResult,
+                courseStatsResult,
+                averageScoreResult,
+                assignmentCompletionResult,
+                fullCompletionResult,
+                courseEnrollmentResult,
+                recentActivityResult
+            ] = await Promise.all([
+
+
+                /* =================================
+                   USER COUNTS
+                ================================= */
+
+                pool.query(
+                    `
+                    SELECT
+
+                        COUNT(*)::int
+                            AS total_users,
+
+                        COUNT(*) FILTER (
+                            WHERE role = 'STUDENT'
+                        )::int
+                            AS students,
+
+                        COUNT(*) FILTER (
+                            WHERE role = 'LECTURER'
+                        )::int
+                            AS lecturers,
+
+                        COUNT(*) FILTER (
+                            WHERE role = 'ADMIN'
+                        )::int
+                            AS administrators,
+
+                        COUNT(*) FILTER (
+                            WHERE COALESCE(
+                                is_active,
+                                TRUE
+                            ) = TRUE
+                        )::int
+                            AS active_accounts
+
+                    FROM users
+                    `
+                ),
+
+
+                /* =================================
+                   COURSE COUNT
+                ================================= */
+
+                pool.query(
+                    `
+                    SELECT
+                        COUNT(*)::int
+                            AS active_courses
+                    FROM courses
+                    `
+                ),
+
+
+                /* =================================
+                   AVERAGE STUDENT SCORE
+                ================================= */
+
+                pool.query(
+                    `
+                    SELECT
+
+                        COALESCE(
+                            ROUND(
+                                AVG(
+                                    CASE
+
+                                        WHEN
+                                            grade::text
+                                            ~
+                                            '^[0-9]+([.][0-9]+)?$'
+
+                                        THEN
+                                            grade::text::numeric
+
+                                        ELSE
+                                            NULL
+
+                                    END
+                                ),
+                                2
+                            ),
+                            0
+                        )::float
+                            AS average_score
+
+                    FROM submissions
+
+                    WHERE
+                        grade IS NOT NULL
+                    `
+                ),
+
+
+                /* =================================
+                   ASSIGNMENT COMPLETION
+
+                   Expected:
+                   Every active student matched
+                   to every assignment for their
+                   degree + batch.
+
+                   Actual:
+                   Their submitted assignments.
+                ================================= */
+
+                pool.query(
+                    `
+                    WITH expected AS (
+
+                        SELECT
+                            COUNT(*)::numeric
+                                AS total_expected
+
+                        FROM assignments a
+
+                        JOIN users u
+                            ON u.role =
+                               'STUDENT'
+
+                            AND u.degree =
+                                a.degree
+
+                            AND u.batch =
+                                a.batch
+
+                            AND COALESCE(
+                                u.is_active,
+                                TRUE
+                            ) = TRUE
+
+                    ),
+
+                    actual AS (
+
+                        SELECT
+
+                            COUNT(
+                                DISTINCT (
+                                    s.assignment_id,
+                                    s.student_id
+                                )
+                            )::numeric
+                                AS total_submitted
+
+                        FROM submissions s
+
+                        JOIN assignments a
+                            ON a.id =
+                               s.assignment_id
+
+                        JOIN users u
+                            ON u.id =
+                               s.student_id
+
+                        WHERE
+                            u.role =
+                                'STUDENT'
+
+                            AND u.degree =
+                                a.degree
+
+                            AND u.batch =
+                                a.batch
+
+                            AND COALESCE(
+                                u.is_active,
+                                TRUE
+                            ) = TRUE
+
+                    )
+
+                    SELECT
+
+                        CASE
+
+                            WHEN
+                                expected.total_expected =
+                                0
+
+                            THEN 0
+
+                            ELSE
+
+                                ROUND(
+                                    (
+                                        actual.total_submitted
+                                        /
+                                        expected.total_expected
+                                    ) * 100
+                                )::int
+
+                        END
+                            AS assignment_completion
+
+                    FROM expected,
+                         actual
+                    `
+                ),
+
+
+                /* =================================
+                   FULL ASSIGNMENT COMPLETION
+
+                   Percentage of active students
+                   who submitted every assignment
+                   assigned to their degree/batch.
+                ================================= */
+
+                pool.query(
+                    `
+                    WITH student_stats AS (
+
+                        SELECT
+
+                            u.id,
+
+                            (
+                                SELECT
+                                    COUNT(*)
+
+                                FROM assignments a
+
+                                WHERE
+                                    a.degree =
+                                        u.degree
+
+                                    AND a.batch =
+                                        u.batch
+                            )::int
+                                AS total_assignments,
+
+
+                            (
+                                SELECT
+                                    COUNT(
+                                        DISTINCT
+                                        s.assignment_id
+                                    )
+
+                                FROM submissions s
+
+                                JOIN assignments a
+                                    ON a.id =
+                                       s.assignment_id
+
+                                WHERE
+                                    s.student_id =
+                                        u.id
+
+                                    AND a.degree =
+                                        u.degree
+
+                                    AND a.batch =
+                                        u.batch
+                            )::int
+                                AS submitted_assignments
+
+
+                        FROM users u
+
+                        WHERE
+                            u.role =
+                                'STUDENT'
+
+                            AND COALESCE(
+                                u.is_active,
+                                TRUE
+                            ) = TRUE
+
+                    )
+
+
+                    SELECT
+
+                        CASE
+
+                            WHEN
+                                COUNT(*) FILTER (
+                                    WHERE
+                                        total_assignments >
+                                        0
+                                ) = 0
+
+                            THEN 0
+
+                            ELSE
+
+                                ROUND(
+
+                                    (
+                                        COUNT(*) FILTER (
+                                            WHERE
+                                                total_assignments >
+                                                0
+
+                                                AND
+
+                                                submitted_assignments >=
+                                                total_assignments
+                                        )::numeric
+
+                                        /
+
+                                        COUNT(*) FILTER (
+                                            WHERE
+                                                total_assignments >
+                                                0
+                                        )
+                                    )
+
+                                    * 100
+
+                                )::int
+
+                        END
+                            AS full_completion
+
+                    FROM student_stats
+                    `
+                ),
+
+
+                /* =================================
+                   COURSE ENROLLMENT
+
+                   Student matching is based on
+                   course degree + batch, matching
+                   your existing application logic.
+                ================================= */
+
+                pool.query(
+                    `
+                    WITH course_counts AS (
+
+                        SELECT
+
+                            c.id,
+
+                            c.title,
+
+                            c.degree,
+
+                            c.batch,
+
+                            COUNT(
+                                u.id
+                            )::int
+                                AS students
+
+
+                        FROM courses c
+
+
+                        LEFT JOIN users u
+
+                            ON u.role =
+                               'STUDENT'
+
+                            AND u.degree =
+                                c.degree
+
+                            AND u.batch =
+                                c.batch
+
+                            AND COALESCE(
+                                u.is_active,
+                                TRUE
+                            ) = TRUE
+
+
+                        GROUP BY
+
+                            c.id,
+                            c.title,
+                            c.degree,
+                            c.batch
+
+                    ),
+
+
+                    maximum AS (
+
+                        SELECT
+
+                            GREATEST(
+                                MAX(students),
+                                1
+                            )::numeric
+                                AS max_students
+
+                        FROM course_counts
+
+                    )
+
+
+                    SELECT
+
+                        cc.id,
+
+                        cc.title
+                            AS name,
+
+                        cc.degree,
+
+                        cc.batch,
+
+                        cc.students,
+
+                        ROUND(
+                            (
+                                cc.students::numeric
+                                /
+                                maximum.max_students
+                            ) * 100
+                        )::int
+                            AS percentage
+
+
+                    FROM course_counts cc
+
+                    CROSS JOIN maximum
+
+
+                    ORDER BY
+
+                        cc.students DESC,
+
+                        cc.id ASC
+
+
+                    LIMIT 8
+                    `
+                ),
+
+
+                /* =================================
+                   RECENT REAL ACTIVITY
+
+                   Current database does not have
+                   created_at for users/courses.
+
+                   So use timestamps that really
+                   exist:
+                   - assignment submissions
+                   - user logins
+                ================================= */
+
+                pool.query(
+                    `
+                    SELECT *
+
+                    FROM (
+
+                        SELECT
+
+                            'SUBMISSION'
+                                AS event_type,
+
+                            'Assignment submitted'
+                                AS title,
+
+                            u.name
+                            ||
+                            ' submitted "'
+                            ||
+                            a.title
+                            ||
+                            '".'
+                                AS description,
+
+                            s.submitted_at
+                                AS event_time
+
+
+                        FROM submissions s
+
+                        JOIN users u
+                            ON u.id =
+                               s.student_id
+
+                        JOIN assignments a
+                            ON a.id =
+                               s.assignment_id
+
+
+                        WHERE
+                            s.submitted_at
+                            IS NOT NULL
+
+
+
+                        UNION ALL
+
+
+
+                        SELECT
+
+                            'LOGIN'
+                                AS event_type,
+
+                            'User login'
+                                AS title,
+
+                            u.name
+                            ||
+                            ' logged in to CampusLearn.'
+                                AS description,
+
+                            u.last_login
+                                AS event_time
+
+
+                        FROM users u
+
+                        WHERE
+                            u.last_login
+                            IS NOT NULL
+
+                    )
+                    AS activity
+
+
+                    ORDER BY
+                        event_time DESC
+
+
+                    LIMIT 8
+                    `
+                )
+
+            ]);
+
+
+            /* =====================================
+               EXTRACT RESULTS
+            ===================================== */
+
+            const userStats =
+                userStatsResult.rows[0];
+
+
+            const courseStats =
+                courseStatsResult.rows[0];
+
+
+            const averageScore =
+                Number(
+                    averageScoreResult
+                        .rows[0]
+                        .average_score
+                ) || 0;
+
+
+            const assignmentCompletion =
+                Number(
+                    assignmentCompletionResult
+                        .rows[0]
+                        .assignment_completion
+                ) || 0;
+
+
+            const fullCompletion =
+                Number(
+                    fullCompletionResult
+                        .rows[0]
+                        .full_completion
+                ) || 0;
+
+
+            /* =====================================
+               SEND REPORT DATA
+            ===================================== */
+
+            res.json({
+
+                summary: {
+
+                    total_users:
+                        Number(
+                            userStats.total_users
+                        ) || 0,
+
+                    students:
+                        Number(
+                            userStats.students
+                        ) || 0,
+
+                    lecturers:
+                        Number(
+                            userStats.lecturers
+                        ) || 0,
+
+                    administrators:
+                        Number(
+                            userStats.administrators
+                        ) || 0,
+
+                    active_accounts:
+                        Number(
+                            userStats.active_accounts
+                        ) || 0,
+
+                    active_courses:
+                        Number(
+                            courseStats.active_courses
+                        ) || 0,
+
+                    average_score:
+                        averageScore
+
+                },
+
+
+                user_distribution: {
+
+                    students:
+                        Number(
+                            userStats.students
+                        ) || 0,
+
+                    lecturers:
+                        Number(
+                            userStats.lecturers
+                        ) || 0,
+
+                    administrators:
+                        Number(
+                            userStats.administrators
+                        ) || 0,
+
+                    active_accounts:
+                        Number(
+                            userStats.active_accounts
+                        ) || 0
+
+                },
+
+
+                academic_performance: {
+
+                    average_score:
+                        averageScore,
+
+                    assignment_completion:
+                        assignmentCompletion,
+
+                    full_assignment_completion:
+                        fullCompletion
+
+                },
+
+
+                course_enrollment:
+
+                    courseEnrollmentResult
+                        .rows
+                        .map(
+                            (course) => ({
+
+                                id:
+                                    course.id,
+
+                                name:
+                                    course.name,
+
+                                degree:
+                                    course.degree,
+
+                                batch:
+                                    course.batch,
+
+                                students:
+                                    Number(
+                                        course.students
+                                    ) || 0,
+
+                                percentage:
+                                    Number(
+                                        course.percentage
+                                    ) || 0
+
+                            })
+                        ),
+
+
+                recent_activity:
+
+                    recentActivityResult
+                        .rows
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Admin Reports Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while generating reports.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   ADMIN SYSTEM SETTINGS
+========================================= */
+
+
+/* =========================================
+   GET SYSTEM SETTINGS
+========================================= */
+
+app.get(
+    '/admin/settings',
+    authenticateToken,
+    authorizeRoles('ADMIN'),
+    async (req, res) => {
+
+        try {
+
+            const result =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        system_name,
+                        contact_email,
+                        current_semester,
+                        academic_year,
+                        email_notifications,
+                        assignment_alerts,
+                        maintenance_mode,
+                        updated_at
+
+                    FROM system_settings
+
+                    ORDER BY id ASC
+
+                    LIMIT 1
+                    `
+                );
+
+
+            if (
+                result.rows.length === 0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'System settings were not found.'
+                    });
+
+            }
+
+
+            res.json(
+                result.rows[0]
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                'Get System Settings Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while loading system settings.'
+                });
+
+        }
+
+    }
+);
+
+
+
+/* =========================================
+   UPDATE SYSTEM SETTINGS
+========================================= */
+
+app.put(
+    '/admin/settings',
+    authenticateToken,
+    authorizeRoles('ADMIN'),
+    async (req, res) => {
+
+        try {
+
+            const {
+                systemName,
+                contactEmail,
+                semester,
+                academicYear,
+                emailNotifications,
+                assignmentAlerts,
+                maintenanceMode
+            } = req.body;
+
+
+            /* =====================================
+               VALIDATION
+            ===================================== */
+
+            if (
+                !systemName ||
+                !systemName.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'System name is required.'
+                    });
+
+            }
+
+
+            if (
+                !contactEmail ||
+                !contactEmail.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Contact email is required.'
+                    });
+
+            }
+
+
+            if (
+                !semester ||
+                !semester.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Current semester is required.'
+                    });
+
+            }
+
+
+            if (
+                !academicYear ||
+                !String(
+                    academicYear
+                ).trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Academic year is required.'
+                    });
+
+            }
+
+
+            /* =====================================
+               FIND SETTINGS ROW
+            ===================================== */
+
+            const existingSettings =
+                await pool.query(
+                    `
+                    SELECT id
+                    FROM system_settings
+                    ORDER BY id ASC
+                    LIMIT 1
+                    `
+                );
+
+
+            if (
+                existingSettings.rows.length ===
+                0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'System settings were not found.'
+                    });
+
+            }
+
+
+            const settingsId =
+                existingSettings
+                    .rows[0]
+                    .id;
+
+
+            /* =====================================
+               UPDATE
+            ===================================== */
+
+            const updatedSettings =
+                await pool.query(
+                    `
+                    UPDATE system_settings
+
+                    SET
+                        system_name = $1,
+                        contact_email = $2,
+                        current_semester = $3,
+                        academic_year = $4,
+                        email_notifications = $5,
+                        assignment_alerts = $6,
+                        maintenance_mode = $7,
+                        updated_at = CURRENT_TIMESTAMP
+
+                    WHERE id = $8
+
+                    RETURNING *
+                    `,
+                    [
+                        systemName.trim(),
+
+                        contactEmail.trim(),
+
+                        semester.trim(),
+
+                        String(
+                            academicYear
+                        ).trim(),
+
+                        emailNotifications ===
+                            true,
+
+                        assignmentAlerts ===
+                            true,
+
+                        maintenanceMode ===
+                            true,
+
+                        settingsId
+                    ]
+                );
+
+
+            res.json({
+                message:
+                    'System settings updated successfully!',
+
+                settings:
+                    updatedSettings.rows[0]
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Update System Settings Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while updating system settings.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   ADMIN CHANGE PASSWORD
+========================================= */
+
+app.put(
+    '/admin/change-password',
+    authenticateToken,
+    authorizeRoles('ADMIN'),
+    async (req, res) => {
+
+        try {
+
+            const {
+                currentPassword,
+                newPassword
+            } = req.body;
+
+
+            const adminId =
+                req.user.user_id;
+
+
+            /* =====================================
+               REQUIRED FIELDS
+            ===================================== */
+
+            if (
+                !currentPassword ||
+                !newPassword
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Current password and new password are required.'
+                    });
+
+            }
+
+
+            /* =====================================
+               NEW PASSWORD LENGTH
+            ===================================== */
+
+            if (
+                newPassword.length < 6
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'New password must contain at least 6 characters.'
+                    });
+
+            }
+
+
+            /* =====================================
+               CURRENT AND NEW MUST DIFFER
+            ===================================== */
+
+            if (
+                currentPassword ===
+                newPassword
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'New password must be different from your current password.'
+                    });
+
+            }
+
+
+            /* =====================================
+               GET ADMIN
+            ===================================== */
+
+            const admin =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        password_hash,
+                        role
+                    FROM users
+                    WHERE id = $1
+                    `,
+                    [
+                        adminId
+                    ]
+                );
+
+
+            if (
+                admin.rows.length === 0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Administrator account not found.'
+                    });
+
+            }
+
+
+            if (
+                admin.rows[0].role !==
+                'ADMIN'
+            ) {
+
+                return res
+                    .status(403)
+                    .json({
+                        error:
+                            'Access denied.'
+                    });
+
+            }
+
+
+            /* =====================================
+               CHECK CURRENT PASSWORD
+            ===================================== */
+
+            const validPassword =
+                await bcrypt.compare(
+                    currentPassword,
+                    admin.rows[0]
+                        .password_hash
+                );
+
+
+            if (!validPassword) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Current password is incorrect.'
+                    });
+
+            }
+
+
+            /* =====================================
+               HASH NEW PASSWORD
+            ===================================== */
+
+            const salt =
+                await bcrypt.genSalt(
+                    10
+                );
+
+
+            const hashedPassword =
+                await bcrypt.hash(
+                    newPassword,
+                    salt
+                );
+
+
+            /* =====================================
+               UPDATE PASSWORD
+            ===================================== */
+
+            await pool.query(
+                `
+                UPDATE users
+
+                SET
+                    password_hash = $1
+
+                WHERE id = $2
+                `,
+                [
+                    hashedPassword,
+                    adminId
+                ]
+            );
+
+
+            /* =====================================
+               SUCCESS
+            ===================================== */
+
+            res.json({
+                message:
+                    'Password changed successfully!'
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Admin Change Password Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while changing password.'
+                });
+
+        }
+
+    }
+);
 
 /* =========================================
    SERVER START
