@@ -1,9 +1,13 @@
 import {
+  useCallback,
   useEffect,
   useState,
 } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+} from "react-router-dom";
+
 import axios from "axios";
 
 import {
@@ -26,14 +30,18 @@ import "../styles/adminDashboard.css";
 
 function AdminDashboard() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
 
   /* ========================================
      LOGGED-IN ADMIN
   ======================================== */
 
-  const [admin, setAdmin] = useState({
+  const [
+    admin,
+    setAdmin,
+  ] = useState({
     name: "Admin",
     email: "",
     role: "ADMIN",
@@ -41,178 +49,614 @@ function AdminDashboard() {
 
 
   /* ========================================
-     GET LOGGED-IN ADMIN
+     REPORT / DASHBOARD DATA
   ======================================== */
 
-  useEffect(() => {
-
-    const fetchAdmin = async () => {
-
-      try {
-
-        const token =
-          localStorage.getItem("token");
+  const [
+    reportData,
+    setReportData,
+  ] = useState(null);
 
 
-        if (!token) {
-
-          navigate("/login");
-
-          return;
-
-        }
+  const [
+    recentUsers,
+    setRecentUsers,
+  ] = useState([]);
 
 
-        const response =
-          await axios.get(
-            "http://localhost:5000/me",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
 
-        setAdmin(response.data);
+  const [
+    error,
+    setError,
+  ] = useState("");
 
-      } catch (error) {
 
-        console.error(
-          "Failed to load admin dashboard user:",
-          error
-        );
+  /* ========================================
+     AUTH ERROR
+  ======================================== */
 
+  const handleAuthError =
+    useCallback(
+      (error) => {
 
         if (
           error.response?.status === 401 ||
           error.response?.status === 403
         ) {
 
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          localStorage.removeItem(
+            "user"
+          );
 
           navigate("/login");
 
+          return true;
+
         }
 
+
+        return false;
+
+      },
+      [navigate]
+    );
+
+
+  /* ========================================
+     INITIALS
+  ======================================== */
+
+  const getInitials =
+    (name = "") => {
+
+      const words =
+        name
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean);
+
+
+      if (words.length === 0) {
+
+        return "U";
+
       }
+
+
+      if (words.length === 1) {
+
+        return words[0]
+          .charAt(0)
+          .toUpperCase();
+
+      }
+
+
+      return (
+        words[0]
+          .charAt(0) +
+        words[
+          words.length - 1
+        ].charAt(0)
+      ).toUpperCase();
 
     };
 
 
-    fetchAdmin();
+  /* ========================================
+     FORMAT ROLE
+  ======================================== */
 
-  }, [navigate]);
+  const formatRole =
+    (role) => {
 
+      if (!role) {
 
-  /*
-    Temporary Admin Dashboard data.
+        return "User";
 
-    Later we will load this from PostgreSQL.
-  */
-
-  const stats = [
-    {
-      label: "Total Users",
-      value: "326",
-      icon: Users,
-      className: "ad-stat-teal",
-    },
-    {
-      label: "Students",
-      value: "248",
-      icon: GraduationCap,
-      className: "ad-stat-purple",
-    },
-    {
-      label: "Lecturers",
-      value: "32",
-      icon: Users,
-      className: "ad-stat-blue",
-    },
-    {
-      label: "Active Courses",
-      value: "18",
-      icon: BookOpen,
-      className: "ad-stat-orange",
-    },
-  ];
-
-
-  const userDistribution = [
-    {
-      label: "Students",
-      count: 248,
-      description:
-        "Registered student accounts",
-      icon: GraduationCap,
-      className: "ad-role-student",
-    },
-    {
-      label: "Lecturers",
-      count: 32,
-      description:
-        "Teaching staff accounts",
-      icon: Users,
-      className: "ad-role-lecturer",
-    },
-    {
-      label: "Administrators",
-      count: 4,
-      description:
-        "System administrator accounts",
-      icon: ShieldCheck,
-      className: "ad-role-admin",
-    },
-  ];
-
-
-  const recentUsers = [
-    {
-      name: "Movinya Perera",
-      initials: "MP",
-      email: "movinya@example.com",
-      role: "Student",
-      joined: "Sep 23, 2026",
-    },
-    {
-      name: "Hasith Witharama",
-      initials: "HW",
-      email: "hasith@example.com",
-      role: "Lecturer",
-      joined: "Sep 22, 2026",
-    },
-    {
-      name: "Amaya Silva",
-      initials: "AS",
-      email: "amaya@example.com",
-      role: "Student",
-      joined: "Sep 21, 2026",
-    },
-    {
-      name: "System Administrator",
-      initials: "AD",
-      email: "admin@campuslearn.lk",
-      role: "Admin",
-      joined: "Sep 20, 2026",
-    },
-  ];
-
-
-  const currentDate =
-    new Date().toLocaleDateString(
-      "en-US",
-      {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
       }
+
+
+      const upper =
+        role.toUpperCase();
+
+
+      if (upper === "ADMIN") {
+
+        return "Admin";
+
+      }
+
+
+      if (upper === "LECTURER") {
+
+        return "Lecturer";
+
+      }
+
+
+      if (upper === "STUDENT") {
+
+        return "Student";
+
+      }
+
+
+      return role;
+
+    };
+
+
+  /* ========================================
+     FORMAT LAST LOGIN
+  ======================================== */
+
+  const formatLastLogin =
+    (value) => {
+
+      if (!value) {
+
+        return "Never";
+
+      }
+
+
+      const date =
+        new Date(value);
+
+
+      if (
+        Number.isNaN(
+          date.getTime()
+        )
+      ) {
+
+        return "Never";
+
+      }
+
+
+      return date.toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }
+      );
+
+    };
+
+
+  /* ========================================
+     LOAD DASHBOARD DATA
+  ======================================== */
+
+  const loadDashboard =
+    useCallback(
+      async () => {
+
+        try {
+
+          setLoading(true);
+
+          setError("");
+
+
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const config = {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          };
+
+
+          const [
+            adminResponse,
+            reportsResponse,
+            usersResponse,
+          ] =
+            await Promise.all([
+
+              axios.get(
+                "http://localhost:5000/me",
+                config
+              ),
+
+              axios.get(
+                "http://localhost:5000/admin/reports/overview",
+                config
+              ),
+
+              axios.get(
+                "http://localhost:5000/admin/users",
+                config
+              ),
+
+            ]);
+
+
+          /* ==============================
+             ADMIN
+          ============================== */
+
+          setAdmin(
+            adminResponse.data
+          );
+
+
+          /* ==============================
+             REPORT DATA
+          ============================== */
+
+          setReportData(
+            reportsResponse.data
+          );
+
+
+          /* ==============================
+             LATEST USER ACCOUNTS
+
+             We do not currently store
+             created_at for users, so we
+             use the highest IDs as the
+             newest account records.
+          ============================== */
+
+          const users =
+            Array.isArray(
+              usersResponse.data
+            )
+              ? usersResponse.data
+              : [];
+
+
+          const latestUsers =
+            [...users]
+              .sort(
+                (a, b) =>
+                  Number(b.id) -
+                  Number(a.id)
+              )
+              .slice(0, 5)
+              .map(
+                (user) => ({
+
+                  id:
+                    user.id,
+
+                  name:
+                    user.name ||
+                    "Unknown User",
+
+                  initials:
+                    getInitials(
+                      user.name
+                    ),
+
+                  email:
+                    user.email ||
+                    "No email",
+
+                  role:
+                    formatRole(
+                      user.role
+                    ),
+
+                  lastLogin:
+                    formatLastLogin(
+                      user.last_login
+                    ),
+
+                  active:
+                    user.is_active !==
+                    false,
+
+                })
+              );
+
+
+          setRecentUsers(
+            latestUsers
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Admin Dashboard Error:",
+            error
+          );
+
+
+          if (
+            handleAuthError(
+              error
+            )
+          ) {
+
+            return;
+
+          }
+
+
+          setError(
+            error.response?.data
+              ?.error ||
+            "Failed to load dashboard data."
+          );
+
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      },
+      [
+        navigate,
+        handleAuthError,
+      ]
     );
 
 
+  /* ========================================
+     INITIAL LOAD
+  ======================================== */
+
+  useEffect(() => {
+
+    loadDashboard();
+
+  }, [loadDashboard]);
+
+
+  /* ========================================
+     SAFE DATA
+  ======================================== */
+
+  const summary =
+    reportData?.summary || {
+
+      total_users: 0,
+
+      students: 0,
+
+      lecturers: 0,
+
+      administrators: 0,
+
+      active_accounts: 0,
+
+      active_courses: 0,
+
+      average_score: 0,
+
+    };
+
+
+  const distribution =
+    reportData
+      ?.user_distribution || {
+
+      students: 0,
+
+      lecturers: 0,
+
+      administrators: 0,
+
+      active_accounts: 0,
+
+    };
+
+
+  /* ========================================
+     STAT CARDS
+  ======================================== */
+
+  const stats = [
+
+    {
+      label:
+        "Total Users",
+
+      value:
+        summary.total_users,
+
+      icon:
+        Users,
+
+      className:
+        "ad-stat-teal",
+    },
+
+    {
+      label:
+        "Students",
+
+      value:
+        summary.students,
+
+      icon:
+        GraduationCap,
+
+      className:
+        "ad-stat-purple",
+    },
+
+    {
+      label:
+        "Lecturers",
+
+      value:
+        summary.lecturers,
+
+      icon:
+        Users,
+
+      className:
+        "ad-stat-blue",
+    },
+
+    {
+      label:
+        "Active Courses",
+
+      value:
+        summary.active_courses,
+
+      icon:
+        BookOpen,
+
+      className:
+        "ad-stat-orange",
+    },
+
+  ];
+
+
+  /* ========================================
+     USER DISTRIBUTION
+  ======================================== */
+
+  const userDistribution = [
+
+    {
+      label:
+        "Students",
+
+      count:
+        distribution.students,
+
+      description:
+        "Registered student accounts",
+
+      icon:
+        GraduationCap,
+
+      className:
+        "ad-role-student",
+    },
+
+    {
+      label:
+        "Lecturers",
+
+      count:
+        distribution.lecturers,
+
+      description:
+        "Teaching staff accounts",
+
+      icon:
+        Users,
+
+      className:
+        "ad-role-lecturer",
+    },
+
+    {
+      label:
+        "Administrators",
+
+      count:
+        distribution.administrators,
+
+      description:
+        "System administrator accounts",
+
+      icon:
+        ShieldCheck,
+
+      className:
+        "ad-role-admin",
+    },
+
+  ];
+
+
+  /* ========================================
+     DATE
+  ======================================== */
+
+  const currentDate =
+    new Date()
+      .toLocaleDateString(
+        "en-US",
+        {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        }
+      );
+
+
+  /* ========================================
+     LOADING
+  ======================================== */
+
+  if (loading) {
+
+    return (
+
+      <div className="admin-dashboard-page">
+
+        <div
+          style={{
+            padding: "40px",
+            textAlign: "center",
+          }}
+        >
+
+          <h2>
+            Loading Dashboard...
+          </h2>
+
+          <p>
+            Getting real CampusLearn
+            data from PostgreSQL.
+          </p>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+
   return (
+
     <div className="admin-dashboard-page">
 
 
@@ -238,7 +682,9 @@ function AdminDashboard() {
 
         <div className="ad-date">
 
-          <CalendarDays size={15} />
+          <CalendarDays
+            size={15}
+          />
 
           {currentDate}
 
@@ -249,44 +695,83 @@ function AdminDashboard() {
 
 
       {/* ====================================
+          ERROR
+      ==================================== */}
+
+      {error && (
+
+        <div
+          style={{
+            marginBottom: "22px",
+            padding: "14px 16px",
+            borderRadius: "10px",
+            background: "#fef2f2",
+            border:
+              "1px solid #fecaca",
+            color: "#dc2626",
+            fontWeight: 600,
+          }}
+        >
+
+          {error}
+
+        </div>
+
+      )}
+
+
+
+      {/* ====================================
           STATS
       ==================================== */}
 
       <section className="ad-stats">
 
-        {stats.map((stat) => {
+        {stats.map(
+          (stat) => {
 
-          const Icon = stat.icon;
+            const Icon =
+              stat.icon;
 
-          return (
-            <div
-              className={`ad-stat-card ${stat.className}`}
-              key={stat.label}
-            >
 
-              <div className="ad-stat-icon">
+            return (
 
-                <Icon size={22} />
+              <div
+                className={
+                  `ad-stat-card ${stat.className}`
+                }
+                key={
+                  stat.label
+                }
+              >
+
+                <div className="ad-stat-icon">
+
+                  <Icon
+                    size={22}
+                  />
+
+                </div>
+
+
+                <div>
+
+                  <strong>
+                    {stat.value}
+                  </strong>
+
+                  <span>
+                    {stat.label}
+                  </span>
+
+                </div>
 
               </div>
 
+            );
 
-              <div>
-
-                <strong>
-                  {stat.value}
-                </strong>
-
-                <span>
-                  {stat.label}
-                </span>
-
-              </div>
-
-            </div>
-          );
-
-        })}
+          }
+        )}
 
       </section>
 
@@ -299,7 +784,9 @@ function AdminDashboard() {
       <section className="ad-main-grid">
 
 
-        {/* USER DISTRIBUTION */}
+        {/* ==================================
+            USER DISTRIBUTION
+        ================================== */}
 
         <div className="ad-panel">
 
@@ -321,18 +808,24 @@ function AdminDashboard() {
 
             <button
               className="ad-panel-link"
+
               onClick={() =>
-                navigate("/admin-users")
+                navigate(
+                  "/admin-users"
+                )
               }
             >
 
               Manage Users
 
-              <ArrowRight size={13} />
+              <ArrowRight
+                size={13}
+              />
 
             </button>
 
           </div>
+
 
 
           <div className="ad-user-distribution">
@@ -340,19 +833,28 @@ function AdminDashboard() {
             {userDistribution.map(
               (role) => {
 
-                const Icon = role.icon;
+                const Icon =
+                  role.icon;
+
 
                 return (
+
                   <div
                     className="ad-role-row"
-                    key={role.label}
+                    key={
+                      role.label
+                    }
                   >
 
                     <div
-                      className={`ad-role-icon ${role.className}`}
+                      className={
+                        `ad-role-icon ${role.className}`
+                      }
                     >
 
-                      <Icon size={18} />
+                      <Icon
+                        size={18}
+                      />
 
                     </div>
 
@@ -377,6 +879,7 @@ function AdminDashboard() {
                     </div>
 
                   </div>
+
                 );
 
               }
@@ -388,7 +891,9 @@ function AdminDashboard() {
 
 
 
-        {/* SYSTEM STATUS */}
+        {/* ==================================
+            SYSTEM STATUS
+        ================================== */}
 
         <div className="ad-panel">
 
@@ -410,8 +915,11 @@ function AdminDashboard() {
           </div>
 
 
+
           <div className="ad-system-list">
 
+
+            {/* DATABASE */}
 
             <div className="ad-system-item">
 
@@ -419,7 +927,9 @@ function AdminDashboard() {
 
                 <div className="ad-system-icon">
 
-                  <Database size={17} />
+                  <Database
+                    size={17}
+                  />
 
                 </div>
 
@@ -431,7 +941,8 @@ function AdminDashboard() {
                   </strong>
 
                   <span>
-                    Primary application database
+                    Primary application
+                    database
                   </span>
 
                 </div>
@@ -441,7 +952,7 @@ function AdminDashboard() {
 
               <span className="ad-status-online">
 
-                Online
+                Connected
 
               </span>
 
@@ -449,13 +960,17 @@ function AdminDashboard() {
 
 
 
+            {/* BACKEND */}
+
             <div className="ad-system-item">
 
               <div className="ad-system-left">
 
                 <div className="ad-system-icon">
 
-                  <Server size={17} />
+                  <Server
+                    size={17}
+                  />
 
                 </div>
 
@@ -467,7 +982,8 @@ function AdminDashboard() {
                   </strong>
 
                   <span>
-                    Node.js / Express service
+                    Node.js / Express
+                    service
                   </span>
 
                 </div>
@@ -484,6 +1000,8 @@ function AdminDashboard() {
             </div>
 
 
+
+            {/* AUTH */}
 
             <div className="ad-system-item">
 
@@ -505,7 +1023,8 @@ function AdminDashboard() {
                   </strong>
 
                   <span>
-                    User login and role access
+                    JWT login and
+                    role-based access
                   </span>
 
                 </div>
@@ -515,7 +1034,7 @@ function AdminDashboard() {
 
               <span className="ad-status-online">
 
-                Online
+                Active
 
               </span>
 
@@ -542,25 +1061,37 @@ function AdminDashboard() {
           </h2>
 
           <p>
-            Frequently used administrator tools.
+            Frequently used
+            administrator tools.
           </p>
 
         </div>
 
 
+
         <div className="ad-quick-actions">
 
 
+          {/* ADD USER */}
+
           <button
-            className="ad-action-card ad-action-teal"
+            className="
+              ad-action-card
+              ad-action-teal
+            "
+
             onClick={() =>
-              navigate("/admin-users")
+              navigate(
+                "/admin-users"
+              )
             }
           >
 
             <div className="ad-action-icon">
 
-              <UserPlus size={20} />
+              <UserPlus
+                size={20}
+              />
 
             </div>
 
@@ -582,16 +1113,26 @@ function AdminDashboard() {
 
 
 
+          {/* COURSES */}
+
           <button
-            className="ad-action-card ad-action-blue"
+            className="
+              ad-action-card
+              ad-action-blue
+            "
+
             onClick={() =>
-              navigate("/admin/courses")
+              navigate(
+                "/admin/courses"
+              )
             }
           >
 
             <div className="ad-action-icon">
 
-              <BookOpen size={20} />
+              <BookOpen
+                size={20}
+              />
 
             </div>
 
@@ -613,16 +1154,26 @@ function AdminDashboard() {
 
 
 
+          {/* REPORTS */}
+
           <button
-            className="ad-action-card ad-action-purple"
+            className="
+              ad-action-card
+              ad-action-purple
+            "
+
             onClick={() =>
-              navigate("/admin/reports")
+              navigate(
+                "/admin/reports"
+              )
             }
           >
 
             <div className="ad-action-icon">
 
-              <BarChart3 size={20} />
+              <BarChart3
+                size={20}
+              />
 
             </div>
 
@@ -644,16 +1195,26 @@ function AdminDashboard() {
 
 
 
+          {/* SETTINGS */}
+
           <button
-            className="ad-action-card ad-action-orange"
+            className="
+              ad-action-card
+              ad-action-orange
+            "
+
             onClick={() =>
-              navigate("/admin/settings")
+              navigate(
+                "/admin/settings"
+              )
             }
           >
 
             <div className="ad-action-icon">
 
-              <Settings size={20} />
+              <Settings
+                size={20}
+              />
 
             </div>
 
@@ -680,7 +1241,7 @@ function AdminDashboard() {
 
 
       {/* ====================================
-          RECENT USERS
+          LATEST USER ACCOUNTS
       ==================================== */}
 
       <section className="ad-section">
@@ -688,15 +1249,16 @@ function AdminDashboard() {
         <div className="ad-section-header">
 
           <h2>
-            Recently Added Users
+            Latest User Accounts
           </h2>
 
           <p>
-            Latest accounts registered
-            in CampusLearn.
+            Most recently created
+            CampusLearn account records.
           </p>
 
         </div>
+
 
 
         <div className="ad-table-wrapper">
@@ -716,7 +1278,7 @@ function AdminDashboard() {
                 </th>
 
                 <th>
-                  Joined
+                  Last Login
                 </th>
 
                 <th>
@@ -730,10 +1292,39 @@ function AdminDashboard() {
 
             <tbody>
 
-              {recentUsers.map(
-                (user, index) => (
+              {recentUsers.length ===
+                0 && (
 
-                  <tr key={index}>
+                <tr>
+
+                  <td
+                    colSpan="4"
+
+                    style={{
+                      textAlign:
+                        "center",
+                      padding:
+                        "24px",
+                    }}
+                  >
+
+                    No users found.
+
+                  </td>
+
+                </tr>
+
+              )}
+
+
+              {recentUsers.map(
+                (user) => (
+
+                  <tr
+                    key={
+                      user.id
+                    }
+                  >
 
                     <td>
 
@@ -741,7 +1332,9 @@ function AdminDashboard() {
 
                         <div className="ad-table-avatar">
 
-                          {user.initials}
+                          {
+                            user.initials
+                          }
 
                         </div>
 
@@ -749,11 +1342,15 @@ function AdminDashboard() {
                         <div>
 
                           <strong>
-                            {user.name}
+                            {
+                              user.name
+                            }
                           </strong>
 
                           <span>
-                            {user.email}
+                            {
+                              user.email
+                            }
                           </span>
 
                         </div>
@@ -766,10 +1363,14 @@ function AdminDashboard() {
                     <td>
 
                       <span
-                        className={`ad-role-badge ad-role-badge-${user.role.toLowerCase()}`}
+                        className={
+                          `ad-role-badge ad-role-badge-${user.role.toLowerCase()}`
+                        }
                       >
 
-                        {user.role}
+                        {
+                          user.role
+                        }
 
                       </span>
 
@@ -777,21 +1378,46 @@ function AdminDashboard() {
 
 
                     <td>
-                      {user.joined}
+
+                      {
+                        user.lastLogin
+                      }
+
                     </td>
 
 
                     <td>
 
-                      <span className="ad-active-badge">
+                      {user.active ? (
 
-                        <CircleCheckBig
-                          size={10}
-                        />
+                        <span className="ad-active-badge">
 
-                        Active
+                          <CircleCheckBig
+                            size={10}
+                          />
 
-                      </span>
+                          Active
+
+                        </span>
+
+                      ) : (
+
+                        <span
+                          style={{
+                            color:
+                              "#dc2626",
+                            fontWeight:
+                              600,
+                            fontSize:
+                              "12px",
+                          }}
+                        >
+
+                          Disabled
+
+                        </span>
+
+                      )}
 
                     </td>
 
@@ -809,7 +1435,9 @@ function AdminDashboard() {
       </section>
 
     </div>
+
   );
+
 }
 
 
