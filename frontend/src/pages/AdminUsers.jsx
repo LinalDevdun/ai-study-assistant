@@ -1,7 +1,13 @@
 import {
+  useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
+
+import { useNavigate } from "react-router-dom";
+
+import axios from "axios";
 
 import {
   Users,
@@ -20,63 +26,69 @@ import {
 import "../styles/adminUsers.css";
 
 
+/* =========================================
+   CREATE USER INITIALS
+========================================= */
+
+const getInitials = (name) => {
+  if (!name) {
+    return "U";
+  }
+
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+};
+
+
+/* =========================================
+   FORMAT LAST LOGIN
+========================================= */
+
+const formatLastLogin = (date) => {
+  if (!date) {
+    return "Never";
+  }
+
+  return new Date(date).toLocaleDateString(
+    "en-US",
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }
+  );
+};
+
+
 function AdminUsers() {
+  const navigate = useNavigate();
 
-  /*
-    Temporary frontend data.
 
-    Later this will be replaced by
-    real PostgreSQL user data.
-  */
+  /* ========================================
+     REAL DATABASE USERS
+  ======================================== */
 
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "Movinya Perera",
-      email: "movinya@example.com",
-      role: "STUDENT",
-      status: "Active",
-      initials: "MP",
-      joined: "Sep 23, 2026",
-    },
-    {
-      id: 2,
-      name: "Amaya Silva",
-      email: "amaya@example.com",
-      role: "STUDENT",
-      status: "Active",
-      initials: "AS",
-      joined: "Sep 22, 2026",
-    },
-    {
-      id: 3,
-      name: "Hasith Witharama",
-      email: "hasith@example.com",
-      role: "LECTURER",
-      status: "Active",
-      initials: "HW",
-      joined: "Sep 20, 2026",
-    },
-    {
-      id: 4,
-      name: "Dinuka Fernando",
-      email: "dinuka@example.com",
-      role: "STUDENT",
-      status: "Disabled",
-      initials: "DF",
-      joined: "Sep 18, 2026",
-    },
-    {
-      id: 5,
-      name: "System Administrator",
-      email: "admin@campuslearn.lk",
-      role: "ADMIN",
-      status: "Active",
-      initials: "AD",
-      joined: "Sep 15, 2026",
-    },
-  ]);
+  const [users, setUsers] =
+    useState([]);
 
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [saving, setSaving] =
+    useState(false);
+
+
+  /* ========================================
+     SEARCH + FILTERS
+  ======================================== */
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -87,28 +99,126 @@ function AdminUsers() {
   const [statusFilter, setStatusFilter] =
     useState("ALL");
 
+
+  /* ========================================
+     MODAL
+  ======================================== */
+
   const [modalOpen, setModalOpen] =
     useState(false);
 
   const [editingUser, setEditingUser] =
     useState(null);
 
-
   const [formData, setFormData] =
     useState({
       name: "",
       email: "",
+      password: "",
       role: "STUDENT",
+      degree: "",
+      batch: "",
     });
 
 
   /* ========================================
-     COUNTS
+     LOAD USERS FROM POSTGRESQL
+  ======================================== */
+
+  const loadUsers = useCallback(
+    async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const token =
+          localStorage.getItem("token");
+
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/admin/users",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+        const databaseUsers =
+          response.data.map(
+            (user) => ({
+              ...user,
+
+              initials:
+                getInitials(
+                  user.name
+                ),
+
+              status:
+                user.is_active
+                  ? "Active"
+                  : "Disabled",
+
+              lastLogin:
+                formatLastLogin(
+                  user.last_login
+                ),
+            })
+          );
+
+        setUsers(databaseUsers);
+      } catch (error) {
+        console.error(
+          "Failed to load users:",
+          error
+        );
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+          return;
+        }
+
+        setError(
+          error.response?.data?.error ||
+            "Failed to load users."
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [navigate]
+  );
+
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+
+  /* ========================================
+     USER COUNTS
   ======================================== */
 
   const totalUsers =
     users.length;
-
 
   const studentCount =
     users.filter(
@@ -116,13 +226,11 @@ function AdminUsers() {
         user.role === "STUDENT"
     ).length;
 
-
   const lecturerCount =
     users.filter(
       (user) =>
         user.role === "LECTURER"
     ).length;
-
 
   const adminCount =
     users.filter(
@@ -137,44 +245,48 @@ function AdminUsers() {
 
   const filteredUsers =
     useMemo(() => {
-
       return users.filter(
         (user) => {
-
           const search =
-            searchTerm.toLowerCase();
+            searchTerm
+              .toLowerCase()
+              .trim();
 
+          const userName =
+            (
+              user.name || ""
+            ).toLowerCase();
+
+          const userEmail =
+            (
+              user.email || ""
+            ).toLowerCase();
 
           const matchesSearch =
-            user.name
-              .toLowerCase()
-              .includes(search) ||
-
-            user.email
-              .toLowerCase()
-              .includes(search);
-
+            userName.includes(
+              search
+            ) ||
+            userEmail.includes(
+              search
+            );
 
           const matchesRole =
             roleFilter === "ALL" ||
-            user.role === roleFilter;
-
+            user.role ===
+              roleFilter;
 
           const matchesStatus =
             statusFilter === "ALL" ||
             user.status ===
               statusFilter;
 
-
           return (
             matchesSearch &&
             matchesRole &&
             matchesStatus
           );
-
         }
       );
-
     }, [
       users,
       searchTerm,
@@ -188,17 +300,18 @@ function AdminUsers() {
   ======================================== */
 
   const openAddModal = () => {
-
     setEditingUser(null);
 
     setFormData({
       name: "",
       email: "",
+      password: "",
       role: "STUDENT",
+      degree: "",
+      batch: "",
     });
 
     setModalOpen(true);
-
   };
 
 
@@ -207,146 +320,426 @@ function AdminUsers() {
   ======================================== */
 
   const openEditModal = (user) => {
-
     setEditingUser(user);
 
     setFormData({
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      name:
+        user.name || "",
+
+      email:
+        user.email || "",
+
+      password: "",
+
+      role:
+        user.role || "STUDENT",
+
+      degree:
+        user.degree || "",
+
+      batch:
+        user.batch || "",
     });
 
     setModalOpen(true);
-
   };
 
 
   /* ========================================
-     SAVE USER
+     CREATE USER
   ======================================== */
 
-  const handleSaveUser = (event) => {
+const handleSaveUser = async (event) => {
 
-    event.preventDefault();
+  event.preventDefault();
 
 
-    if (
-      !formData.name ||
-      !formData.email
-    ) {
+  /* ========================================
+     BASIC VALIDATION
+  ======================================== */
+
+  if (
+    !formData.name.trim() ||
+    !formData.email.trim() ||
+    !formData.role
+  ) {
+
+    alert(
+      "Please enter name, email and role."
+    );
+
+    return;
+  }
+
+
+  /* ========================================
+     STUDENT VALIDATION
+  ======================================== */
+
+  if (
+    formData.role === "STUDENT" &&
+    (
+      !formData.degree.trim() ||
+      !formData.batch.trim()
+    )
+  ) {
+
+    alert(
+      "Please enter the student's degree and batch."
+    );
+
+    return;
+  }
+
+
+  /* ========================================
+     PASSWORD VALIDATION FOR NEW USER ONLY
+  ======================================== */
+
+  if (
+    !editingUser &&
+    (
+      !formData.password ||
+      formData.password.length < 6
+    )
+  ) {
+
+    alert(
+      "Password must contain at least 6 characters."
+    );
+
+    return;
+  }
+
+
+  try {
+
+    setSaving(true);
+
+
+    const token =
+      localStorage.getItem("token");
+
+
+    if (!token) {
+
+      navigate("/login");
+
       return;
+
     }
 
+
+    /* ========================================
+       EDIT EXISTING USER
+    ======================================== */
 
     if (editingUser) {
 
-      setUsers(
-        (previous) =>
-          previous.map(
-            (user) =>
-              user.id ===
-              editingUser.id
-                ? {
-                    ...user,
-                    name: formData.name,
-                    email: formData.email,
-                    role: formData.role,
-                  }
-                : user
-          )
+      await axios.put(
+        `http://localhost:5000/admin/users/${editingUser.id}`,
+
+        {
+          name:
+            formData.name.trim(),
+
+          email:
+            formData.email
+              .trim()
+              .toLowerCase(),
+
+          role:
+            formData.role,
+
+          degree:
+            formData.role === "STUDENT"
+              ? formData.degree.trim()
+              : null,
+
+          batch:
+            formData.role === "STUDENT"
+              ? formData.batch.trim()
+              : null,
+        },
+
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
       );
 
-    } else {
 
-      const initials =
-        formData.name
-          .split(" ")
-          .map(
-            (word) =>
-              word.charAt(0)
-          )
-          .join("")
-          .slice(0, 2)
-          .toUpperCase();
+      await loadUsers();
 
 
-      const newUser = {
-        id: Date.now(),
+      setModalOpen(false);
 
-        name: formData.name,
-
-        email: formData.email,
-
-        role: formData.role,
-
-        status: "Active",
-
-        initials,
-
-        joined:
-          new Date()
-            .toLocaleDateString(
-              "en-US",
-              {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              }
-            ),
-      };
+      setEditingUser(null);
 
 
-      setUsers(
-        (previous) => [
-          newUser,
-          ...previous,
-        ]
+      alert(
+        "User updated successfully!"
       );
+
+      return;
 
     }
+
+
+    /* ========================================
+       CREATE NEW USER
+    ======================================== */
+
+    await axios.post(
+      "http://localhost:5000/admin/users",
+
+      {
+        name:
+          formData.name.trim(),
+
+        email:
+          formData.email
+            .trim()
+            .toLowerCase(),
+
+        password:
+          formData.password,
+
+        role:
+          formData.role,
+
+        degree:
+          formData.role === "STUDENT"
+            ? formData.degree.trim()
+            : null,
+
+        batch:
+          formData.role === "STUDENT"
+            ? formData.batch.trim()
+            : null,
+      },
+
+      {
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+        },
+      }
+    );
+
+
+    await loadUsers();
 
 
     setModalOpen(false);
 
-  };
+
+    alert(
+      "User created successfully!"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Save user error:",
+      error
+    );
+
+
+    if (
+      error.response?.status === 401 ||
+      error.response?.status === 403
+    ) {
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+
+      navigate("/login");
+
+      return;
+
+    }
+
+
+    alert(
+      error.response?.data?.error ||
+      "Failed to save user."
+    );
+
+
+  } finally {
+
+    setSaving(false);
+
+  }
+
+};
 
 
   /* ========================================
      ENABLE / DISABLE
+     STEP 28D
   ======================================== */
 
-  const toggleUserStatus = (id) => {
+const toggleUserStatus =
+  async (userId) => {
 
-    setUsers(
-      (previous) =>
-        previous.map(
+    try {
+
+      const token =
+        localStorage.getItem("token");
+
+
+      if (!token) {
+
+        navigate("/login");
+
+        return;
+      }
+
+
+      const selectedUser =
+        users.find(
           (user) =>
-            user.id === id
-              ? {
-                  ...user,
+            user.id === userId
+        );
 
-                  status:
-                    user.status ===
-                    "Active"
-                      ? "Disabled"
-                      : "Active",
-                }
-              : user
-        )
-    );
+
+      if (!selectedUser) {
+        return;
+      }
+
+
+      const newStatus =
+        selectedUser.status !==
+        "Active";
+
+
+      const actionName =
+        newStatus
+          ? "enable"
+          : "disable";
+
+
+      const confirmed =
+        window.confirm(
+          `Are you sure you want to ${actionName} ${selectedUser.name}?`
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      await axios.put(
+        `http://localhost:5000/admin/users/${userId}/status`,
+
+        {
+          is_active:
+            newStatus,
+        },
+
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
+      );
+
+
+      /*
+        Reload fresh data
+        from PostgreSQL
+      */
+
+      await loadUsers();
+
+
+      alert(
+        newStatus
+          ? "User enabled successfully!"
+          : "User disabled successfully!"
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Update user status error:",
+        error
+      );
+
+
+      if (
+        error.response?.status === 401 ||
+        error.response?.status === 403
+      ) {
+
+        localStorage.removeItem(
+          "token"
+        );
+
+        localStorage.removeItem(
+          "role"
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+
+      alert(
+        error.response?.data?.error ||
+        "Failed to update user status."
+      );
+
+    }
 
   };
 
 
   /* ========================================
      DELETE USER
+     STEP 28E
   ======================================== */
 
-  const deleteUser = (id) => {
+const deleteUser = async (userId) => {
+
+  try {
+
+    const token =
+      localStorage.getItem("token");
+
+
+    if (!token) {
+
+      navigate("/login");
+
+      return;
+    }
+
+
+    const selectedUser =
+      users.find(
+        (user) =>
+          user.id === userId
+      );
+
+
+    if (!selectedUser) {
+      return;
+    }
+
 
     const confirmed =
       window.confirm(
-        "Are you sure you want to delete this user?"
+        `Are you sure you want to permanently delete ${selectedUser.name}?`
       );
 
 
@@ -355,15 +748,60 @@ function AdminUsers() {
     }
 
 
-    setUsers(
-      (previous) =>
-        previous.filter(
-          (user) =>
-            user.id !== id
-        )
+    await axios.delete(
+      `http://localhost:5000/admin/users/${userId}`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${token}`,
+        },
+      }
     );
 
-  };
+
+    /*
+      Reload users directly
+      from PostgreSQL
+    */
+
+    await loadUsers();
+
+
+    alert(
+      "User deleted successfully!"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Delete user error:",
+      error
+    );
+
+
+    if (
+      error.response?.status === 401 ||
+      error.response?.status === 403
+    ) {
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+
+      navigate("/login");
+
+      return;
+    }
+
+
+    alert(
+      error.response?.data?.error ||
+      "Failed to delete user."
+    );
+
+  }
+
+};
 
 
   return (
@@ -383,8 +821,9 @@ function AdminUsers() {
           </h1>
 
           <p>
-            Manage students, lecturers
-            and administrator accounts.
+            Manage students,
+            lecturers and
+            administrator accounts.
           </p>
 
         </div>
@@ -412,10 +851,14 @@ function AdminUsers() {
       <section className="au-summary">
 
 
+        {/* TOTAL USERS */}
+
         <div className="au-summary-card au-teal">
 
           <div className="au-summary-icon">
+
             <Users size={21} />
+
           </div>
 
           <div>
@@ -433,12 +876,17 @@ function AdminUsers() {
         </div>
 
 
+
+        {/* STUDENTS */}
+
         <div className="au-summary-card au-purple">
 
           <div className="au-summary-icon">
+
             <GraduationCap
               size={21}
             />
+
           </div>
 
           <div>
@@ -456,10 +904,15 @@ function AdminUsers() {
         </div>
 
 
+
+        {/* LECTURERS */}
+
         <div className="au-summary-card au-blue">
 
           <div className="au-summary-icon">
+
             <Users size={21} />
+
           </div>
 
           <div>
@@ -477,12 +930,17 @@ function AdminUsers() {
         </div>
 
 
+
+        {/* ADMINISTRATORS */}
+
         <div className="au-summary-card au-orange">
 
           <div className="au-summary-icon">
+
             <ShieldCheck
               size={21}
             />
+
           </div>
 
           <div>
@@ -504,11 +962,13 @@ function AdminUsers() {
 
 
       {/* ====================================
-          FILTER BAR
+          SEARCH + FILTER
       ==================================== */}
 
       <section className="au-toolbar">
 
+
+        {/* SEARCH */}
 
         <div className="au-search">
 
@@ -528,8 +988,13 @@ function AdminUsers() {
         </div>
 
 
+
+        {/* FILTERS */}
+
         <div className="au-filters">
 
+
+          {/* ROLE FILTER */}
 
           <select
             value={roleFilter}
@@ -558,6 +1023,9 @@ function AdminUsers() {
 
           </select>
 
+
+
+          {/* STATUS FILTER */}
 
           <select
             value={statusFilter}
@@ -594,231 +1062,296 @@ function AdminUsers() {
 
       <section className="au-table-container">
 
-        <table className="au-table">
 
+        {/* LOADING */}
 
-          <thead>
-
-            <tr>
-
-              <th>
-                User
-              </th>
-
-              <th>
-                Role
-              </th>
-
-              <th>
-                Joined
-              </th>
-
-              <th>
-                Status
-              </th>
-
-              <th>
-                Actions
-              </th>
-
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            {filteredUsers.map(
-              (user) => (
-
-                <tr key={user.id}>
-
-
-                  {/* USER */}
-
-                  <td>
-
-                    <div className="au-user-profile">
-
-                      <div className="au-avatar">
-
-                        {user.initials}
-
-                      </div>
-
-
-                      <div>
-
-                        <strong>
-                          {user.name}
-                        </strong>
-
-                        <span>
-
-                          <Mail size={10} />
-
-                          {user.email}
-
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                  </td>
-
-
-
-                  {/* ROLE */}
-
-                  <td>
-
-                    <span
-                      className={`au-role au-role-${user.role.toLowerCase()}`}
-                    >
-
-                      {user.role}
-
-                    </span>
-
-                  </td>
-
-
-
-                  {/* JOIN DATE */}
-
-                  <td>
-
-                    {user.joined}
-
-                  </td>
-
-
-
-                  {/* STATUS */}
-
-                  <td>
-
-                    <span
-                      className={
-                        user.status ===
-                        "Active"
-                          ? "au-status au-status-active"
-                          : "au-status au-status-disabled"
-                      }
-                    >
-
-                      {user.status}
-
-                    </span>
-
-                  </td>
-
-
-
-                  {/* ACTIONS */}
-
-                  <td>
-
-                    <div className="au-actions">
-
-
-                      <button
-                        className="au-action-button au-edit"
-                        onClick={() =>
-                          openEditModal(
-                            user
-                          )
-                        }
-                        title="Edit user"
-                      >
-
-                        <Pencil
-                          size={14}
-                        />
-
-                      </button>
-
-
-                      <button
-                        className="au-action-button au-toggle"
-                        onClick={() =>
-                          toggleUserStatus(
-                            user.id
-                          )
-                        }
-                        title={
-                          user.status ===
-                          "Active"
-                            ? "Disable user"
-                            : "Enable user"
-                        }
-                      >
-
-                        {user.status ===
-                        "Active" ? (
-
-                          <UserX
-                            size={14}
-                          />
-
-                        ) : (
-
-                          <UserCheck
-                            size={14}
-                          />
-
-                        )}
-
-                      </button>
-
-
-                      <button
-                        className="au-action-button au-delete"
-                        onClick={() =>
-                          deleteUser(
-                            user.id
-                          )
-                        }
-                        title="Delete user"
-                      >
-
-                        <Trash2
-                          size={14}
-                        />
-
-                      </button>
-
-                    </div>
-
-                  </td>
-
-                </tr>
-
-              )
-            )}
-
-          </tbody>
-
-        </table>
-
-
-        {filteredUsers.length === 0 && (
+        {loading && (
 
           <div className="au-empty">
 
             <Users size={30} />
 
             <h3>
-              No users found
+              Loading users...
             </h3>
 
             <p>
-              Try changing your search
-              or filters.
+              Getting user information
+              from PostgreSQL.
             </p>
 
           </div>
+
+        )}
+
+
+
+        {/* ERROR */}
+
+        {!loading && error && (
+
+          <div className="au-empty">
+
+            <Users size={30} />
+
+            <h3>
+              Unable to load users
+            </h3>
+
+            <p>
+              {error}
+            </p>
+
+          </div>
+
+        )}
+
+
+
+        {/* TABLE */}
+
+        {!loading && !error && (
+
+          <>
+
+            <table className="au-table">
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    User
+                  </th>
+
+                  <th>
+                    Role
+                  </th>
+
+                  <th>
+                    Last Login
+                  </th>
+
+                  <th>
+                    Status
+                  </th>
+
+                  <th>
+                    Actions
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                {filteredUsers.map(
+                  (user) => (
+
+                    <tr key={user.id}>
+
+
+                      {/* USER */}
+
+                      <td>
+
+                        <div className="au-user-profile">
+
+                          <div className="au-avatar">
+
+                            {user.initials}
+
+                          </div>
+
+
+                          <div>
+
+                            <strong>
+                              {user.name}
+                            </strong>
+
+                            <span>
+
+                              <Mail size={10} />
+
+                              {user.email}
+
+                            </span>
+
+                          </div>
+
+                        </div>
+
+                      </td>
+
+
+
+                      {/* ROLE */}
+
+                      <td>
+
+                        <span
+                          className={`au-role au-role-${user.role.toLowerCase()}`}
+                        >
+
+                          {user.role}
+
+                        </span>
+
+                      </td>
+
+
+
+                      {/* LAST LOGIN */}
+
+                      <td>
+                        {user.lastLogin}
+                      </td>
+
+
+
+                      {/* STATUS */}
+
+                      <td>
+
+                        <span
+                          className={
+                            user.status ===
+                            "Active"
+                              ? "au-status au-status-active"
+                              : "au-status au-status-disabled"
+                          }
+                        >
+
+                          {user.status}
+
+                        </span>
+
+                      </td>
+
+
+
+                      {/* ACTIONS */}
+
+                      <td>
+
+                        <div className="au-actions">
+
+
+                          {/* EDIT */}
+
+                          <button
+                            className="au-action-button au-edit"
+                            onClick={() =>
+                              openEditModal(
+                                user
+                              )
+                            }
+                            title="Edit user"
+                          >
+
+                            <Pencil
+                              size={14}
+                            />
+
+                          </button>
+
+
+
+                          {/* ENABLE / DISABLE */}
+
+                          <button
+                            className="au-action-button au-toggle"
+                            onClick={() =>
+                              toggleUserStatus(
+                                user.id
+                              )
+                            }
+                            title={
+                              user.status ===
+                              "Active"
+                                ? "Disable user"
+                                : "Enable user"
+                            }
+                          >
+
+                            {user.status ===
+                            "Active" ? (
+
+                              <UserX
+                                size={14}
+                              />
+
+                            ) : (
+
+                              <UserCheck
+                                size={14}
+                              />
+
+                            )}
+
+                          </button>
+
+
+
+                          {/* DELETE */}
+
+                          <button
+                            className="au-action-button au-delete"
+                            onClick={() =>
+                              deleteUser(
+                                user.id
+                              )
+                            }
+                            title="Delete user"
+                          >
+
+                            <Trash2
+                              size={14}
+                            />
+
+                          </button>
+
+                        </div>
+
+                      </td>
+
+                    </tr>
+
+                  )
+                )}
+
+              </tbody>
+
+            </table>
+
+
+
+            {/* NO RESULTS */}
+
+            {filteredUsers.length ===
+              0 && (
+
+              <div className="au-empty">
+
+                <Users size={30} />
+
+                <h3>
+                  No users found
+                </h3>
+
+                <p>
+                  Try changing your
+                  search or filters.
+                </p>
+
+              </div>
+
+            )}
+
+          </>
 
         )}
 
@@ -836,6 +1369,8 @@ function AdminUsers() {
 
           <div className="au-modal">
 
+
+            {/* MODAL HEADER */}
 
             <div className="au-modal-header">
 
@@ -861,6 +1396,7 @@ function AdminUsers() {
 
 
               <button
+                type="button"
                 onClick={() =>
                   setModalOpen(false)
                 }
@@ -874,6 +1410,10 @@ function AdminUsers() {
 
 
 
+            {/* ==================================
+                FORM
+            ================================== */}
+
             <form
               className="au-form"
               onSubmit={
@@ -881,6 +1421,8 @@ function AdminUsers() {
               }
             >
 
+
+              {/* FULL NAME */}
 
               <div className="au-form-group">
 
@@ -891,20 +1433,26 @@ function AdminUsers() {
                 <input
                   type="text"
                   placeholder="Enter full name"
-                  value={formData.name}
+                  value={
+                    formData.name
+                  }
                   onChange={(event) =>
                     setFormData({
                       ...formData,
 
                       name:
-                        event.target.value,
+                        event.target
+                          .value,
                     })
                   }
+                  required
                 />
 
               </div>
 
 
+
+              {/* EMAIL */}
 
               <div className="au-form-group">
 
@@ -915,20 +1463,64 @@ function AdminUsers() {
                 <input
                   type="email"
                   placeholder="Enter email address"
-                  value={formData.email}
+                  value={
+                    formData.email
+                  }
                   onChange={(event) =>
                     setFormData({
                       ...formData,
 
                       email:
-                        event.target.value,
+                        event.target
+                          .value,
                     })
                   }
+                  required
                 />
 
               </div>
 
 
+
+              {/* PASSWORD
+                  Only required when creating
+                  a new user.
+              */}
+
+              {!editingUser && (
+
+                <div className="au-form-group">
+
+                  <label>
+                    Password
+                  </label>
+
+                  <input
+                    type="password"
+                    placeholder="Minimum 6 characters"
+                    value={
+                      formData.password
+                    }
+                    onChange={(event) =>
+                      setFormData({
+                        ...formData,
+
+                        password:
+                          event.target
+                            .value,
+                      })
+                    }
+                    minLength={6}
+                    required
+                  />
+
+                </div>
+
+              )}
+
+
+
+              {/* USER ROLE */}
 
               <div className="au-form-group">
 
@@ -937,13 +1529,16 @@ function AdminUsers() {
                 </label>
 
                 <select
-                  value={formData.role}
+                  value={
+                    formData.role
+                  }
                   onChange={(event) =>
                     setFormData({
                       ...formData,
 
                       role:
-                        event.target.value,
+                        event.target
+                          .value,
                     })
                   }
                 >
@@ -966,6 +1561,83 @@ function AdminUsers() {
 
 
 
+              {/* ==================================
+                  STUDENT DETAILS
+              ================================== */}
+
+              {formData.role ===
+                "STUDENT" && (
+
+                <>
+
+                  {/* DEGREE */}
+
+                  <div className="au-form-group">
+
+                    <label>
+                      Degree
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="Example: BSc Computer Science"
+                      value={
+                        formData.degree
+                      }
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+
+                          degree:
+                            event.target
+                              .value,
+                        })
+                      }
+                      required
+                    />
+
+                  </div>
+
+
+
+                  {/* BATCH */}
+
+                  <div className="au-form-group">
+
+                    <label>
+                      Batch
+                    </label>
+
+                    <input
+                      type="text"
+                      placeholder="Example: 25.1"
+                      value={
+                        formData.batch
+                      }
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+
+                          batch:
+                            event.target
+                              .value,
+                        })
+                      }
+                      required
+                    />
+
+                  </div>
+
+                </>
+
+              )}
+
+
+
+              {/* ==================================
+                  BUTTONS
+              ================================== */}
+
               <div className="au-modal-actions">
 
                 <button
@@ -974,6 +1646,7 @@ function AdminUsers() {
                   onClick={() =>
                     setModalOpen(false)
                   }
+                  disabled={saving}
                 >
 
                   Cancel
@@ -984,9 +1657,14 @@ function AdminUsers() {
                 <button
                   type="submit"
                   className="au-save-button"
+                  disabled={saving}
                 >
 
-                  {editingUser
+                {saving
+                  ? editingUser
+                    ? "Saving..."
+                    : "Creating..."
+                  : editingUser
                     ? "Save Changes"
                     : "Create User"}
 
