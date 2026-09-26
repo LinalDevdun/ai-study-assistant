@@ -1,4 +1,14 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  NavLink,
+  useNavigate,
+} from "react-router-dom";
+
+import axios from "axios";
 
 import {
   LayoutDashboard,
@@ -12,13 +22,142 @@ import {
   LogOut,
 } from "lucide-react";
 
+
 function StudentSidebar() {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+
+  /* ========================================
+     STUDENT DATA
+  ======================================== */
+
+  const [student, setStudent] =
+    useState({
+      name: "Student User",
+      email: "",
+      role: "STUDENT",
+    });
+
+
+  /* ========================================
+     GET LOGGED-IN STUDENT
+  ======================================== */
+
+  useEffect(() => {
+
+    const fetchStudent = async () => {
+
+      try {
+
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/me",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        setStudent(response.data);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load student:",
+          error
+        );
+
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+        }
+
+      }
+
+    };
+
+
+    fetchStudent();
+
+  }, [navigate]);
+
+
+  /* ========================================
+     INITIALS
+  ======================================== */
+
+  const getInitials = (name) => {
+
+    if (!name) {
+      return "ST";
+    }
+
+
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map(
+        (word) =>
+          word.charAt(0)
+      )
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
   };
+
+
+  const initials =
+    getInitials(student.name);
+
+
+  /* ========================================
+     LOGOUT
+  ======================================== */
+
+  const handleLogout = () => {
+
+    localStorage.removeItem("token");
+
+    localStorage.removeItem("role");
+
+    navigate("/login");
+
+  };
+
+
+  /* ========================================
+     MAIN MENU
+  ======================================== */
 
   const mainMenu = [
     {
@@ -26,26 +165,31 @@ function StudentSidebar() {
       path: "/dashboard",
       icon: LayoutDashboard,
     },
+
     {
       name: "My Courses",
       path: "/courses",
       icon: BookOpen,
     },
+
     {
       name: "Assignments",
       path: "/assignments",
       icon: ClipboardList,
     },
+
     {
       name: "Deadlines",
       path: "/deadlines",
       icon: CalendarDays,
     },
+
     {
       name: "Learning Progress",
       path: "/progress",
       icon: ChartNoAxesCombined,
     },
+
     {
       name: "Grades",
       path: "/grades",
@@ -53,12 +197,18 @@ function StudentSidebar() {
     },
   ];
 
+
+  /* ========================================
+     LEARNING MENU
+  ======================================== */
+
   const learningMenu = [
     {
       name: "AI Study Tutor",
       path: "/tutor",
       icon: Sparkles,
     },
+
     {
       name: "Notifications",
       path: "/notifications",
@@ -66,90 +216,176 @@ function StudentSidebar() {
     },
   ];
 
+
+  /* ========================================
+     MENU ITEM
+  ======================================== */
+
   const renderMenuItem = (item) => {
+
     const Icon = item.icon;
+
 
     return (
       <NavLink
         key={item.path}
         to={item.path}
         className={({ isActive }) =>
-          `sidebar-link ${isActive ? "sidebar-link-active" : ""}`
+          `sidebar-link ${
+            isActive
+              ? "sidebar-link-active"
+              : ""
+          }`
         }
       >
-        <Icon size={19} strokeWidth={2} />
 
-        <span>{item.name}</span>
+        <Icon
+          size={19}
+          strokeWidth={2}
+        />
+
+        <span>
+          {item.name}
+        </span>
+
       </NavLink>
     );
+
   };
+
 
   return (
     <aside className="student-sidebar">
 
-      {/* LOGO */}
+
+      {/* ====================================
+          LOGO
+      ==================================== */}
+
       <div className="sidebar-logo">
+
         <div className="sidebar-logo-icon">
-          <GraduationCap size={25} strokeWidth={2.3} />
+
+          <GraduationCap
+            size={25}
+            strokeWidth={2.3}
+          />
+
         </div>
+
 
         <div>
+
           <div className="sidebar-logo-title">
+
             Campus<span>Learn</span>
+
           </div>
 
+
           <div className="sidebar-logo-subtitle">
+
             Student Portal
+
           </div>
+
         </div>
+
       </div>
 
 
-      {/* NAVIGATION */}
+
+      {/* ====================================
+          NAVIGATION
+      ==================================== */}
+
       <div className="sidebar-navigation">
 
+
         <p className="sidebar-section-title">
+
           MAIN
+
         </p>
 
+
         <nav className="sidebar-menu">
-          {mainMenu.map(renderMenuItem)}
+
+          {mainMenu.map(
+            renderMenuItem
+          )}
+
         </nav>
+
 
 
         <p className="sidebar-section-title sidebar-second-section">
+
           LEARNING
+
         </p>
 
+
         <nav className="sidebar-menu">
-          {learningMenu.map(renderMenuItem)}
+
+          {learningMenu.map(
+            renderMenuItem
+          )}
+
         </nav>
 
       </div>
 
 
-      {/* BOTTOM */}
+
+      {/* ====================================
+          BOTTOM
+      ==================================== */}
+
       <div className="sidebar-bottom">
+
+
+        {/* LOGOUT */}
 
         <button
           className="sidebar-logout"
           onClick={handleLogout}
         >
+
           <LogOut size={19} />
 
-          <span>Log out</span>
+          <span>
+            Log out
+          </span>
+
         </button>
 
 
+
+        {/* STUDENT PROFILE */}
+
         <div className="sidebar-user">
+
+
           <div className="sidebar-avatar">
-            ST
+
+            {initials}
+
           </div>
 
+
           <div className="sidebar-user-info">
-            <p>Student User</p>
-            <span>Student</span>
+
+            <p>
+              {student.name}
+            </p>
+
+            <span>
+              Student
+            </span>
+
           </div>
+
         </div>
 
       </div>
@@ -157,5 +393,6 @@ function StudentSidebar() {
     </aside>
   );
 }
+
 
 export default StudentSidebar;
