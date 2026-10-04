@@ -161,44 +161,84 @@ function Deadlines() {
     );
 
 
-  const urgentCount =
-    validDeadlines.filter(
-      (assignment) => {
+const urgentCount =
+  validDeadlines.filter(
+    (assignment) => {
 
-        const days =
-          getDaysLeft(
-            assignment.due_date
-          );
+      const completed =
+        assignment.is_submitted ||
+        assignment.is_graded;
 
+      if (completed) {
+        return false;
+      }
 
-        return (
-          days !== null &&
-          days >= 0 &&
-          days <= 2
+      const days =
+        getDaysLeft(
+          assignment.due_date
         );
 
+      return (
+        days !== null &&
+        days >= 0 &&
+        days <= 2
+      );
+
+    }
+  ).length;
+
+
+const thisWeekCount =
+  validDeadlines.filter(
+    (assignment) => {
+
+      const completed =
+        assignment.is_submitted ||
+        assignment.is_graded;
+
+      if (completed) {
+        return false;
       }
-    ).length;
 
-
-  const thisWeekCount =
-    validDeadlines.filter(
-      (assignment) => {
-
-        const days =
-          getDaysLeft(
-            assignment.due_date
-          );
-
-
-        return (
-          days !== null &&
-          days >= 0 &&
-          days <= 7
+      const days =
+        getDaysLeft(
+          assignment.due_date
         );
 
+      return (
+        days !== null &&
+        days >= 0 &&
+        days <= 7
+      );
+
+    }
+  ).length;
+
+
+const upcomingCount =
+  validDeadlines.filter(
+    (assignment) => {
+
+      const completed =
+        assignment.is_submitted ||
+        assignment.is_graded;
+
+      if (completed) {
+        return false;
       }
-    ).length;
+
+      const days =
+        getDaysLeft(
+          assignment.due_date
+        );
+
+      return (
+        days !== null &&
+        days >= 0
+      );
+
+    }
+  ).length;
 
 
   const completedCount =
@@ -353,9 +393,9 @@ function Deadlines() {
 
           <CalendarClock size={16} />
 
-          {validDeadlines.length}
-          {" "}
-          Upcoming
+        {upcomingCount}
+        {" "}
+        Upcoming
 
         </div>
 
@@ -559,6 +599,10 @@ function Deadlines() {
                   assignment.due_date
                 );
 
+              const completed =
+                assignment.is_submitted ||
+                assignment.is_graded;
+
 
               return (
                 <article
@@ -600,11 +644,15 @@ function Deadlines() {
                         className={`deadline-status deadline-status-${status}`}
                       >
 
-                        {status ===
-                          "urgent"
+                  {assignment.is_graded
+                    ? "Graded"
+                    : assignment.is_submitted
+                      ? "Submitted"
+                      : days < 0
+                        ? "Passed"
+                        : status === "urgent"
                           ? "Urgent"
-                          : status ===
-                              "soon"
+                          : status === "soon"
                             ? "Due Soon"
                             : "Upcoming"}
 
@@ -672,13 +720,15 @@ function Deadlines() {
 
                     <span className="deadline-days-left">
 
-                      {days < 0
-                        ? "Deadline passed"
-                        : days === 0
-                          ? "Due today"
-                          : days === 1
-                            ? "1 day left"
-                            : `${days} days left`}
+                      {completed
+                        ? "Coursework completed"
+                        : days < 0
+                          ? "Deadline passed"
+                          : days === 0
+                            ? "Due today"
+                            : days === 1
+                              ? "1 day left"
+                              : `${days} days left`}
 
                     </span>
 

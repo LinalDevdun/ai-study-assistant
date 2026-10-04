@@ -1,4 +1,10 @@
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import axios from "axios";
 
 import {
   Bell,
@@ -19,73 +25,105 @@ import "../styles/notifications.css";
 
 function Notifications() {
 
-  /*
-    Temporary frontend notifications.
-
-    Later these will come from the
-    backend/database.
-  */
-
   const [notifications, setNotifications] =
-    useState([
-      {
-        id: 1,
-        type: "assignment",
-        title: "New Assignment Available",
-        message:
-          "A new assignment has been added for Artificial Intelligence & Machine Learning.",
-        time: "10 minutes ago",
-        category: "Assignment",
-        unread: true,
-      },
-      {
-        id: 2,
-        type: "grade",
-        title: "Assignment Graded",
-        message:
-          "Your Database Normalization Exercise has been graded. Visit the Grades page to view your result.",
-        time: "1 hour ago",
-        category: "Grade",
-        unread: true,
-      },
-      {
-        id: 3,
-        type: "deadline",
-        title: "Deadline Reminder",
-        message:
-          "Your Software Engineering report is due soon. Make sure your final submission is uploaded before the deadline.",
-        time: "3 hours ago",
-        category: "Deadline",
-        unread: true,
-      },
-      {
-        id: 4,
-        type: "course",
-        title: "New Course Material",
-        message:
-          "New learning material has been uploaded to Web Development Fundamentals.",
-        time: "Yesterday",
-        category: "Course",
-        unread: false,
-      },
-      {
-        id: 5,
-        type: "system",
-        title: "CampusLearn Update",
-        message:
-          "Your student learning portal has been updated with new progress and notification features.",
-        time: "2 days ago",
-        category: "System",
-        unread: false,
-      },
-    ]);
-
+    useState([]);
 
   const [searchTerm, setSearchTerm] =
     useState("");
 
   const [filter, setFilter] =
     useState("all");
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+
+  /* ========================================
+     LOAD REAL NOTIFICATIONS
+  ======================================== */
+
+  useEffect(() => {
+
+    const loadNotifications =
+      async () => {
+
+        try {
+
+          setLoading(true);
+          setError("");
+
+
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+
+            setError(
+              "Please log in again."
+            );
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/notifications",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          const realNotifications =
+            Array.isArray(
+              response.data
+            )
+              ? response.data
+              : [];
+
+
+          setNotifications(
+            realNotifications
+          );
+
+
+        } catch (loadError) {
+
+          console.error(
+            "Notification loading error:",
+            loadError
+          );
+
+
+          setError(
+            loadError.response?.data?.error ||
+            "Failed to load notifications."
+          );
+
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      };
+
+
+    loadNotifications();
+
+  }, []);
 
 
   /* ========================================
@@ -110,7 +148,105 @@ function Notifications() {
 
       default:
         return Info;
+
     }
+
+  };
+
+
+  /* ========================================
+     RELATIVE TIME
+  ======================================== */
+
+  const getRelativeTime = (
+    createdAt
+  ) => {
+
+    if (!createdAt) {
+      return "";
+    }
+
+
+    const created =
+      new Date(
+        createdAt
+      );
+
+    const now =
+      new Date();
+
+
+    const difference =
+      now.getTime() -
+      created.getTime();
+
+
+    const minutes =
+      Math.floor(
+        difference /
+        (1000 * 60)
+      );
+
+
+    if (minutes < 1) {
+      return "Just now";
+    }
+
+
+    if (minutes < 60) {
+
+      return `${minutes} ${
+        minutes === 1
+          ? "minute"
+          : "minutes"
+      } ago`;
+
+    }
+
+
+    const hours =
+      Math.floor(
+        minutes / 60
+      );
+
+
+    if (hours < 24) {
+
+      return `${hours} ${
+        hours === 1
+          ? "hour"
+          : "hours"
+      } ago`;
+
+    }
+
+
+    const days =
+      Math.floor(
+        hours / 24
+      );
+
+
+    if (days === 1) {
+      return "Yesterday";
+    }
+
+
+    if (days < 7) {
+
+      return `${days} days ago`;
+
+    }
+
+
+    return created.toLocaleDateString(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }
+    );
 
   };
 
@@ -119,36 +255,118 @@ function Notifications() {
      MARK ONE AS READ
   ======================================== */
 
-  const markAsRead = (id) => {
+  const markAsRead =
+    async (id) => {
 
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id
-          ? {
-              ...notification,
-              unread: false,
-            }
-          : notification
-      )
-    );
+      try {
 
-  };
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+
+        await axios.put(
+          `http://localhost:5000/notifications/${id}/read`,
+          {},
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+
+        setNotifications(
+          (previous) =>
+            previous.map(
+              (notification) =>
+
+                notification.id === id
+
+                  ? {
+                      ...notification,
+                      is_read: true,
+                    }
+
+                  : notification
+            )
+        );
+
+
+      } catch (readError) {
+
+        console.error(
+          "Mark notification error:",
+          readError
+        );
+
+
+        setError(
+          readError.response?.data?.error ||
+          "Failed to mark notification as read."
+        );
+
+      }
+
+    };
 
 
   /* ========================================
      MARK ALL AS READ
   ======================================== */
 
-  const markAllAsRead = () => {
+  const markAllAsRead =
+    async () => {
 
-    setNotifications(
-      notifications.map((notification) => ({
-        ...notification,
-        unread: false,
-      }))
-    );
+      try {
 
-  };
+        const token =
+          localStorage.getItem(
+            "token"
+          );
+
+
+        await axios.put(
+          "http://localhost:5000/notifications/read-all",
+          {},
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+
+        setNotifications(
+          (previous) =>
+            previous.map(
+              (notification) => ({
+                ...notification,
+                is_read: true,
+              })
+            )
+        );
+
+
+      } catch (readError) {
+
+        console.error(
+          "Mark all notifications error:",
+          readError
+        );
+
+
+        setError(
+          readError.response?.data?.error ||
+          "Failed to mark all notifications as read."
+        );
+
+      }
+
+    };
 
 
   /* ========================================
@@ -158,7 +376,7 @@ function Notifications() {
   const unreadCount =
     notifications.filter(
       (notification) =>
-        notification.unread
+        !notification.is_read
     ).length;
 
 
@@ -178,35 +396,59 @@ function Notifications() {
         (notification) => {
 
           const search =
-            searchTerm.toLowerCase();
+            searchTerm
+              .trim()
+              .toLowerCase();
+
+
+          const title =
+            notification.title ||
+            "";
+
+          const message =
+            notification.message ||
+            "";
+
+          const category =
+            notification.category ||
+            "";
 
 
           const matchesSearch =
-            notification.title
+            title
               .toLowerCase()
               .includes(search) ||
 
-            notification.message
+            message
               .toLowerCase()
               .includes(search) ||
 
-            notification.category
+            category
               .toLowerCase()
               .includes(search);
 
 
-          let matchesFilter = true;
+          let matchesFilter =
+            true;
 
 
-          if (filter === "unread") {
+          if (
+            filter === "unread"
+          ) {
+
             matchesFilter =
-              notification.unread;
+              !notification.is_read;
+
           }
 
 
-          if (filter === "read") {
+          if (
+            filter === "read"
+          ) {
+
             matchesFilter =
-              !notification.unread;
+              notification.is_read;
+
           }
 
 
@@ -264,10 +506,14 @@ function Notifications() {
 
             <button
               className="mark-all-button"
-              onClick={markAllAsRead}
+              onClick={
+                markAllAsRead
+              }
             >
 
-              <CheckCheck size={15} />
+              <CheckCheck
+                size={15}
+              />
 
               Mark all as read
 
@@ -281,6 +527,36 @@ function Notifications() {
 
 
       {/* ====================================
+          ERROR
+      ==================================== */}
+
+      {error && (
+
+        <div
+          style={{
+            marginBottom:
+              "18px",
+            padding:
+              "12px 16px",
+            borderRadius:
+              "12px",
+            background:
+              "#fff1f2",
+            color:
+              "#be123c",
+            fontSize:
+              "14px",
+          }}
+        >
+
+          {error}
+
+        </div>
+
+      )}
+
+
+      {/* ====================================
           SUMMARY
       ==================================== */}
 
@@ -290,7 +566,9 @@ function Notifications() {
 
           <div className="notification-summary-icon">
 
-            <Bell size={21} />
+            <Bell
+              size={21}
+            />
 
           </div>
 
@@ -298,7 +576,11 @@ function Notifications() {
           <div>
 
             <strong>
-              {notifications.length}
+
+              {loading
+                ? "..."
+                : notifications.length}
+
             </strong>
 
             <span>
@@ -314,7 +596,9 @@ function Notifications() {
 
           <div className="notification-summary-icon">
 
-            <MailOpen size={21} />
+            <MailOpen
+              size={21}
+            />
 
           </div>
 
@@ -322,7 +606,11 @@ function Notifications() {
           <div>
 
             <strong>
-              {unreadCount}
+
+              {loading
+                ? "..."
+                : unreadCount}
+
             </strong>
 
             <span>
@@ -338,7 +626,9 @@ function Notifications() {
 
           <div className="notification-summary-icon">
 
-            <CircleCheck size={21} />
+            <CircleCheck
+              size={21}
+            />
 
           </div>
 
@@ -346,7 +636,11 @@ function Notifications() {
           <div>
 
             <strong>
-              {readCount}
+
+              {loading
+                ? "..."
+                : readCount}
+
             </strong>
 
             <span>
@@ -368,7 +662,9 @@ function Notifications() {
 
         <div className="notification-search">
 
-          <Search size={17} />
+          <Search
+            size={17}
+          />
 
           <input
             type="text"
@@ -417,13 +713,40 @@ function Notifications() {
 
       <section className="notifications-list">
 
-        {filteredNotifications.length === 0 ? (
+        {loading ? (
 
           <div className="notifications-empty">
 
             <div className="notifications-empty-icon">
 
-              <Bell size={27} />
+              <Bell
+                size={27}
+              />
+
+            </div>
+
+
+            <h3>
+              Loading notifications...
+            </h3>
+
+
+            <p>
+              Please wait while your
+              notifications are loaded.
+            </p>
+
+          </div>
+
+        ) : filteredNotifications.length === 0 ? (
+
+          <div className="notifications-empty">
+
+            <div className="notifications-empty-icon">
+
+              <Bell
+                size={27}
+              />
 
             </div>
 
@@ -434,8 +757,11 @@ function Notifications() {
 
 
             <p>
-              There are no notifications
-              matching your current filter.
+
+              {notifications.length === 0
+                ? "You don't have any notifications yet."
+                : "There are no notifications matching your current filter."}
+
             </p>
 
           </div>
@@ -451,37 +777,50 @@ function Notifications() {
                 );
 
 
+              const unread =
+                !notification.is_read;
+
+
               return (
+
                 <article
-                  key={notification.id}
+                  key={
+                    notification.id
+                  }
                   className={`notification-item ${
-                    notification.unread
+                    unread
                       ? "notification-item-unread"
                       : ""
                   }`}
                 >
 
                   {/* ICON */}
+
                   <div
                     className={`notification-item-icon notification-type-${notification.type}`}
                   >
 
-                    <Icon size={20} />
+                    <Icon
+                      size={20}
+                    />
 
                   </div>
 
 
                   {/* CONTENT */}
+
                   <div className="notification-item-content">
 
                     <div className="notification-title-row">
 
                       <h3>
+
                         {notification.title}
+
                       </h3>
 
 
-                      {notification.unread && (
+                      {unread && (
 
                         <span className="notification-unread-dot" />
 
@@ -501,9 +840,13 @@ function Notifications() {
 
                       <span>
 
-                        <Clock3 size={11} />
+                        <Clock3
+                          size={11}
+                        />
 
-                        {notification.time}
+                        {getRelativeTime(
+                          notification.created_at
+                        )}
 
                       </span>
 
@@ -520,9 +863,10 @@ function Notifications() {
 
 
                   {/* ACTION */}
+
                   <div className="notification-item-action">
 
-                    {notification.unread && (
+                    {unread && (
 
                       <button
                         className="notification-read-button"
@@ -545,6 +889,7 @@ function Notifications() {
                   </div>
 
                 </article>
+
               );
 
             }
@@ -556,6 +901,7 @@ function Notifications() {
 
     </div>
   );
+
 }
 
 

@@ -601,3 +601,316 @@
   }
 
 }
+
+/* =========================================
+   LECTURER PROFILE DROPDOWN
+========================================= */
+
+.lecturer-profile-wrapper {
+  position: relative;
+}
+
+
+/* ARROW */
+
+.lecturer-profile-arrow {
+  transition:
+    transform 0.2s ease;
+}
+
+.lecturer-profile-arrow-open {
+  transform: rotate(180deg);
+}
+
+
+/* DROPDOWN */
+
+.lecturer-profile-dropdown {
+  width: 270px;
+
+  position: absolute;
+
+  top: calc(100% + 12px);
+  right: 0;
+
+  background: white;
+
+  border:
+    1px solid
+    var(--border-light);
+
+  border-radius: 15px;
+
+  box-shadow:
+    0 16px 40px
+    rgba(15, 23, 42, 0.12);
+
+  overflow: hidden;
+
+  z-index: 500;
+}
+
+
+/* HEADER */
+
+.lecturer-dropdown-header {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 17px;
+
+  border-bottom:
+    1px solid
+    var(--border-light);
+}
+
+
+.lecturer-dropdown-avatar {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #6366f1
+    );
+
+  border-radius: 11px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+.lecturer-dropdown-header strong {
+  display: block;
+
+  max-width: 180px;
+
+  overflow: hidden;
+
+  color:
+    var(--text-primary);
+
+  font-size: 13px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+.lecturer-dropdown-header span {
+  display: block;
+
+  max-width: 180px;
+
+  margin-top: 3px;
+
+  overflow: hidden;
+
+  color:
+    var(--text-muted);
+
+  font-size: 10px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* MENU */
+
+.lecturer-dropdown-menu {
+  padding: 8px;
+}
+
+
+.lecturer-dropdown-menu button {
+  width: 100%;
+  min-height: 40px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 11px;
+
+  color:
+    var(--text-secondary);
+
+  background: transparent;
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 12px;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+
+.lecturer-dropdown-menu button svg {
+  color: #8b95a7;
+}
+
+
+.lecturer-dropdown-menu button:hover {
+  color: #4f63e7;
+
+  background: #f5f7ff;
+}
+
+
+.lecturer-dropdown-menu button:hover svg {
+  color: #4f63e7;
+}
+
+
+/* FOOTER */
+
+.lecturer-dropdown-footer {
+  padding: 8px;
+
+  border-top:
+    1px solid
+    var(--border-light);
+}
+
+
+.lecturer-dropdown-logout {
+  width: 100%;
+  min-height: 40px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 11px;
+
+  color: var(--danger);
+
+  background: transparent;
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.lecturer-dropdown-logout:hover {
+  background:
+    var(--danger-soft);
+}
+
+/* =========================================
+   CREATE DROPDOWN
+========================================= */
+
+.lecturer-create-wrapper {
+  position: relative;
+}
+
+.lecturer-create-dropdown {
+  width: 245px;
+
+  position: absolute;
+
+  top: calc(100% + 12px);
+  right: 0;
+
+  padding: 8px;
+
+  background: white;
+
+  border:
+    1px solid
+    var(--border-light);
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 16px 40px
+    rgba(15, 23, 42, 0.12);
+
+  z-index: 500;
+}
+
+.lecturer-create-dropdown > button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 11px;
+
+  color: var(--text-primary);
+  background: transparent;
+
+  border: none;
+  border-radius: 10px;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.lecturer-create-dropdown > button:hover {
+  background: #f5f7ff;
+}
+
+.lecturer-create-dropdown-icon {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: #4f63e7;
+  background: #eef2ff;
+
+  border-radius: 10px;
+}
+
+.lecturer-create-dropdown strong {
+  display: block;
+
+  color: var(--text-primary);
+
+  font-size: 12px;
+}
+
+.lecturer-create-dropdown span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+}

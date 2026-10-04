@@ -1,9 +1,13 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+} from "react-router-dom";
+
 import axios from "axios";
 
 import {
@@ -41,17 +45,54 @@ function LecturerDashboard() {
 
 
   /* ========================================
-     GET LOGGED-IN LECTURER
+     DASHBOARD DATA
+  ======================================== */
+
+  const [dashboard, setDashboard] =
+    useState({
+      stats: {
+        active_courses: 0,
+        total_students: 0,
+        total_submissions: 0,
+        waiting_to_grade: 0,
+        total_assignments: 0,
+        graded_submissions: 0,
+        average_score: null,
+      },
+
+      courses: [],
+      students: [],
+      recent_submissions: [],
+      activity: [],
+      reminders: [],
+    });
+
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
+
+  /* ========================================
+     LOAD LECTURER + DASHBOARD
   ======================================== */
 
   useEffect(() => {
 
-    const fetchLecturer = async () => {
+    const fetchDashboard = async () => {
 
       try {
 
+        setLoading(true);
+        setErrorMessage("");
+
+
         const token =
-          localStorage.getItem("token");
+          localStorage.getItem(
+            "token"
+          );
 
 
         if (!token) {
@@ -63,175 +104,494 @@ function LecturerDashboard() {
         }
 
 
-        const response =
-          await axios.get(
-            "http://localhost:5000/me",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
+        const config = {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        };
 
 
-        setLecturer(response.data);
+        const [
+          lecturerResponse,
+          dashboardResponse,
+        ] =
+          await Promise.all([
+
+            axios.get(
+              "http://localhost:5000/me",
+              config
+            ),
+
+            axios.get(
+              "http://localhost:5000/lecturer/dashboard",
+              config
+            ),
+
+          ]);
+
+
+        setLecturer(
+          lecturerResponse.data
+        );
+
+
+        setDashboard({
+          stats:
+            dashboardResponse.data
+              ?.stats || {},
+
+          courses:
+            dashboardResponse.data
+              ?.courses || [],
+
+          students:
+            dashboardResponse.data
+              ?.students || [],
+
+          recent_submissions:
+            dashboardResponse.data
+              ?.recent_submissions || [],
+
+          activity:
+            dashboardResponse.data
+              ?.activity || [],
+
+          reminders:
+            dashboardResponse.data
+              ?.reminders || [],
+        });
+
 
       } catch (error) {
 
         console.error(
-          "Failed to load lecturer dashboard user:",
+          "Lecturer Dashboard Error:",
           error
         );
 
 
         if (
-          error.response?.status === 401 ||
-          error.response?.status === 403
+          error.response?.status ===
+            401 ||
+          error.response?.status ===
+            403
         ) {
 
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
 
           navigate("/login");
 
+          return;
+
         }
+
+
+        setErrorMessage(
+          error.response?.data
+            ?.error ||
+            "Failed to load lecturer dashboard."
+        );
+
+
+      } finally {
+
+        setLoading(false);
 
       }
 
     };
 
 
-    fetchLecturer();
+    fetchDashboard();
 
   }, [navigate]);
 
 
-  /*
-    Temporary UI data.
+  /* ========================================
+     SAFE VALUES
+  ======================================== */
 
-    We will connect this to your
-    backend/database later.
-  */
+  const statsData =
+    dashboard.stats || {};
+
+
+  const activeCourses =
+    Number(
+      statsData.active_courses || 0
+    );
+
+
+  const totalStudents =
+    Number(
+      statsData.total_students || 0
+    );
+
+
+  const totalSubmissions =
+    Number(
+      statsData.total_submissions || 0
+    );
+
+
+  const waitingToGrade =
+    Number(
+      statsData.waiting_to_grade || 0
+    );
+
+
+  const gradedSubmissions =
+    Number(
+      statsData.graded_submissions || 0
+    );
+
+
+  const averageScore =
+    statsData.average_score === null ||
+    statsData.average_score ===
+      undefined
+
+      ? null
+
+      : Number(
+          statsData.average_score
+        );
+
+
+  /* ========================================
+     SUMMARY CARDS
+  ======================================== */
 
   const stats = [
+
     {
       label: "Active Courses",
-      value: "6",
+      value: activeCourses,
       icon: BookOpen,
-      className: "lecturer-stat-blue",
+      className:
+        "lecturer-stat-blue",
     },
+
     {
       label: "Total Students",
-      value: "148",
+      value: totalStudents,
       icon: Users,
-      className: "lecturer-stat-purple",
+      className:
+        "lecturer-stat-purple",
     },
+
     {
       label: "Submissions",
-      value: "23",
+      value: totalSubmissions,
       icon: FileCheck2,
-      className: "lecturer-stat-green",
+      className:
+        "lecturer-stat-green",
     },
+
     {
       label: "To Grade",
-      value: "12",
+      value: waitingToGrade,
       icon: ClipboardList,
-      className: "lecturer-stat-orange",
+      className:
+        "lecturer-stat-orange",
     },
+
   ];
 
 
-  const courses = [
-    {
-      title: "Software Engineering",
-      students: 42,
-      batch: "25.1",
-    },
-    {
-      title: "Database Systems",
-      students: 36,
-      batch: "25.1",
-    },
-    {
-      title: "Web Development",
-      students: 38,
-      batch: "25.2",
-    },
-    {
-      title: "Artificial Intelligence",
-      students: 32,
-      batch: "25.2",
-    },
-  ];
+  /* ========================================
+     WEEKLY SUBMISSION ACTIVITY
+  ======================================== */
+
+  const activity =
+    useMemo(() => {
+
+      const days = [
+        {
+          day: "Mon",
+          dayNumber: 1,
+        },
+        {
+          day: "Tue",
+          dayNumber: 2,
+        },
+        {
+          day: "Wed",
+          dayNumber: 3,
+        },
+        {
+          day: "Thu",
+          dayNumber: 4,
+        },
+        {
+          day: "Fri",
+          dayNumber: 5,
+        },
+        {
+          day: "Sat",
+          dayNumber: 6,
+        },
+        {
+          day: "Sun",
+          dayNumber: 7,
+        },
+      ];
 
 
-  const activity = [
-    { day: "Mon", value: 18, height: 46 },
-    { day: "Tue", value: 27, height: 69 },
-    { day: "Wed", value: 21, height: 54 },
-    { day: "Thu", value: 33, height: 86 },
-    { day: "Fri", value: 29, height: 75 },
-    { day: "Sat", value: 14, height: 36 },
-    { day: "Sun", value: 20, height: 52 },
-  ];
+      const values =
+        days.map((day) => {
+
+          const found =
+            dashboard.activity.find(
+              (item) =>
+                Number(
+                  item.day_number
+                ) ===
+                day.dayNumber
+            );
 
 
-  const submissions = [
-    {
-      student: "Movinya Perera",
-      assignment: "Database Design Report",
-      course: "Database Systems",
-      status: "pending",
-    },
-    {
-      student: "Amaya Silva",
-      assignment: "React Interface",
-      course: "Web Development",
-      status: "submitted",
-    },
-    {
-      student: "Dinuka Fernando",
-      assignment: "Software Design Report",
-      course: "Software Engineering",
-      status: "graded",
-    },
-    {
-      student: "Nethmi Jayasinghe",
-      assignment: "AI Model Evaluation",
-      course: "Artificial Intelligence",
-      status: "pending",
-    },
-  ];
+          return {
+            ...day,
+
+            value:
+              Number(
+                found?.submission_count ||
+                  0
+              ),
+          };
+
+        });
 
 
-  const students = [
-    {
-      name: "Movinya Perera",
-      initials: "MP",
-      course: "Database Systems",
-      progress: 82,
-    },
-    {
-      name: "Amaya Silva",
-      initials: "AS",
-      course: "Web Development",
-      progress: 75,
-    },
-    {
-      name: "Dinuka Fernando",
-      initials: "DF",
-      course: "Software Engineering",
-      progress: 91,
-    },
-    {
-      name: "Nethmi Jayasinghe",
-      initials: "NJ",
-      course: "Artificial Intelligence",
-      progress: 68,
-    },
-  ];
+      const maximum =
+        Math.max(
+          ...values.map(
+            (item) =>
+              item.value
+          ),
+          0
+        );
 
+
+      return values.map(
+        (item) => ({
+
+          ...item,
+
+          height:
+            item.value === 0 ||
+            maximum === 0
+
+              ? 0
+
+              : Math.max(
+                  18,
+
+                  Math.round(
+                    (
+                      item.value /
+                      maximum
+                    ) *
+                      86
+                  )
+                ),
+
+        })
+      );
+
+    }, [dashboard.activity]);
+
+
+  /* ========================================
+     RECENT SUBMISSIONS
+  ======================================== */
+
+  const submissions =
+    useMemo(() => {
+
+      return dashboard
+        .recent_submissions
+        .map(
+          (submission) => {
+
+            const hasGrade =
+              submission.grade !==
+                null &&
+              submission.grade !==
+                undefined &&
+              String(
+                submission.grade
+              ).trim() !== "";
+
+
+            return {
+
+              ...submission,
+
+              status:
+                hasGrade
+                  ? "graded"
+                  : "pending",
+
+            };
+
+          }
+        );
+
+    }, [
+      dashboard.recent_submissions,
+    ]);
+
+
+  /* ========================================
+     STUDENT DISPLAY DATA
+  ======================================== */
+
+  const students =
+    useMemo(() => {
+
+      return dashboard.students.map(
+        (student) => {
+
+          const initials =
+            student.name
+
+              ? student.name
+                  .split(" ")
+                  .filter(Boolean)
+                  .map(
+                    (word) =>
+                      word.charAt(0)
+                  )
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()
+
+              : "ST";
+
+
+          return {
+
+            ...student,
+
+            initials,
+
+            progress:
+              Number(
+                student.progress || 0
+              ),
+
+            course:
+              `${
+                student.degree ||
+                "Program not assigned"
+              }${
+                student.batch
+                  ? ` • Batch ${student.batch}`
+                  : ""
+              }`,
+
+          };
+
+        }
+      );
+
+    }, [dashboard.students]);
+
+
+    /* ========================================
+   ACADEMIC REMINDERS
+======================================== */
+
+const reminders =
+  useMemo(() => {
+
+    return (
+      dashboard.reminders || []
+    ).map((reminder) => {
+
+      const days =
+        Number(
+          reminder.days_until_due
+        );
+
+
+      let message =
+        "Academic task requires attention";
+
+
+      if (
+        reminder.reminder_type ===
+        "overdue"
+      ) {
+
+        message =
+          `Overdue by ${Math.abs(days)} day${
+            Math.abs(days) === 1
+              ? ""
+              : "s"
+          }`;
+
+      } else if (
+        reminder.reminder_type ===
+        "due_today"
+      ) {
+
+        message =
+          "Due today";
+
+      } else if (
+        reminder.reminder_type ===
+        "due_soon"
+      ) {
+
+        message =
+          `Due in ${days} day${
+            days === 1
+              ? ""
+              : "s"
+          }`;
+
+      } else if (
+        Number(
+          reminder.waiting_to_grade
+        ) > 0
+      ) {
+
+        message =
+          `${reminder.waiting_to_grade} submission${
+            Number(
+              reminder.waiting_to_grade
+            ) === 1
+              ? ""
+              : "s"
+          } waiting to grade`;
+
+      }
+
+
+      return {
+
+        ...reminder,
+
+        message,
+
+      };
+
+    });
+
+  }, [dashboard.reminders]);
+
+  /* ========================================
+     DATE
+  ======================================== */
 
   const currentDate =
     new Date().toLocaleDateString(
@@ -244,19 +604,24 @@ function LecturerDashboard() {
     );
 
 
+  /* ========================================
+     UI
+  ======================================== */
+
   return (
+
     <div className="lecturer-dashboard-page">
 
-      {/* ====================================
-          HEADER
-      ==================================== */}
+
+      {/* HEADER */}
 
       <section className="lecturer-dashboard-header">
 
         <div>
 
           <h1>
-            Welcome back, {lecturer.name} 👋
+            Welcome back,{" "}
+            {lecturer.name} 👋
           </h1>
 
           <p>
@@ -270,7 +635,9 @@ function LecturerDashboard() {
 
         <div className="lecturer-dashboard-date">
 
-          <CalendarDays size={15} />
+          <CalendarDays
+            size={15}
+          />
 
           {currentDate}
 
@@ -279,17 +646,38 @@ function LecturerDashboard() {
       </section>
 
 
-      {/* ====================================
-          STATS
-      ==================================== */}
+      {/* ERROR */}
+
+      {errorMessage && (
+
+        <div
+          style={{
+            marginBottom: "20px",
+            padding: "14px 18px",
+            borderRadius: "12px",
+            background: "#fff1f2",
+            color: "#dc2626",
+            fontSize: "14px",
+          }}
+        >
+          {errorMessage}
+        </div>
+
+      )}
+
+
+      {/* STATS */}
 
       <section className="lecturer-stats">
 
         {stats.map((stat) => {
 
-          const Icon = stat.icon;
+          const Icon =
+            stat.icon;
+
 
           return (
+
             <div
               className={`lecturer-stat-card ${stat.className}`}
               key={stat.label}
@@ -305,7 +693,11 @@ function LecturerDashboard() {
               <div>
 
                 <strong>
-                  {stat.value}
+
+                  {loading
+                    ? "..."
+                    : stat.value}
+
                 </strong>
 
                 <span>
@@ -315,15 +707,94 @@ function LecturerDashboard() {
               </div>
 
             </div>
+
           );
 
         })}
 
       </section>
 
+      {/* ====================================
+    ACADEMIC REMINDERS
+==================================== */}
+
+{!loading &&
+  reminders.length > 0 && (
+
+  <section className="lecturer-dashboard-section">
+
+    <div className="lecturer-section-heading">
+
+      <div>
+
+        <h2>
+          Academic Reminders
+        </h2>
+
+        <p>
+          Upcoming deadlines and academic
+          tasks that need your attention.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div className="lecturer-panel">
+
+      <div className="lecturer-course-list">
+
+        {reminders.map(
+          (reminder) => (
+
+            <div
+              className="lecturer-course-item"
+              key={reminder.id}
+            >
+
+              <div className="lecturer-course-icon">
+
+                <Clock3 size={19} />
+
+              </div>
+
+
+              <div className="lecturer-course-info">
+
+                <h3>
+                  {reminder.title}
+                </h3>
+
+                <p>
+                  {reminder.course_title}
+                </p>
+
+              </div>
+
+
+              <span
+                className="lecturer-status-badge lecturer-status-pending"
+              >
+                {reminder.message}
+              </span>
+
+            </div>
+
+          )
+        )}
+
+      </div>
+
+    </div>
+
+  </section>
+
+)}
+
 
       {/* ====================================
-          TEACHING OVERVIEW
+          COURSES + ACTIVITY
       ==================================== */}
 
       <section className="lecturer-overview-grid">
@@ -343,7 +814,8 @@ function LecturerDashboard() {
             </h2>
 
             <p>
-              Courses you're currently teaching.
+              Courses you're currently
+              teaching.
             </p>
 
           </div>
@@ -351,44 +823,71 @@ function LecturerDashboard() {
 
           <div className="lecturer-course-list">
 
-            {courses.map((course, index) => (
+            {!loading &&
+              dashboard.courses.length ===
+                0 && (
 
-              <div
-                className="lecturer-course-item"
-                key={index}
-              >
+                <p>
+                  No courses are currently
+                  assigned to you.
+                </p>
 
-                <div className="lecturer-course-icon">
+              )}
 
-                  <BookOpen size={19} />
+
+            {dashboard.courses.map(
+              (course) => (
+
+                <div
+                  className="lecturer-course-item"
+                  key={course.id}
+                >
+
+                  <div className="lecturer-course-icon">
+
+                    <BookOpen
+                      size={19}
+                    />
+
+                  </div>
+
+
+                  <div className="lecturer-course-info">
+
+                    <h3>
+                      {course.title}
+                    </h3>
+
+                    <p>
+
+                      {course.degree}
+
+                      {course.batch &&
+                        ` • Batch ${course.batch}`}
+
+                    </p>
+
+                  </div>
+
+
+                  <div className="lecturer-course-students">
+
+                    <Users
+                      size={13}
+                    />
+
+                    {Number(
+                      course.student_count ||
+                        0
+                    )}{" "}
+                    students
+
+                  </div>
 
                 </div>
 
-
-                <div className="lecturer-course-info">
-
-                  <h3>
-                    {course.title}
-                  </h3>
-
-                  <p>
-                    Batch {course.batch}
-                  </p>
-
-                </div>
-
-
-                <div className="lecturer-course-students">
-
-                  <Users size={13} />
-
-                  {course.students} students
-
-                </div>
-
-              </div>
-
-            ))}
+              )
+            )}
 
           </div>
 
@@ -406,7 +905,8 @@ function LecturerDashboard() {
             </h2>
 
             <p>
-              Student submissions this week.
+              Student submissions this
+              week.
             </p>
 
           </div>
@@ -414,37 +914,40 @@ function LecturerDashboard() {
 
           <div className="lecturer-activity-chart">
 
-            {activity.map((item) => (
+            {activity.map(
+              (item) => (
 
-              <div
-                className="lecturer-chart-column"
-                key={item.day}
-              >
+                <div
+                  className="lecturer-chart-column"
+                  key={item.day}
+                >
 
-                <strong>
-                  {item.value}
-                </strong>
+                  <strong>
+                    {item.value}
+                  </strong>
 
 
-                <div className="lecturer-chart-track">
+                  <div className="lecturer-chart-track">
 
-                  <div
-                    className="lecturer-chart-bar"
-                    style={{
-                      height: `${item.height}%`,
-                    }}
-                  />
+                    <div
+                      className="lecturer-chart-bar"
+                      style={{
+                        height:
+                          `${item.height}%`,
+                      }}
+                    />
+
+                  </div>
+
+
+                  <span>
+                    {item.day}
+                  </span>
 
                 </div>
 
-
-                <span>
-                  {item.day}
-                </span>
-
-              </div>
-
-            ))}
+              )
+            )}
 
           </div>
 
@@ -482,13 +985,21 @@ function LecturerDashboard() {
         <div className="lecturer-quick-actions">
 
 
-          <button className="lecturer-action-card action-blue">
+          <button
+            className="lecturer-action-card action-blue"
+            onClick={() =>
+              navigate(
+                "/lecturer/courses"
+              )
+            }
+          >
 
             <div className="lecturer-action-icon">
 
               <Plus size={20} />
 
             </div>
+
 
             <div>
 
@@ -497,7 +1008,8 @@ function LecturerDashboard() {
               </h3>
 
               <p>
-                Add a new module for your students.
+                Add a new module for your
+                students.
               </p>
 
             </div>
@@ -505,13 +1017,23 @@ function LecturerDashboard() {
           </button>
 
 
-          <button className="lecturer-action-card action-purple">
+          <button
+            className="lecturer-action-card action-purple"
+            onClick={() =>
+              navigate(
+                "/lecturer/assignments"
+              )
+            }
+          >
 
             <div className="lecturer-action-icon">
 
-              <ClipboardList size={20} />
+              <ClipboardList
+                size={20}
+              />
 
             </div>
+
 
             <div>
 
@@ -520,7 +1042,8 @@ function LecturerDashboard() {
               </h3>
 
               <p>
-                Publish new coursework and deadlines.
+                Publish new coursework and
+                deadlines.
               </p>
 
             </div>
@@ -528,13 +1051,23 @@ function LecturerDashboard() {
           </button>
 
 
-          <button className="lecturer-action-card action-green">
+          <button
+            className="lecturer-action-card action-green"
+            onClick={() =>
+              navigate(
+                "/lecturer/courses"
+              )
+            }
+          >
 
             <div className="lecturer-action-icon">
 
-              <UploadCloud size={20} />
+              <UploadCloud
+                size={20}
+              />
 
             </div>
+
 
             <div>
 
@@ -543,7 +1076,8 @@ function LecturerDashboard() {
               </h3>
 
               <p>
-                Share PDFs and learning resources.
+                Share PDFs and learning
+                resources.
               </p>
 
             </div>
@@ -551,13 +1085,23 @@ function LecturerDashboard() {
           </button>
 
 
-          <button className="lecturer-action-card action-orange">
+          <button
+            className="lecturer-action-card action-orange"
+            onClick={() =>
+              navigate(
+                "/lecturer/grading"
+              )
+            }
+          >
 
             <div className="lecturer-action-icon">
 
-              <GraduationCap size={20} />
+              <GraduationCap
+                size={20}
+              />
 
             </div>
+
 
             <div>
 
@@ -566,7 +1110,8 @@ function LecturerDashboard() {
               </h3>
 
               <p>
-                Review student work and add feedback.
+                Review student work and add
+                feedback.
               </p>
 
             </div>
@@ -579,7 +1124,7 @@ function LecturerDashboard() {
 
 
       {/* ====================================
-          SUBMISSIONS
+          RECENT SUBMISSIONS
       ==================================== */}
 
       <section
@@ -596,17 +1141,27 @@ function LecturerDashboard() {
             </h2>
 
             <p>
-              Latest coursework submitted by students.
+              Latest coursework submitted
+              by your students.
             </p>
 
           </div>
 
 
-          <button className="lecturer-section-button">
+          <button
+            className="lecturer-section-button"
+            onClick={() =>
+              navigate(
+                "/lecturer/submissions"
+              )
+            }
+          >
 
             View All
 
-            <ArrowRight size={14} />
+            <ArrowRight
+              size={14}
+            />
 
           </button>
 
@@ -630,7 +1185,7 @@ function LecturerDashboard() {
                 </th>
 
                 <th>
-                  Course
+                  Program / Batch
                 </th>
 
                 <th>
@@ -648,28 +1203,65 @@ function LecturerDashboard() {
 
             <tbody>
 
-              {submissions.map(
-                (submission, index) => (
+              {submissions.length ===
+                0 &&
+                !loading && (
 
-                  <tr key={index}>
+                  <tr>
+
+                    <td
+                      colSpan="5"
+                      style={{
+                        textAlign:
+                          "center",
+                        padding:
+                          "30px",
+                      }}
+                    >
+                      No student submissions
+                      yet.
+                    </td>
+
+                  </tr>
+
+                )}
+
+
+              {submissions.map(
+                (submission) => (
+
+                  <tr
+                    key={
+                      submission.submission_id
+                    }
+                  >
 
                     <td className="lecturer-table-primary">
 
-                      {submission.student}
+                      {
+                        submission.student_name
+                      }
 
                     </td>
 
 
                     <td>
 
-                      {submission.assignment}
+                      {
+                        submission.assignment_title
+                      }
 
                     </td>
 
 
                     <td>
 
-                      {submission.course}
+                      {
+                        submission.degree
+                      }
+
+                      {submission.batch &&
+                        ` • ${submission.batch}`}
 
                     </td>
 
@@ -680,23 +1272,30 @@ function LecturerDashboard() {
                         className={`lecturer-status-badge lecturer-status-${submission.status}`}
                       >
 
-                        {submission.status === "pending" && (
-                          <Clock3 size={11} />
+                        {submission.status ===
+                          "pending" && (
+
+                          <Clock3
+                            size={11}
+                          />
+
                         )}
 
-                        {submission.status === "submitted" && (
-                          <FileCheck2 size={11} />
+
+                        {submission.status ===
+                          "graded" && (
+
+                          <UserCheck
+                            size={11}
+                          />
+
                         )}
 
-                        {submission.status === "graded" && (
-                          <UserCheck size={11} />
-                        )}
 
-                        {submission.status === "pending"
+                        {submission.status ===
+                        "pending"
                           ? "To Grade"
-                          : submission.status === "submitted"
-                            ? "Submitted"
-                            : "Graded"}
+                          : "Graded"}
 
                       </span>
 
@@ -705,7 +1304,14 @@ function LecturerDashboard() {
 
                     <td>
 
-                      <button className="lecturer-table-action">
+                      <button
+                        className="lecturer-table-action"
+                        onClick={() =>
+                          navigate(
+                            "/lecturer/grading"
+                          )
+                        }
+                      >
 
                         Review
 
@@ -728,7 +1334,7 @@ function LecturerDashboard() {
 
 
       {/* ====================================
-          GRADING
+          GRADING OVERVIEW
       ==================================== */}
 
       <section
@@ -745,7 +1351,9 @@ function LecturerDashboard() {
             </h2>
 
             <p>
-              Monitor grading workload and completed reviews.
+              Monitor your real grading
+              workload and completed
+              reviews.
             </p>
 
           </div>
@@ -755,18 +1363,21 @@ function LecturerDashboard() {
 
         <div className="lecturer-stats">
 
+
           <div className="lecturer-stat-card lecturer-stat-orange">
 
             <div className="lecturer-stat-icon">
 
-              <ClipboardList size={21} />
+              <ClipboardList
+                size={21}
+              />
 
             </div>
 
             <div>
 
               <strong>
-                12
+                {waitingToGrade}
               </strong>
 
               <span>
@@ -782,18 +1393,20 @@ function LecturerDashboard() {
 
             <div className="lecturer-stat-icon">
 
-              <FileCheck2 size={21} />
+              <FileCheck2
+                size={21}
+              />
 
             </div>
 
             <div>
 
               <strong>
-                31
+                {gradedSubmissions}
               </strong>
 
               <span>
-                Graded This Week
+                Graded Submissions
               </span>
 
             </div>
@@ -812,7 +1425,7 @@ function LecturerDashboard() {
             <div>
 
               <strong>
-                148
+                {totalStudents}
               </strong>
 
               <span>
@@ -828,18 +1441,24 @@ function LecturerDashboard() {
 
             <div className="lecturer-stat-icon">
 
-              <GraduationCap size={21} />
+              <GraduationCap
+                size={21}
+              />
 
             </div>
 
             <div>
 
               <strong>
-                81%
+
+                {averageScore !== null
+                  ? `${averageScore}%`
+                  : "—"}
+
               </strong>
 
               <span>
-                Average Performance
+                Average Numeric Score
               </span>
 
             </div>
@@ -852,7 +1471,7 @@ function LecturerDashboard() {
 
 
       {/* ====================================
-          STUDENTS
+          STUDENT PROGRESS
       ==================================== */}
 
       <section
@@ -869,7 +1488,8 @@ function LecturerDashboard() {
             </h2>
 
             <p>
-              Quick overview of student learning progress.
+              Real assignment completion
+              progress for your students.
             </p>
 
           </div>
@@ -877,72 +1497,93 @@ function LecturerDashboard() {
         </div>
 
 
+        {!loading &&
+          students.length === 0 && (
+
+            <p>
+              No students are currently
+              assigned to the programs and
+              batches you teach.
+            </p>
+
+          )}
+
+
         <div className="lecturer-student-grid">
 
-          {students.map(
-            (student, index) => (
+          {students
+            .slice(0, 4)
+            .map(
+              (student) => (
 
-              <article
-                className="lecturer-student-card"
-                key={index}
-              >
+                <article
+                  className="lecturer-student-card"
+                  key={student.id}
+                >
 
-                <div className="lecturer-student-avatar">
+                  <div className="lecturer-student-avatar">
 
-                  {student.initials}
-
-                </div>
-
-
-                <h3>
-                  {student.name}
-                </h3>
-
-
-                <p>
-                  {student.course}
-                </p>
-
-
-                <div className="lecturer-student-progress">
-
-                  <div className="lecturer-student-progress-info">
-
-                    <span>
-                      Progress
-                    </span>
-
-                    <strong>
-                      {student.progress}%
-                    </strong>
+                    {
+                      student.initials
+                    }
 
                   </div>
 
 
-                  <div className="lecturer-student-progress-track">
+                  <h3>
+                    {student.name}
+                  </h3>
 
-                    <div
-                      className="lecturer-student-progress-fill"
-                      style={{
-                        width: `${student.progress}%`,
-                      }}
-                    />
+
+                  <p>
+                    {student.course}
+                  </p>
+
+
+                  <div className="lecturer-student-progress">
+
+                    <div className="lecturer-student-progress-info">
+
+                      <span>
+                        Progress
+                      </span>
+
+                      <strong>
+                        {
+                          student.progress
+                        }%
+                      </strong>
+
+                    </div>
+
+
+                    <div className="lecturer-student-progress-track">
+
+                      <div
+                        className="lecturer-student-progress-fill"
+                        style={{
+                          width:
+                            `${student.progress}%`,
+                        }}
+                      />
+
+                    </div>
 
                   </div>
 
-                </div>
+                </article>
 
-              </article>
-
-            )
-          )}
+              )
+            )}
 
         </div>
 
       </section>
 
     </div>
+
   );
+
 }
 
 

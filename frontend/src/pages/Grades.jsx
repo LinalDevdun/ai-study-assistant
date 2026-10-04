@@ -1,13 +1,17 @@
 import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import axios from "axios";
+
+import {
   GraduationCap,
   Award,
   TrendingUp,
   BookOpen,
   Trophy,
-  BrainCircuit,
-  Database,
-  Code2,
-  Globe2,
   CircleCheckBig,
 } from "lucide-react";
 
@@ -16,114 +20,412 @@ import "../styles/grades.css";
 
 function Grades() {
 
-  /*
-    TEMPORARY UI DATA
+  const [grades, setGrades] =
+    useState([]);
 
-    Later we will replace this
-    with real backend/database data.
-  */
+  const [loading, setLoading] =
+    useState(true);
 
-  const gpa = 3.7;
-
-
-  const courseGrades = [
-    {
-      id: 1,
-      course:
-        "Artificial Intelligence & Machine Learning",
-      lecturer: "Dr. Sarah Johnson",
-      score: 86,
-      grade: "A",
-      icon: BrainCircuit,
-    },
-    {
-      id: 2,
-      course: "Database Systems",
-      lecturer: "Prof. Michael Brown",
-      score: 82,
-      grade: "A",
-      icon: Database,
-    },
-    {
-      id: 3,
-      course: "Software Engineering",
-      lecturer: "Dr. Emily Davis",
-      score: 74,
-      grade: "B",
-      icon: Code2,
-    },
-    {
-      id: 4,
-      course:
-        "Web Development Fundamentals",
-      lecturer: "Mr. David Wilson",
-      score: 78,
-      grade: "B",
-      icon: Globe2,
-    },
-  ];
+  const [error, setError] =
+    useState("");
 
 
-  const recentResults = [
-    {
-      assignment:
-        "Machine Learning Model Evaluation",
-      course:
-        "Artificial Intelligence",
-      marks: "87 / 100",
-      grade: "A",
-      feedback:
-        "Strong analysis and clear explanation.",
-    },
-    {
-      assignment:
-        "Database Normalization Exercise",
-      course: "Database Systems",
-      marks: "84 / 100",
-      grade: "A",
-      feedback:
-        "Well structured and technically accurate.",
-    },
-    {
-      assignment:
-        "Software Design Report",
-      course: "Software Engineering",
-      marks: "75 / 100",
-      grade: "B",
-      feedback:
-        "Good work. Improve design justification.",
-    },
-    {
-      assignment:
-        "Responsive Web Interface",
-      course: "Web Development",
-      marks: "78 / 100",
-      grade: "B",
-      feedback:
-        "Good implementation and clean interface.",
-    },
-  ];
+  /* ========================================
+     LOAD REAL STUDENT GRADES
+  ======================================== */
+
+  useEffect(() => {
+
+    const loadGrades =
+      async () => {
+
+        try {
+
+          setLoading(true);
+          setError("");
 
 
-  const getGradeClass = (grade) => {
+          const token =
+            localStorage.getItem(
+              "token"
+            );
 
-    if (grade === "A") {
+
+          if (!token) {
+
+            setError(
+              "Please log in again."
+            );
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/my-grades",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          setGrades(
+            Array.isArray(
+              response.data
+            )
+              ? response.data
+              : []
+          );
+
+
+        } catch (loadError) {
+
+          console.error(
+            "Grades loading error:",
+            loadError
+          );
+
+
+          setError(
+            loadError.response
+              ?.data?.error ||
+            "Failed to load grades."
+          );
+
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      };
+
+
+    loadGrades();
+
+  }, []);
+
+
+  /* ========================================
+     GRADE HELPERS
+  ======================================== */
+
+  const normalizeGrade = (
+    grade
+  ) => {
+
+    if (
+      grade === null ||
+      grade === undefined
+    ) {
+
+      return "";
+
+    }
+
+
+    return String(
+      grade
+    ).trim();
+
+  };
+
+
+  /* ========================================
+     REAL RESULT PERCENTAGE
+
+     Uses:
+     1. percentage from backend
+     2. marks / max marks as fallback
+  ======================================== */
+
+  const getResultPercentage = (
+    result
+  ) => {
+
+    if (
+      result?.percentage !== null &&
+      result?.percentage !== undefined &&
+      result?.percentage !== ""
+    ) {
+
+      const percentage =
+        Number(
+          result.percentage
+        );
+
+
+      if (
+        !Number.isNaN(
+          percentage
+        )
+      ) {
+
+        return percentage;
+
+      }
+
+    }
+
+
+    if (
+      result?.marks_awarded !== null &&
+      result?.marks_awarded !== undefined &&
+      result?.marks_awarded !== "" &&
+      result?.max_marks !== null &&
+      result?.max_marks !== undefined &&
+      result?.max_marks !== ""
+    ) {
+
+      const marks =
+        Number(
+          result.marks_awarded
+        );
+
+      const maxMarks =
+        Number(
+          result.max_marks
+        );
+
+
+      if (
+        !Number.isNaN(marks) &&
+        !Number.isNaN(maxMarks) &&
+        maxMarks > 0
+      ) {
+
+        return (
+          Math.round(
+            (
+              marks /
+              maxMarks
+            ) *
+            10000
+          ) /
+          100
+        );
+
+      }
+
+    }
+
+
+    return null;
+
+  };
+
+
+  /* ========================================
+     SCORE DISPLAY
+  ======================================== */
+
+  const getScoreDisplay = (
+    result
+  ) => {
+
+    if (
+      result?.marks_awarded !== null &&
+      result?.marks_awarded !== undefined &&
+      result?.marks_awarded !== "" &&
+      result?.max_marks !== null &&
+      result?.max_marks !== undefined &&
+      result?.max_marks !== ""
+    ) {
+
+      const marks =
+        Number(
+          result.marks_awarded
+        );
+
+      const maxMarks =
+        Number(
+          result.max_marks
+        );
+
+
+      if (
+        !Number.isNaN(marks) &&
+        !Number.isNaN(maxMarks)
+      ) {
+
+        return `${marks} / ${maxMarks}`;
+
+      }
+
+    }
+
+
+    const percentage =
+      getResultPercentage(
+        result
+      );
+
+
+    if (
+      percentage !== null
+    ) {
+
+      return `${percentage}%`;
+
+    }
+
+
+    return "—";
+
+  };
+
+
+  /* ========================================
+     GRADE CLASS
+  ======================================== */
+
+  const getGradeClass = (
+    grade
+  ) => {
+
+    const value =
+      normalizeGrade(
+        grade
+      ).toUpperCase();
+
+
+    if (
+      value.startsWith("A")
+    ) {
+
       return "grade-a";
+
     }
 
-    if (grade === "B") {
+
+    if (
+      value.startsWith("B")
+    ) {
+
       return "grade-b";
+
     }
+
 
     return "grade-c";
 
   };
 
 
+  /* ========================================
+     REAL SUMMARY VALUES
+  ======================================== */
+
+  const numericGrades =
+    useMemo(
+      () =>
+        grades
+          .map(
+            (item) =>
+              getResultPercentage(
+                item
+              )
+          )
+          .filter(
+            (score) =>
+              score !== null
+          ),
+      [grades]
+    );
+
+
+  const averageScore =
+    useMemo(
+      () => {
+
+        if (
+          numericGrades.length === 0
+        ) {
+
+          return null;
+
+        }
+
+
+        const total =
+          numericGrades.reduce(
+            (
+              sum,
+              score
+            ) =>
+              sum + score,
+            0
+          );
+
+
+        return Math.round(
+          total /
+          numericGrades.length
+        );
+
+      },
+      [numericGrades]
+    );
+
+
+  const aGradeCount =
+    useMemo(
+      () =>
+        grades.filter(
+          (item) =>
+            normalizeGrade(
+              item.grade
+            )
+              .toUpperCase()
+              .startsWith("A")
+        ).length,
+      [grades]
+    );
+
+
+  /* ========================================
+     DATE
+  ======================================== */
+
+  const formatDate = (
+    date
+  ) => {
+
+    if (!date) {
+
+      return "—";
+
+    }
+
+
+    return new Date(
+      date
+    ).toLocaleDateString(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }
+    );
+
+  };
+
+
   return (
+
     <div className="grades-page">
 
-      {/* HEADER */}
+
+      {/* ====================================
+          HEADER
+      ==================================== */}
 
       <section className="grades-header">
 
@@ -134,9 +436,9 @@ function Grades() {
           </h1>
 
           <p>
-            Review your academic performance,
-            assignment results and lecturer
-            feedback.
+            Review your academic
+            performance, assignment
+            results and lecturer feedback.
           </p>
 
         </div>
@@ -144,54 +446,103 @@ function Grades() {
 
         <div className="grades-header-badge">
 
-          <TrendingUp size={16} />
+          <TrendingUp
+            size={16}
+          />
 
-          Good Standing
+          {grades.length > 0
+            ? "Results Available"
+            : "Awaiting Results"}
 
         </div>
 
       </section>
 
 
-      {/* SUMMARY */}
+      {/* ====================================
+          ERROR
+      ==================================== */}
+
+      {error && (
+
+        <div
+          style={{
+            marginBottom: "18px",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            background: "#fff1f2",
+            color: "#be123c",
+            fontSize: "14px",
+          }}
+        >
+
+          {error}
+
+        </div>
+
+      )}
+
+
+      {/* ====================================
+          SUMMARY
+      ==================================== */}
 
       <section className="grades-summary">
+
+
+        {/* GPA */}
 
         <div className="grade-summary-card grade-purple">
 
           <div className="grade-summary-icon">
-            <GraduationCap size={21} />
+
+            <GraduationCap
+              size={21}
+            />
+
           </div>
+
 
           <div>
 
             <strong>
-              {gpa}
+              —
             </strong>
 
             <span>
-              Current GPA
+              GPA Not Calculated
             </span>
 
           </div>
 
         </div>
 
+
+        {/* GRADED RESULTS */}
 
         <div className="grade-summary-card grade-blue">
 
           <div className="grade-summary-icon">
-            <BookOpen size={21} />
+
+            <BookOpen
+              size={21}
+            />
+
           </div>
+
 
           <div>
 
             <strong>
-              6
+
+              {loading
+                ? "..."
+                : grades.length}
+
             </strong>
 
             <span>
-              Graded Courses
+              Graded Results
             </span>
 
           </div>
@@ -199,16 +550,29 @@ function Grades() {
         </div>
 
 
+        {/* AVERAGE SCORE */}
+
         <div className="grade-summary-card grade-green">
 
           <div className="grade-summary-icon">
-            <CircleCheckBig size={21} />
+
+            <CircleCheckBig
+              size={21}
+            />
+
           </div>
+
 
           <div>
 
             <strong>
-              81%
+
+              {loading
+                ? "..."
+                : averageScore !== null
+                  ? `${averageScore}%`
+                  : "—"}
+
             </strong>
 
             <span>
@@ -220,16 +584,27 @@ function Grades() {
         </div>
 
 
+        {/* A GRADES */}
+
         <div className="grade-summary-card grade-orange">
 
           <div className="grade-summary-icon">
-            <Award size={21} />
+
+            <Award
+              size={21}
+            />
+
           </div>
+
 
           <div>
 
             <strong>
-              2
+
+              {loading
+                ? "..."
+                : aGradeCount}
+
             </strong>
 
             <span>
@@ -243,23 +618,28 @@ function Grades() {
       </section>
 
 
-      {/* MAIN */}
+      {/* ====================================
+          MAIN
+      ==================================== */}
 
       <section className="grades-main-grid">
 
-        {/* COURSE PERFORMANCE */}
+
+        {/* ====================================
+            GRADED PERFORMANCE
+        ==================================== */}
 
         <div className="grades-panel">
 
           <div className="grades-panel-header">
 
             <h2>
-              Course Performance
+              Graded Performance
             </h2>
 
             <p>
-              Your current performance
-              across your modules.
+              Your completed coursework
+              that has been graded.
             </p>
 
           </div>
@@ -267,60 +647,105 @@ function Grades() {
 
           <div className="course-grades-list">
 
-            {courseGrades.map(
-              (course) => {
+            {loading ? (
 
-                const Icon =
-                  course.icon;
+              <div
+                style={{
+                  padding: "22px",
+                  color: "#7b8195",
+                }}
+              >
 
+                Loading grades...
 
-                return (
-                  <article
-                    className="course-grade-card"
-                    key={course.id}
-                  >
+              </div>
 
-                    <div className="course-grade-icon">
+            ) : grades.length === 0 ? (
 
-                      <Icon size={19} />
+              <div
+                style={{
+                  padding: "22px",
+                  color: "#7b8195",
+                }}
+              >
 
-                    </div>
+                No graded assignments
+                are available yet.
 
+              </div>
 
-                    <div className="course-grade-info">
+            ) : (
 
-                      <h3>
-                        {course.course}
-                      </h3>
+              grades.map(
+                (result) => {
 
-                      <p>
-                        {course.lecturer}
-                      </p>
-
-                    </div>
-
-
-                    <div className="course-grade-score">
-
-                      {course.score}%
-
-                    </div>
+                  const numericScore =
+                    getResultPercentage(
+                      result
+                    );
 
 
-                    <div
-                      className={`course-grade-letter ${getGradeClass(
-                        course.grade
-                      )}`}
+                  return (
+
+                    <article
+                      className="course-grade-card"
+                      key={
+                        result.submission_id
+                      }
                     >
 
-                      {course.grade}
+                      <div className="course-grade-icon">
 
-                    </div>
+                        <GraduationCap
+                          size={19}
+                        />
 
-                  </article>
-                );
+                      </div>
 
-              }
+
+                      <div className="course-grade-info">
+
+                        <h3>
+                          {
+                            result.assignment_title
+                          }
+                        </h3>
+
+                        <p>
+                          Graded submission
+                        </p>
+
+                      </div>
+
+
+                      <div className="course-grade-score">
+
+                        {numericScore !== null
+                          ? `${numericScore}%`
+                          : "Result"}
+
+                      </div>
+
+
+                      <div
+                        className={`course-grade-letter ${getGradeClass(
+                          result.grade
+                        )}`}
+                      >
+
+                        {normalizeGrade(
+                          result.grade
+                        ) || "—"}
+
+                      </div>
+
+                    </article>
+
+                  );
+
+                }
+              )
+
             )}
 
           </div>
@@ -328,18 +753,20 @@ function Grades() {
         </div>
 
 
-        {/* GPA */}
+        {/* ====================================
+            RESULTS OVERVIEW
+        ==================================== */}
 
         <div className="grades-panel">
 
           <div className="grades-panel-header">
 
             <h2>
-              GPA Overview
+              Results Overview
             </h2>
 
             <p>
-              Current semester standing.
+              Current graded coursework.
             </p>
 
           </div>
@@ -352,11 +779,15 @@ function Grades() {
               <div className="gpa-circle-inner">
 
                 <strong>
-                  {gpa}
+
+                  {loading
+                    ? "..."
+                    : grades.length}
+
                 </strong>
 
                 <span>
-                  CURRENT GPA
+                  GRADED
                 </span>
 
               </div>
@@ -365,10 +796,17 @@ function Grades() {
 
 
             <p className="gpa-message">
-              Your academic performance
-              is currently strong. Keep
-              maintaining consistent
-              results across your modules.
+
+              {loading
+                ? "Loading your results..."
+                : grades.length === 0
+                  ? "Your results will appear here after your lecturer grades your submissions."
+                  : `${grades.length} graded ${
+                      grades.length === 1
+                        ? "submission is"
+                        : "submissions are"
+                    } currently available.`}
+
             </p>
 
           </div>
@@ -378,7 +816,9 @@ function Grades() {
       </section>
 
 
-      {/* RECENT RESULTS */}
+      {/* ====================================
+          RECENT RESULTS
+      ==================================== */}
 
       <section className="recent-results-section">
 
@@ -400,11 +840,11 @@ function Grades() {
                 </th>
 
                 <th>
-                  Course
+                  Submitted
                 </th>
 
                 <th>
-                  Marks
+                  Score
                 </th>
 
                 <th>
@@ -422,52 +862,114 @@ function Grades() {
 
             <tbody>
 
-              {recentResults.map(
-                (result, index) => (
+              {loading ? (
 
-                  <tr key={index}>
+                <tr>
 
-                    <td className="result-title">
+                  <td
+                    colSpan="5"
+                    style={{
+                      textAlign:
+                        "center",
+                    }}
+                  >
 
-                      {result.assignment}
+                    Loading results...
 
-                    </td>
+                  </td>
+
+                </tr>
+
+              ) : grades.length === 0 ? (
+
+                <tr>
+
+                  <td
+                    colSpan="5"
+                    style={{
+                      textAlign:
+                        "center",
+                    }}
+                  >
+
+                    No graded results
+                    available yet.
+
+                  </td>
+
+                </tr>
+
+              ) : (
+
+                grades.map(
+                  (result) => {
+
+                    const scoreDisplay =
+                      getScoreDisplay(
+                        result
+                      );
 
 
-                    <td>
+                    return (
 
-                      {result.course}
+                      <tr
+                        key={
+                          result.submission_id
+                        }
+                      >
 
-                    </td>
+                        <td className="result-title">
 
+                          {
+                            result.assignment_title
+                          }
 
-                    <td>
-
-                      {result.marks}
-
-                    </td>
-
-
-                    <td>
-
-                      <span className="result-grade-badge">
-
-                        {result.grade}
-
-                      </span>
-
-                    </td>
+                        </td>
 
 
-                    <td className="result-feedback">
+                        <td>
 
-                      {result.feedback}
+                          {formatDate(
+                            result.submitted_at
+                          )}
 
-                    </td>
+                        </td>
 
-                  </tr>
 
+                        <td>
+
+                          {scoreDisplay}
+
+                        </td>
+
+
+                        <td>
+
+                          <span className="result-grade-badge">
+
+                            {normalizeGrade(
+                              result.grade
+                            ) || "—"}
+
+                          </span>
+
+                        </td>
+
+
+                        <td className="result-feedback">
+
+                          {result.feedback ||
+                            "No lecturer feedback provided."}
+
+                        </td>
+
+                      </tr>
+
+                    );
+
+                  }
                 )
+
               )}
 
             </tbody>
@@ -479,13 +981,17 @@ function Grades() {
       </section>
 
 
-      {/* BANNER */}
+      {/* ====================================
+          BANNER
+      ==================================== */}
 
       <section className="grades-banner">
 
         <div className="grades-banner-icon">
 
-          <Trophy size={24} />
+          <Trophy
+            size={24}
+          />
 
         </div>
 
@@ -493,14 +999,24 @@ function Grades() {
         <div className="grades-banner-content">
 
           <h3>
-            Keep up the great work!
+
+            {grades.length > 0
+              ? "Keep up the good work!"
+              : "Results coming soon"}
+
           </h3>
 
+
           <p>
-            Your current GPA is 3.7 and your
-            average performance is strong.
-            Stay consistent with your coursework
-            to maintain your results.
+
+            {grades.length > 0
+              ? `You currently have ${grades.length} graded ${
+                  grades.length === 1
+                    ? "submission"
+                    : "submissions"
+                }. Review your lecturer feedback to keep improving.`
+              : "Your grades and lecturer feedback will appear here after your submitted work has been graded."}
+
           </p>
 
         </div>
@@ -508,7 +1024,9 @@ function Grades() {
       </section>
 
     </div>
+
   );
+
 }
 
 

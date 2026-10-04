@@ -452,7 +452,7 @@ function LecturerSidebar() {
               size={19}
             />
 
-            AI Study Tutor
+            AI Teaching Assistant
 
           </button>
 

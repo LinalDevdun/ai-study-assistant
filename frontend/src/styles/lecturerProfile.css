@@ -1,0 +1,212 @@
+.lecturer-profile-page {
+  padding: 42px;
+}
+
+
+/* HEADER */
+
+.lp-page-header {
+  margin-bottom: 28px;
+}
+
+.lp-page-header h1 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 30px;
+  font-weight: 800;
+
+  letter-spacing: -0.8px;
+}
+
+.lp-page-header p {
+  margin-top: 7px;
+
+  color: var(--text-secondary);
+
+  font-size: 14px;
+}
+
+
+/* PROFILE CARD */
+
+.lp-profile-card {
+  max-width: 900px;
+
+  overflow: hidden;
+
+  background: white;
+
+  border:
+    1px solid
+    var(--border-light);
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 10px 35px
+    rgba(15, 23, 42, 0.05);
+}
+
+
+/* BANNER */
+
+.lp-profile-banner {
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+
+  padding: 34px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4f46e5,
+      #667eea
+    );
+}
+
+
+.lp-avatar {
+  width: 72px;
+  height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  background:
+    rgba(255, 255, 255, 0.18);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.25);
+
+  border-radius: 18px;
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+
+.lp-profile-banner h2 {
+  margin: 0;
+
+  font-size: 25px;
+  font-weight: 800;
+}
+
+
+.lp-profile-banner p {
+  margin: 5px 0 0;
+
+  color:
+    rgba(255, 255, 255, 0.82);
+
+  font-size: 13px;
+}
+
+
+/* DETAILS */
+
+.lp-details {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 16px;
+
+  padding: 28px;
+}
+
+
+.lp-detail-card {
+  min-height: 92px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 18px;
+
+  background: #fafbff;
+
+  border:
+    1px solid
+    var(--border-light);
+
+  border-radius: 14px;
+}
+
+
+.lp-detail-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: #4f63e7;
+
+  background: #eef2ff;
+
+  border-radius: 11px;
+}
+
+
+.lp-detail-card span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+}
+
+
+.lp-detail-card strong {
+  display: block;
+
+  color: var(--text-primary);
+
+  font-size: 13px;
+}
+
+
+/* LOADING */
+
+.lp-loading {
+  padding: 40px;
+
+  color: var(--text-secondary);
+
+  text-align: center;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 760px) {
+
+  .lecturer-profile-page {
+    padding: 24px 18px;
+  }
+
+  .lp-details {
+    grid-template-columns:
+      1fr;
+  }
+
+}

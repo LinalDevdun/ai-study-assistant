@@ -27,6 +27,9 @@ import Assignments from "./pages/Assignments";
 import Notifications from "./pages/Notifications";
 import Grades from "./pages/Grades";
 import MyCourses from "./pages/MyCourses";
+import StudentProfile from "./pages/StudentProfile";
+import StudentSettings from "./pages/StudentSettings";
+import StudentChangePassword from "./pages/StudentChangePassword";
 
 
 /* =========================================
@@ -39,6 +42,11 @@ import LecturerAssignments from "./pages/LecturerAssignments";
 import LecturerSubmissions from "./pages/LecturerSubmissions";
 import LecturerGrading from "./pages/LecturerGrading";
 import LecturerStudents from "./pages/LecturerStudents";
+import LecturerCourse from "./pages/LecturerCourse";
+import LecturerProfile from "./pages/LecturerProfile";
+import LecturerChangePassword from "./pages/LecturerChangePassword";
+import LecturerSettings from "./pages/LecturerSettings";
+import LecturerTutor from "./pages/LecturerTutor";
 
 
 /* =========================================
@@ -195,6 +203,66 @@ function App() {
           }
         />
 
+        <Route
+          path="/grades"
+          element={
+            <ProtectedRoute
+              allowedRoles={["STUDENT"]}
+            >
+              <StudentLayout>
+                <Grades />
+              </StudentLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* STUDENT PROFILE */}
+
+        <Route
+          path="/student/profile"
+          element={
+            <ProtectedRoute
+              allowedRoles={["STUDENT"]}
+            >
+              <StudentLayout>
+                <StudentProfile />
+              </StudentLayout>
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* STUDENT SETTINGS */}
+
+        <Route
+          path="/student/settings"
+          element={
+            <ProtectedRoute
+              allowedRoles={["STUDENT"]}
+            >
+              <StudentLayout>
+                <StudentSettings />
+              </StudentLayout>
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* STUDENT CHANGE PASSWORD */}
+
+        <Route
+          path="/student/change-password"
+          element={
+            <ProtectedRoute
+              allowedRoles={["STUDENT"]}
+            >
+              <StudentLayout>
+                <StudentChangePassword />
+              </StudentLayout>
+            </ProtectedRoute>
+          }
+        />
+
 
 
         {/* ========================================
@@ -223,6 +291,19 @@ function App() {
             >
               <LecturerLayout>
                 <LecturerCourses />
+              </LecturerLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/lecturer/course/:id"
+          element={
+            <ProtectedRoute
+              allowedRoles={["LECTURER"]}
+            >
+              <LecturerLayout>
+                <LecturerCourse />
               </LecturerLayout>
             </ProtectedRoute>
           }
@@ -283,7 +364,51 @@ function App() {
             </ProtectedRoute>
           }
         />
+        
+        <Route
+          path="/lecturer/profile"
+          element={
+            <ProtectedRoute
+              allowedRoles={["LECTURER"]}
+            >
+              <LecturerLayout>
 
+                <LecturerProfile />
+
+              </LecturerLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/lecturer/change-password"
+          element={
+            <ProtectedRoute
+              allowedRoles={["LECTURER"]}
+            >
+              <LecturerLayout>
+
+                <LecturerChangePassword />
+
+              </LecturerLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/lecturer/settings"
+          element={
+            <ProtectedRoute
+              allowedRoles={["LECTURER"]}
+            >
+              <LecturerLayout>
+
+                <LecturerSettings />
+
+              </LecturerLayout>
+            </ProtectedRoute>
+          }
+        />
 
 
         {/* ========================================
@@ -434,7 +559,7 @@ function App() {
               ) : role === "LECTURER" ? (
 
                 <LecturerLayout>
-                  <Tutor />
+                  <LecturerTutor />
                 </LecturerLayout>
 
               ) : (

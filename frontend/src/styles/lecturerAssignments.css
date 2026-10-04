@@ -583,3 +583,159 @@
   }
 
 }
+
+/* =========================================
+   VIEW ASSIGNMENT MODAL
+========================================= */
+
+.la-view-details {
+  padding: 22px;
+}
+
+.la-view-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding-bottom: 20px;
+
+  border-bottom: 1px solid #eef0f5;
+}
+
+.la-view-title h3 {
+  margin: 0 0 5px;
+
+  color: #252a3d;
+
+  font-size: 17px;
+}
+
+.la-view-title span {
+  color: #9298ad;
+
+  font-size: 12px;
+}
+
+.la-view-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+
+  margin-top: 20px;
+}
+
+.la-view-grid > div {
+  padding: 14px;
+
+  background: #f8f9fc;
+
+  border: 1px solid #edf0f5;
+  border-radius: 10px;
+}
+
+.la-view-grid span,
+.la-view-section > span {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #9298ad;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.la-view-grid strong {
+  color: #2c3147;
+
+  font-size: 13px;
+}
+
+.la-view-section {
+  margin-top: 18px;
+}
+
+.la-view-section p {
+  margin: 0;
+
+  color: #626981;
+
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.la-view-file-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+
+  color: #5061e7;
+  background: #f1f3ff;
+
+  border: none;
+  border-radius: 9px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.la-view-file-button:hover {
+  background: #e8ebff;
+}
+
+/* =========================================
+   ASSIGNMENT MORE MENU
+========================================= */
+
+.la-more-wrapper {
+  position: relative;
+}
+
+.la-more-menu {
+  position: absolute;
+
+  top: 42px;
+  right: 0;
+
+  width: 155px;
+
+  padding: 6px;
+
+  background: white;
+
+  border: 1px solid #e9ecf3;
+  border-radius: 10px;
+
+  box-shadow:
+    0 12px 30px
+    rgba(15, 23, 42, 0.12);
+
+  z-index: 100;
+}
+
+.la-more-menu button {
+  width: 100%;
+
+  padding: 10px 12px;
+
+  color: #dc2626;
+  background: transparent;
+
+  border: none;
+  border-radius: 7px;
+
+  text-align: left;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.la-more-menu button:hover {
+  background: #fff1f2;
+}

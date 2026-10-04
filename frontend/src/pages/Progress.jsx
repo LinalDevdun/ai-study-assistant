@@ -1,3 +1,6 @@
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+
 import {
   TrendingUp,
   BookOpen,
@@ -16,91 +19,289 @@ import "../styles/progress.css";
 
 function Progress() {
 
-  /*
-    Temporary frontend values.
-
-    Later we will replace these with
-    real backend/database values.
-  */
-
-  const overallProgress = 77;
+  const [courses, setCourses] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
 
-  const weeklyActivity = [
-    {
-      day: "Mon",
-      hours: 2.5,
-      height: 55,
-    },
-    {
-      day: "Tue",
-      hours: 3.2,
-      height: 72,
-    },
-    {
-      day: "Wed",
-      hours: 1.8,
-      height: 41,
-    },
-    {
-      day: "Thu",
-      hours: 4.0,
-      height: 88,
-    },
-    {
-      day: "Fri",
-      hours: 3.4,
-      height: 76,
-    },
-    {
-      day: "Sat",
-      hours: 2.2,
-      height: 49,
-    },
-    {
-      day: "Sun",
-      hours: 3.7,
-      height: 82,
-    },
-  ];
+  /* ========================================
+     LOAD REAL STUDENT DATA
+  ======================================== */
+
+  useEffect(() => {
+
+    const loadProgressData = async () => {
+
+      try {
+
+        setLoading(true);
+        setError("");
 
 
-  const courses = [
-    {
-      id: 1,
-      title:
-        "Artificial Intelligence & Machine Learning",
-      completed: 18,
-      total: 25,
-      progress: 72,
-      icon: BrainCircuit,
-    },
-    {
-      id: 2,
-      title: "Database Systems",
-      completed: 17,
-      total: 20,
-      progress: 85,
-      icon: Database,
-    },
-    {
-      id: 3,
-      title: "Software Engineering",
-      completed: 11,
-      total: 18,
-      progress: 61,
-      icon: Code2,
-    },
-    {
-      id: 4,
-      title:
-        "Web Development Fundamentals",
-      completed: 9,
-      total: 20,
-      progress: 45,
-      icon: Globe2,
-    },
-  ];
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          setError(
+            "Please log in again."
+          );
+
+          return;
+
+        }
+
+
+        const config = {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        };
+
+
+        const [
+          coursesResponse,
+          assignmentsResponse,
+        ] =
+          await Promise.all([
+
+            axios.get(
+              "http://localhost:5000/courses",
+              config
+            ),
+
+            axios.get(
+              "http://localhost:5000/assignments",
+              config
+            ),
+
+          ]);
+
+
+        const realCourses =
+          Array.isArray(
+            coursesResponse.data
+          )
+            ? coursesResponse.data
+            : [];
+
+
+        const realAssignments =
+          Array.isArray(
+            assignmentsResponse.data
+          )
+            ? assignmentsResponse.data
+            : [];
+
+
+        /*
+          Load each course's real lesson count.
+
+          There is currently no student
+          lesson-completion table, so we show
+          real lesson availability without
+          inventing fake completion percentages.
+        */
+
+        const coursesWithLessons =
+          await Promise.all(
+
+            realCourses.map(
+              async (course) => {
+
+                try {
+
+                  const response =
+                    await axios.get(
+                      `http://localhost:5000/courses/${course.id}/lessons`,
+                      config
+                    );
+
+
+                  const lessons =
+                    Array.isArray(
+                      response.data
+                    )
+                      ? response.data
+                      : [];
+
+
+                  return {
+                    ...course,
+                    lessonCount:
+                      lessons.length,
+                  };
+
+
+                } catch (lessonError) {
+
+                  console.error(
+                    `Error loading lessons for course ${course.id}:`,
+                    lessonError
+                  );
+
+
+                  return {
+                    ...course,
+                    lessonCount: 0,
+                  };
+
+                }
+
+              }
+            )
+
+          );
+
+
+        setCourses(
+          coursesWithLessons
+        );
+
+        setAssignments(
+          realAssignments
+        );
+
+
+      } catch (loadError) {
+
+        console.error(
+          "Error loading progress data:",
+          loadError
+        );
+
+
+        setError(
+          loadError.response?.data?.error ||
+          "Failed to load learning progress."
+        );
+
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+
+    loadProgressData();
+
+  }, []);
+
+
+  /* ========================================
+     REAL PROGRESS VALUES
+  ======================================== */
+
+  const completedTasks =
+    useMemo(
+      () =>
+        assignments.filter(
+          (assignment) =>
+            assignment.is_submitted ||
+            assignment.is_graded
+        ).length,
+      [assignments]
+    );
+
+
+  const overallProgress =
+    useMemo(
+      () =>
+        assignments.length > 0
+          ? Math.round(
+              (
+                completedTasks /
+                assignments.length
+              ) * 100
+            )
+          : 0,
+      [
+        assignments.length,
+        completedTasks,
+      ]
+    );
+
+
+  const activeCourses =
+    courses.length;
+
+
+  /* ========================================
+     COURSE ICON
+  ======================================== */
+
+  const getCourseIcon = (title = "") => {
+
+    const name =
+      title.toLowerCase();
+
+
+    if (
+      name.includes("ai") ||
+      name.includes("artificial") ||
+      name.includes("machine")
+    ) {
+      return BrainCircuit;
+    }
+
+
+    if (
+      name.includes("database")
+    ) {
+      return Database;
+    }
+
+
+    if (
+      name.includes("software") ||
+      name.includes("programming")
+    ) {
+      return Code2;
+    }
+
+
+    if (
+      name.includes("web") ||
+      name.includes("internet") ||
+      name.includes("iot")
+    ) {
+      return Globe2;
+    }
+
+
+    return BookOpen;
+
+  };
+
+
+  /* ========================================
+     MESSAGE
+  ======================================== */
+
+  const progressMessage =
+    overallProgress === 100
+      ? "Excellent! You've submitted all currently assigned coursework."
+      : overallProgress >= 70
+        ? "Great work! You're making strong progress with your coursework."
+        : overallProgress >= 40
+          ? "You're making steady progress. Keep completing your coursework."
+          : assignments.length === 0
+            ? "No assignments are available yet. Your progress will update when coursework is published."
+            : "Keep going! Complete your pending coursework to increase your progress.";
+
+
+  const progressBadge =
+    overallProgress >= 70
+      ? "On Track"
+      : overallProgress >= 40
+        ? "In Progress"
+        : "Getting Started";
 
 
   return (
@@ -119,9 +320,8 @@ function Progress() {
           </h1>
 
           <p>
-            Track your learning activity,
-            course completion and study
-            performance.
+            Track your real coursework
+            completion and enrolled courses.
           </p>
 
         </div>
@@ -131,11 +331,29 @@ function Progress() {
 
           <TrendingUp size={16} />
 
-          On Track
+          {progressBadge}
 
         </div>
 
       </section>
+
+
+      {/* ERROR */}
+
+      {error && (
+        <div
+          style={{
+            marginBottom: "18px",
+            padding: "12px 16px",
+            borderRadius: "12px",
+            background: "#fff1f2",
+            color: "#be123c",
+            fontSize: "14px",
+          }}
+        >
+          {error}
+        </div>
+      )}
 
 
       {/* ====================================
@@ -153,7 +371,9 @@ function Progress() {
           <div>
 
             <strong>
-              {overallProgress}%
+              {loading
+                ? "..."
+                : `${overallProgress}%`}
             </strong>
 
             <span>
@@ -174,7 +394,9 @@ function Progress() {
           <div>
 
             <strong>
-              6
+              {loading
+                ? "..."
+                : activeCourses}
             </strong>
 
             <span>
@@ -195,11 +417,11 @@ function Progress() {
           <div>
 
             <strong>
-              20.8h
+              —
             </strong>
 
             <span>
-              Study Time This Week
+              Study Time Not Tracked
             </span>
 
           </div>
@@ -216,7 +438,9 @@ function Progress() {
           <div>
 
             <strong>
-              14
+              {loading
+                ? "..."
+                : completedTasks}
             </strong>
 
             <span>
@@ -231,13 +455,14 @@ function Progress() {
 
 
       {/* ====================================
-          OVERALL + WEEKLY
+          OVERALL + ACTIVITY
       ==================================== */}
 
       <section className="progress-main-grid">
 
 
         {/* OVERALL */}
+
         <div className="progress-panel">
 
           <div className="progress-panel-header">
@@ -247,8 +472,8 @@ function Progress() {
             </h2>
 
             <p>
-              Your progress across all
-              enrolled courses.
+              Based on your real assignment
+              submission status.
             </p>
 
           </div>
@@ -279,7 +504,9 @@ function Progress() {
               <div className="progress-circle-inner">
 
                 <strong>
-                  {overallProgress}%
+                  {loading
+                    ? "..."
+                    : `${overallProgress}%`}
                 </strong>
 
                 <span>
@@ -292,10 +519,9 @@ function Progress() {
 
 
             <p className="progress-overall-message">
-              Great work! You're making
-              consistent progress across
-              your modules. Keep your
-              learning streak going.
+              {loading
+                ? "Loading your progress..."
+                : progressMessage}
             </p>
 
           </div>
@@ -303,7 +529,8 @@ function Progress() {
         </div>
 
 
-        {/* WEEKLY ACTIVITY */}
+        {/* STUDY ACTIVITY */}
+
         <div className="progress-panel">
 
           <div className="progress-panel-header">
@@ -313,49 +540,53 @@ function Progress() {
             </h2>
 
             <p>
-              Hours spent studying this
-              week.
+              Study-time tracking is not
+              available yet.
             </p>
 
           </div>
 
 
-          <div className="weekly-chart">
+          <div
+            className="weekly-chart"
+            style={{
+              minHeight: "230px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+            }}
+          >
 
-            {weeklyActivity.map(
-              (item) => (
+            <div
+              style={{
+                maxWidth: "280px",
+                color: "#7b8195",
+                lineHeight: 1.6,
+              }}
+            >
 
-                <div
-                  className="weekly-column"
-                  key={item.day}
-                >
+              <Clock3
+                size={30}
+                strokeWidth={1.7}
+                style={{
+                  marginBottom: "10px",
+                }}
+              />
 
-                  <strong>
-                    {item.hours}h
-                  </strong>
+              <p
+                style={{
+                  margin: 0,
+                }}
+              >
+                CampusLearn does not yet
+                record study-session time.
+                This section will update
+                once study activity tracking
+                is added.
+              </p>
 
-
-                  <div className="weekly-bar-track">
-
-                    <div
-                      className="weekly-bar-fill"
-                      style={{
-                        height:
-                          `${item.height}%`,
-                      }}
-                    />
-
-                  </div>
-
-
-                  <span>
-                    {item.day}
-                  </span>
-
-                </div>
-
-              )
-            )}
+            </div>
 
           </div>
 
@@ -381,84 +612,116 @@ function Progress() {
 
         <div className="course-progress-list">
 
-          {courses.map((course) => {
+          {loading ? (
 
-            const Icon =
-              course.icon;
+            <div
+              style={{
+                padding: "24px",
+                color: "#7b8195",
+              }}
+            >
+              Loading courses...
+            </div>
+
+          ) : courses.length === 0 ? (
+
+            <div
+              style={{
+                padding: "24px",
+                color: "#7b8195",
+              }}
+            >
+              No courses are currently
+              assigned to your degree and
+              batch.
+            </div>
+
+          ) : (
+
+            courses.map((course) => {
+
+              const Icon =
+                getCourseIcon(
+                  course.title
+                );
 
 
-            return (
-              <article
-                className="course-progress-card"
-                key={course.id}
-              >
+              return (
+                <article
+                  className="course-progress-card"
+                  key={course.id}
+                >
 
-                <div className="course-progress-top">
+                  <div className="course-progress-top">
 
-                  <div className="course-progress-icon">
+                    <div className="course-progress-icon">
 
-                    <Icon
-                      size={20}
+                      <Icon
+                        size={20}
+                      />
+
+                    </div>
+
+
+                    <div className="course-progress-info">
+
+                      <h3>
+                        {course.title}
+                      </h3>
+
+                      <p>
+                        {course.lessonCount}{" "}
+                        {course.lessonCount === 1
+                          ? "lesson"
+                          : "lessons"}{" "}
+                        available
+                      </p>
+
+                    </div>
+
+
+                    <span className="course-progress-percentage">
+
+                      Not tracked
+
+                    </span>
+
+                  </div>
+
+
+                  <div className="course-progress-track-large">
+
+                    <div
+                      className="course-progress-fill-large"
+                      style={{
+                        width: "0%",
+                      }}
                     />
 
                   </div>
 
 
-                  <div className="course-progress-info">
+                  <div className="course-progress-bottom">
 
-                    <h3>
-                      {course.title}
-                    </h3>
+                    <span>
+                      Batch{" "}
+                      {course.batch ||
+                        "Not assigned"}
+                    </span>
 
-                    <p>
-                      {course.completed} of{" "}
-                      {course.total} lessons
-                      completed
-                    </p>
+                    <span>
+                      Lesson completion
+                      tracking not enabled
+                    </span>
 
                   </div>
 
+                </article>
+              );
 
-                  <span className="course-progress-percentage">
+            })
 
-                    {course.progress}%
-
-                  </span>
-
-                </div>
-
-
-                <div className="course-progress-track-large">
-
-                  <div
-                    className="course-progress-fill-large"
-                    style={{
-                      width:
-                        `${course.progress}%`,
-                    }}
-                  />
-
-                </div>
-
-
-                <div className="course-progress-bottom">
-
-                  <span>
-                    {course.completed} completed
-                  </span>
-
-                  <span>
-                    {course.total -
-                      course.completed}{" "}
-                    remaining
-                  </span>
-
-                </div>
-
-              </article>
-            );
-
-          })}
+          )}
 
         </div>
 
@@ -483,14 +746,15 @@ function Progress() {
           <div>
 
             <h3>
-              You're doing great!
+              {overallProgress === 100
+                ? "All caught up!"
+                : "Keep progressing!"}
             </h3>
 
             <p>
-              You've completed 77% of your
-              learning activities. Keep
-              studying consistently to reach
-              your semester goals.
+              {assignments.length === 0
+                ? "Your learning progress will update when assignments are published."
+                : `You've completed ${completedTasks} of ${assignments.length} current coursework tasks (${overallProgress}%).`}
             </p>
 
           </div>

@@ -3,7 +3,11 @@ import {
   useState,
 } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
 import axios from "axios";
 
 import {
@@ -19,10 +23,19 @@ import {
 
 function StudentTopbar() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
+
+  const location =
+    useLocation();
+
 
   const [profileOpen, setProfileOpen] =
     useState(false);
+
+
+  const [unreadCount, setUnreadCount] =
+    useState(0);
 
 
   const [student, setStudent] =
@@ -36,77 +49,203 @@ function StudentTopbar() {
 
 
   /* ========================================
+     HANDLE INVALID TOKEN
+  ======================================== */
+
+  const handleInvalidToken = () => {
+
+    localStorage.removeItem(
+      "token"
+    );
+
+    localStorage.removeItem(
+      "role"
+    );
+
+    navigate("/login");
+
+  };
+
+
+  /* ========================================
      GET LOGGED-IN STUDENT
   ======================================== */
 
   useEffect(() => {
 
-    const fetchStudent = async () => {
+    const fetchStudent =
+      async () => {
 
-      try {
+        try {
 
-        const token =
-          localStorage.getItem("token");
+          const token =
+            localStorage.getItem(
+              "token"
+            );
 
 
-        if (!token) {
-          navigate("/login");
-          return;
+          if (!token) {
+
+            handleInvalidToken();
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/me",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          setStudent(
+            response.data
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Failed to load student profile:",
+            error
+          );
+
+
+          if (
+            error.response?.status === 401 ||
+            error.response?.status === 403
+          ) {
+
+            handleInvalidToken();
+
+          }
+
         }
 
-
-        const response =
-          await axios.get(
-            "http://localhost:5000/me",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-
-        setStudent(response.data);
-
-      } catch (error) {
-
-        console.error(
-          "Failed to load student profile:",
-          error
-        );
-
-
-        /*
-          If token is invalid or expired,
-          remove login information.
-        */
-
-        if (
-          error.response?.status === 401 ||
-          error.response?.status === 403
-        ) {
-
-          localStorage.removeItem(
-            "token"
-          );
-
-          localStorage.removeItem(
-            "role"
-          );
-
-          navigate("/login");
-
-        }
-
-      }
-
-    };
+      };
 
 
     fetchStudent();
 
   }, [navigate]);
+
+
+  /* ========================================
+     GET REAL UNREAD NOTIFICATION COUNT
+  ======================================== */
+
+  useEffect(() => {
+
+    const fetchUnreadNotifications =
+      async () => {
+
+        try {
+
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+
+            handleInvalidToken();
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/notifications",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          const notifications =
+            Array.isArray(
+              response.data
+            )
+              ? response.data
+              : [];
+
+
+          const unread =
+            notifications.filter(
+              (notification) =>
+                !notification.is_read
+            ).length;
+
+
+          setUnreadCount(
+            unread
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Failed to load notification count:",
+            error
+          );
+
+
+          if (
+            error.response?.status === 401 ||
+            error.response?.status === 403
+          ) {
+
+            handleInvalidToken();
+
+          }
+
+        }
+
+      };
+
+
+    fetchUnreadNotifications();
+
+
+    const handleWindowFocus = () => {
+
+      fetchUnreadNotifications();
+
+    };
+
+
+    window.addEventListener(
+      "focus",
+      handleWindowFocus
+    );
+
+
+    return () => {
+
+      window.removeEventListener(
+        "focus",
+        handleWindowFocus
+      );
+
+    };
+
+  }, [
+    navigate,
+    location.pathname,
+  ]);
 
 
   /* ========================================
@@ -135,7 +274,46 @@ function StudentTopbar() {
 
 
   const initials =
-    getInitials(student.name);
+    getInitials(
+      student.name
+    );
+
+
+  /* ========================================
+     PROFILE NAVIGATION
+  ======================================== */
+
+  const goToProfile = () => {
+
+    setProfileOpen(false);
+
+    navigate(
+      "/student/profile"
+    );
+
+  };
+
+
+  const goToSettings = () => {
+
+    setProfileOpen(false);
+
+    navigate(
+      "/student/settings"
+    );
+
+  };
+
+
+  const goToChangePassword = () => {
+
+    setProfileOpen(false);
+
+    navigate(
+      "/student/change-password"
+    );
+
+  };
 
 
   /* ========================================
@@ -144,9 +322,15 @@ function StudentTopbar() {
 
   const handleLogout = () => {
 
-    localStorage.removeItem("token");
+    localStorage.removeItem(
+      "token"
+    );
 
-    localStorage.removeItem("role");
+    localStorage.removeItem(
+      "role"
+    );
+
+    setProfileOpen(false);
 
     navigate("/login");
 
@@ -154,6 +338,7 @@ function StudentTopbar() {
 
 
   return (
+
     <header className="student-topbar">
 
 
@@ -168,13 +353,13 @@ function StudentTopbar() {
           className="topbar-search-icon"
         />
 
+
         <input
           type="text"
           placeholder="Search courses, assignments..."
         />
 
       </div>
-
 
 
       {/* ====================================
@@ -184,23 +369,37 @@ function StudentTopbar() {
       <div className="topbar-actions">
 
 
-        {/* NOTIFICATION */}
+        {/* ==================================
+            NOTIFICATION
+        ================================== */}
 
         <button
+          type="button"
           className="topbar-icon-button"
           onClick={() =>
-            navigate("/notifications")
+            navigate(
+              "/notifications"
+            )
           }
+          title="Notifications"
         >
 
           <Bell size={20} />
 
-          <span className="notification-dot">
-            3
-          </span>
+
+          {unreadCount > 0 && (
+
+            <span className="notification-dot">
+
+              {unreadCount > 99
+                ? "99+"
+                : unreadCount}
+
+            </span>
+
+          )}
 
         </button>
-
 
 
         {/* ==================================
@@ -211,10 +410,12 @@ function StudentTopbar() {
 
 
           <button
+            type="button"
             className="topbar-profile"
             onClick={() =>
               setProfileOpen(
-                !profileOpen
+                (previous) =>
+                  !previous
               )
             }
           >
@@ -229,15 +430,12 @@ function StudentTopbar() {
             </div>
 
 
-
             {/* NAME */}
 
             <div className="topbar-profile-text">
 
               <strong>
-
                 {student.name}
-
               </strong>
 
               <span>
@@ -245,7 +443,6 @@ function StudentTopbar() {
               </span>
 
             </div>
-
 
 
             <ChevronDown
@@ -258,7 +455,6 @@ function StudentTopbar() {
             />
 
           </button>
-
 
 
           {/* ==================================
@@ -285,15 +481,11 @@ function StudentTopbar() {
                 <div>
 
                   <strong>
-
                     {student.name}
-
                   </strong>
 
                   <span>
-
                     {student.email}
-
                   </span>
 
                 </div>
@@ -301,13 +493,17 @@ function StudentTopbar() {
               </div>
 
 
-
               {/* PROFILE MENU */}
 
               <div className="profile-dropdown-menu">
 
 
-                <button>
+                <button
+                  type="button"
+                  onClick={
+                    goToProfile
+                  }
+                >
 
                   <User size={17} />
 
@@ -316,7 +512,12 @@ function StudentTopbar() {
                 </button>
 
 
-                <button>
+                <button
+                  type="button"
+                  onClick={
+                    goToSettings
+                  }
+                >
 
                   <Settings size={17} />
 
@@ -325,7 +526,12 @@ function StudentTopbar() {
                 </button>
 
 
-                <button>
+                <button
+                  type="button"
+                  onClick={
+                    goToChangePassword
+                  }
+                >
 
                   <LockKeyhole
                     size={17}
@@ -338,12 +544,12 @@ function StudentTopbar() {
               </div>
 
 
-
               {/* LOGOUT */}
 
               <div className="profile-dropdown-footer">
 
                 <button
+                  type="button"
                   className="dropdown-logout"
                   onClick={
                     handleLogout
@@ -367,7 +573,9 @@ function StudentTopbar() {
       </div>
 
     </header>
+
   );
+
 }
 
 

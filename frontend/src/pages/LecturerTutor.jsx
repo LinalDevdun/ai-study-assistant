@@ -19,31 +19,37 @@ import {
   User,
   Send,
   Lightbulb,
-  BookOpen,
   FileText,
   BrainCircuit,
+  BookOpen,
   RotateCcw,
   GraduationCap,
+  ClipboardList,
 } from "lucide-react";
 
 import "../styles/tutor.css";
 
 
-function Tutor() {
+function LecturerTutor() {
 
   const location =
     useLocation();
 
 
   /* ========================================
-     LESSON CONTEXT
+     OPTIONAL COURSE CONTEXT
   ======================================== */
 
-  const lessonContext =
-    location.state?.lessonContext || "";
+  const courseContext =
+    location.state?.courseContext ||
+    location.state?.lessonContext ||
+    "";
 
-  const lessonTitle =
-    location.state?.lessonTitle || "";
+
+  const courseTitle =
+    location.state?.courseTitle ||
+    location.state?.lessonTitle ||
+    "";
 
 
   /* ========================================
@@ -53,8 +59,10 @@ function Tutor() {
   const [question, setQuestion] =
     useState("");
 
+
   const [loading, setLoading] =
     useState(false);
+
 
   const [messages, setMessages] =
     useState([]);
@@ -82,30 +90,41 @@ function Tutor() {
 
 
   /* ========================================
-     SUGGESTED QUESTIONS
+     LECTURER SUGGESTIONS
   ======================================== */
 
   const suggestions = [
+
     {
       icon: Lightbulb,
       text:
-        "Explain this concept in very simple words.",
+        "Create a lesson plan for a university lecture.",
     },
+
     {
-      icon: FileText,
+      icon: ClipboardList,
       text:
-        "Summarize the important points for my exam.",
+        "Create an assignment with clear instructions and marking criteria.",
     },
+
     {
       icon: BrainCircuit,
       text:
-        "Give me a simple example to understand this topic.",
+        "Generate 10 quiz questions for my students.",
     },
+
+    {
+      icon: FileText,
+      text:
+        "Create a marking rubric for an academic assignment.",
+    },
+
     {
       icon: BookOpen,
       text:
-        "Create 5 practice questions for me.",
+        "Explain a difficult topic in a way I can teach to students.",
     },
+
   ];
 
 
@@ -124,17 +143,23 @@ function Tutor() {
         !trimmedQuestion ||
         loading
       ) {
+
         return;
+
       }
 
 
       const userMessage = {
+
         id:
           `${Date.now()}-user`,
+
         role:
           "user",
+
         content:
           trimmedQuestion,
+
       };
 
 
@@ -161,26 +186,35 @@ function Tutor() {
 
         const response =
           await axios.post(
+
             "http://localhost:5000/tutor",
 
             {
+
               question:
                 trimmedQuestion,
 
               context:
-                lessonContext,
+                courseContext,
+
             },
 
             {
+
               headers: {
+
                 Authorization:
                   `Bearer ${token}`,
+
               },
+
             }
+
           );
 
 
         const aiMessage = {
+
           id:
             `${Date.now()}-assistant`,
 
@@ -190,6 +224,7 @@ function Tutor() {
           content:
             response.data.answer ||
             "I couldn't generate an answer.",
+
         };
 
 
@@ -204,7 +239,7 @@ function Tutor() {
       } catch (error) {
 
         console.error(
-          "Tutor API Error:",
+          "Lecturer Tutor API Error:",
           error.response
             ? error.response.data
             : error.message
@@ -212,6 +247,7 @@ function Tutor() {
 
 
         const errorMessage = {
+
           id:
             `${Date.now()}-error`,
 
@@ -219,8 +255,10 @@ function Tutor() {
             "error",
 
           content:
-            error.response?.data?.error ||
-            "The AI tutor couldn't respond right now. Please try again.",
+            error.response
+              ?.data?.error ||
+            "The AI teaching assistant couldn't respond right now. Please try again.",
+
         };
 
 
@@ -303,13 +341,13 @@ function Tutor() {
         <div>
 
           <h1>
-            AI Study Tutor
+            AI Teaching Assistant
           </h1>
 
           <p>
-            Ask questions, understand difficult
-            concepts and get support while you
-            study.
+            Create teaching materials,
+            assignments, quizzes, rubrics
+            and academic content with AI.
           </p>
 
         </div>
@@ -356,16 +394,18 @@ function Tutor() {
 
 
             <p>
-              Your personal study assistant
-              for explanations, revision and
-              practice.
+              Your AI teaching assistant
+              for lesson planning, assessment
+              creation and academic support.
             </p>
 
           </div>
 
 
           <p className="tutor-suggestion-title">
+
             Try asking
+
           </p>
 
 
@@ -415,14 +455,14 @@ function Tutor() {
           <div className="tutor-side-note">
 
             <strong>
-              Study tip:
+              Teaching tip:
             </strong>
 
             <br />
 
-            Ask one clear question at a
-            time and request examples when
-            a topic feels difficult.
+            Give the AI details such as
+            subject, student level, duration
+            and marks for more useful results.
 
           </div>
 
@@ -454,11 +494,11 @@ function Tutor() {
               <div>
 
                 <h3>
-                  Study Assistant
+                  Teaching Assistant
                 </h3>
 
                 <span>
-                  Ready to help you learn
+                  Ready to help with your teaching
                 </span>
 
               </div>
@@ -486,9 +526,9 @@ function Tutor() {
           </div>
 
 
-          {/* LESSON CONTEXT */}
+          {/* COURSE CONTEXT */}
 
-          {lessonTitle && (
+          {courseTitle && (
 
             <div className="tutor-context">
 
@@ -497,10 +537,13 @@ function Tutor() {
               />
 
               <span>
-                Studying:{" "}
+
+                Teaching:{" "}
+
                 <strong>
-                  {lessonTitle}
+                  {courseTitle}
                 </strong>
+
               </span>
 
             </div>
@@ -528,23 +571,23 @@ function Tutor() {
 
 
                 <h2>
-                  What can I help you learn?
+                  What can I help you create?
                 </h2>
 
 
                 <p>
-                  Ask me to explain a difficult
-                  concept, summarize a lesson,
-                  create revision questions or
-                  help you prepare for an exam.
 
-                  {lessonTitle && (
+                  Ask me to create lesson plans,
+                  assignments, quiz questions,
+                  marking rubrics or teaching
+                  explanations.
+
+                  {courseTitle && (
                     <>
                       {" "}
-                      I already have context
-                      from your lesson{" "}
+                      I already have context from{" "}
                       <strong>
-                        {lessonTitle}
+                        {courseTitle}
                       </strong>.
                     </>
                   )}
@@ -561,6 +604,7 @@ function Tutor() {
                   const isUser =
                     message.role ===
                     "user";
+
 
                   const isError =
                     message.role ===
@@ -611,31 +655,39 @@ function Tutor() {
                           !isError && (
 
                           <div className="tutor-message-label">
+
                             CampusLearn AI
+
                           </div>
 
                         )}
 
 
-                      {isUser ? (
+                        {isUser ? (
 
-                        <div className="tutor-message-body">
-                          {message.content}
-                        </div>
+                          <div className="tutor-message-body">
 
-                      ) : (
-
-                        <div className="tutor-message-body tutor-markdown">
-
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                          >
                             {message.content}
-                          </ReactMarkdown>
 
-                        </div>
+                          </div>
 
-                      )}
+                        ) : (
+
+                          <div className="tutor-message-body tutor-markdown">
+
+                            <ReactMarkdown
+                              remarkPlugins={[
+                                remarkGfm,
+                              ]}
+                            >
+
+                              {message.content}
+
+                            </ReactMarkdown>
+
+                          </div>
+
+                        )}
 
                       </div>
 
@@ -667,7 +719,9 @@ function Tutor() {
                 <div className="tutor-message-content">
 
                   <div className="tutor-message-label">
+
                     CampusLearn AI
+
                   </div>
 
 
@@ -683,7 +737,7 @@ function Tutor() {
 
 
                     <small>
-                      Thinking about your question...
+                      Preparing your teaching content...
                     </small>
 
                   </div>
@@ -728,9 +782,9 @@ function Tutor() {
                   handleKeyDown
                 }
                 placeholder={
-                  lessonTitle
-                    ? `Ask something about ${lessonTitle}...`
-                    : "Ask your study question..."
+                  courseTitle
+                    ? `Ask something about teaching ${courseTitle}...`
+                    : "Ask your teaching question..."
                 }
               />
 
@@ -769,10 +823,10 @@ function Tutor() {
 
             <p className="tutor-composer-note">
 
-              AI-generated answers can make
-              mistakes. Check important academic
-              information with your course
-              materials.
+              AI-generated teaching content
+              can contain mistakes. Review
+              important academic material
+              before sharing it with students.
 
             </p>
 
@@ -789,4 +843,4 @@ function Tutor() {
 }
 
 
-export default Tutor;
+export default LecturerTutor;

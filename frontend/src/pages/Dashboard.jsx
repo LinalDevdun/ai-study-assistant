@@ -3,7 +3,10 @@ import {
   useState,
 } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+} from "react-router-dom";
+
 import axios from "axios";
 
 import {
@@ -27,85 +30,129 @@ import "../styles/dashboard.css";
 
 
 function Dashboard() {
-  const navigate = useNavigate();
+
+  const navigate =
+    useNavigate();
 
 
   /* ========================================
-     LOGGED-IN STUDENT
+     DASHBOARD DATA
   ======================================== */
 
-  const [student, setStudent] = useState({
-    name: "Student",
-    email: "",
-    role: "STUDENT",
-    degree: "",
-    batch: "",
-  });
+  const [
+    dashboardData,
+    setDashboardData,
+  ] = useState(null);
+
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+
+  const [
+    error,
+    setError,
+  ] = useState("");
 
 
   /* ========================================
-     GET LOGGED-IN STUDENT
+     FETCH STUDENT DASHBOARD
   ======================================== */
 
   useEffect(() => {
 
-    const fetchStudent = async () => {
+    const fetchDashboard =
+      async () => {
 
-      try {
+        try {
 
-        const token =
-          localStorage.getItem("token");
-
-
-        if (!token) {
-
-          navigate("/login");
-
-          return;
-
-        }
+          setLoading(true);
+          setError("");
 
 
-        const response =
-          await axios.get(
-            "http://localhost:5000/me",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/student/dashboard",
+              {
+                headers: {
+
+                  Authorization:
+                    `Bearer ${token}`,
+
+                },
+              }
+            );
+
+
+          setDashboardData(
+            response.data
           );
 
 
-        setStudent(response.data);
+        } catch (error) {
 
-      } catch (error) {
-
-        console.error(
-          "Failed to load dashboard user:",
-          error
-        );
+          console.error(
+            "Failed to load student dashboard:",
+            error
+          );
 
 
-        if (
-          error.response?.status === 401 ||
-          error.response?.status === 403
-        ) {
+          if (
+            error.response?.status ===
+              401 ||
+            error.response?.status ===
+              403
+          ) {
 
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
+            localStorage.removeItem(
+              "token"
+            );
 
-          navigate("/login");
+            localStorage.removeItem(
+              "role"
+            );
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          setError(
+            error.response?.data
+              ?.error ||
+              "Failed to load dashboard."
+          );
+
+
+        } finally {
+
+          setLoading(false);
 
         }
 
-      }
-
-    };
+      };
 
 
-    fetchStudent();
+    fetchDashboard();
 
   }, [navigate]);
 
@@ -114,182 +161,20 @@ function Dashboard() {
      GREETING
   ======================================== */
 
-  const hour = new Date().getHours();
+  const hour =
+    new Date().getHours();
 
 
   const greeting =
     hour < 12
+
       ? "Good morning"
+
       : hour < 18
+
         ? "Good afternoon"
+
         : "Good evening";
-
-
-  /* ========================================
-     STATISTICS
-  ======================================== */
-
-  const stats = [
-    {
-      label: "Enrolled Courses",
-      value: "6",
-      description: "Active courses",
-      icon: BookOpen,
-      color: "stat-purple",
-    },
-
-    {
-      label: "Assignments",
-      value: "4",
-      description: "2 due this week",
-      icon: ClipboardCheck,
-      color: "stat-blue",
-    },
-
-    {
-      label: "Overall Progress",
-      value: "77%",
-      description: "Great progress",
-      icon: TrendingUp,
-      color: "stat-green",
-    },
-
-    {
-      label: "Current GPA",
-      value: "3.7",
-      description: "This semester",
-      icon: Award,
-      color: "stat-orange",
-    },
-  ];
-
-
-  /* ========================================
-     COURSES
-  ======================================== */
-
-  const courses = [
-    {
-      id: 1,
-      title:
-        "Artificial Intelligence & Machine Learning",
-      instructor:
-        "Dr. Sarah Johnson",
-      progress: 72,
-      category:
-        "Computer Science",
-      icon: BrainCircuit,
-      cover: "course-violet",
-    },
-
-    {
-      id: 2,
-      title:
-        "Database Systems",
-      instructor:
-        "Prof. Michael Brown",
-      progress: 85,
-      category:
-        "Database",
-      icon: Database,
-      cover: "course-emerald",
-    },
-
-    {
-      id: 3,
-      title:
-        "Software Engineering",
-      instructor:
-        "Dr. Emily Davis",
-      progress: 61,
-      category:
-        "Software",
-      icon: Code2,
-      cover: "course-blue",
-    },
-
-    {
-      id: 4,
-      title:
-        "Web Development Fundamentals",
-      instructor:
-        "Mr. David Wilson",
-      progress: 45,
-      category:
-        "Web Development",
-      icon: Globe2,
-      cover: "course-amber",
-    },
-
-    {
-      id: 5,
-      title:
-        "Discrete Mathematics",
-      instructor:
-        "Dr. James Lee",
-      progress: 30,
-      category:
-        "Mathematics",
-      icon: Sigma,
-      cover: "course-rose",
-    },
-
-    {
-      id: 6,
-      title:
-        "Data Structures & Algorithms",
-      instructor:
-        "Dr. Robert Taylor",
-      progress: 90,
-      category:
-        "Algorithms",
-      icon: Network,
-      cover: "course-cyan",
-    },
-  ];
-
-
-  /* ========================================
-     ASSIGNMENTS
-  ======================================== */
-
-  const assignments = [
-    {
-      title:
-        "Machine Learning Model Evaluation",
-      course:
-        "Artificial Intelligence",
-      due:
-        "Tomorrow",
-    },
-
-    {
-      title:
-        "Database Normalization Exercise",
-      course:
-        "Database Systems",
-      due:
-        "Sep 26",
-    },
-
-    {
-      title:
-        "React Interface Development",
-      course:
-        "Web Development",
-      due:
-        "Sep 28",
-    },
-
-    {
-      title:
-        "Sorting Algorithms Report",
-      course:
-        "Data Structures",
-      due:
-        "Oct 02",
-    },
-  ];
 
 
   /* ========================================
@@ -297,17 +182,327 @@ function Dashboard() {
   ======================================== */
 
   const currentDate =
-    new Date().toLocaleDateString(
-      "en-US",
-      {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
+    new Date()
+      .toLocaleDateString(
+        "en-US",
+        {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        }
+      );
+
+
+  /* ========================================
+     DATE FORMATTER
+  ======================================== */
+
+  const formatDueDate =
+    (dateValue) => {
+
+      if (!dateValue) {
+
+        return "No due date";
+
       }
+
+
+      const dueDate =
+        new Date(dateValue);
+
+
+      const today =
+        new Date();
+
+
+      const tomorrow =
+        new Date();
+
+
+      tomorrow.setDate(
+        today.getDate() + 1
+      );
+
+
+      const dueOnly =
+        dueDate
+          .toDateString();
+
+
+      const todayOnly =
+        today
+          .toDateString();
+
+
+      const tomorrowOnly =
+        tomorrow
+          .toDateString();
+
+
+      if (
+        dueOnly === todayOnly
+      ) {
+
+        return "Today";
+
+      }
+
+
+      if (
+        dueOnly === tomorrowOnly
+      ) {
+
+        return "Tomorrow";
+
+      }
+
+
+      return dueDate
+        .toLocaleDateString(
+          "en-US",
+          {
+            month: "short",
+            day: "numeric",
+          }
+        );
+
+    };
+
+
+  /* ========================================
+     COURSE VISUAL STYLES
+  ======================================== */
+
+  const courseStyles = [
+
+    {
+      icon: BrainCircuit,
+      cover: "course-violet",
+    },
+
+    {
+      icon: Database,
+      cover: "course-emerald",
+    },
+
+    {
+      icon: Code2,
+      cover: "course-blue",
+    },
+
+    {
+      icon: Globe2,
+      cover: "course-amber",
+    },
+
+    {
+      icon: Sigma,
+      cover: "course-rose",
+    },
+
+    {
+      icon: Network,
+      cover: "course-cyan",
+    },
+
+  ];
+
+
+  /* ========================================
+     LOADING
+  ======================================== */
+
+  if (loading) {
+
+    return (
+
+      <div className="dashboard-page">
+
+        <div
+          style={{
+            padding: "40px",
+            textAlign: "center",
+          }}
+        >
+
+          Loading dashboard...
+
+        </div>
+
+      </div>
+
     );
+
+  }
+
+
+  /* ========================================
+     ERROR
+  ======================================== */
+
+  if (
+    error ||
+    !dashboardData
+  ) {
+
+    return (
+
+      <div className="dashboard-page">
+
+        <div
+          style={{
+            padding: "40px",
+            textAlign: "center",
+          }}
+        >
+
+          {error ||
+            "Dashboard data unavailable."}
+
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+
+  /* ========================================
+     EXTRACT API DATA
+  ======================================== */
+
+  const student =
+    dashboardData.student || {};
+
+
+  const dashboardStats =
+    dashboardData.stats || {};
+
+
+  const courses =
+    dashboardData.courses || [];
+
+
+  const assignments =
+    dashboardData
+      .upcoming_assignments || [];
+
+
+  const overallProgress =
+    Number(
+      dashboardStats
+        .overall_progress
+    ) || 0;
+
+
+  const averageScore =
+    Number(
+      dashboardStats
+        .average_score
+    ) || 0;
+
+
+  /* ========================================
+     STATISTICS
+  ======================================== */
+
+  const stats = [
+
+    {
+
+      label:
+        "Enrolled Courses",
+
+      value:
+        dashboardStats
+          .enrolled_courses ?? 0,
+
+      description:
+        "Active courses",
+
+      icon:
+        BookOpen,
+
+      color:
+        "stat-purple",
+
+    },
+
+    {
+
+      label:
+        "Assignments",
+
+      value:
+        dashboardStats
+          .total_assignments ?? 0,
+
+      description:
+        `${
+          dashboardStats
+            .due_this_week ?? 0
+        } due this week`,
+
+      icon:
+        ClipboardCheck,
+
+      color:
+        "stat-blue",
+
+    },
+
+    {
+
+      label:
+        "Overall Progress",
+
+      value:
+        `${overallProgress}%`,
+
+      description:
+        `${
+          dashboardStats
+            .submitted_assignments ??
+          0
+        } submitted`,
+
+      icon:
+        TrendingUp,
+
+      color:
+        "stat-green",
+
+    },
+
+    {
+
+      label:
+        "Average Score",
+
+      value:
+        `${Math.round(
+          averageScore
+        )}%`,
+
+      description:
+        averageScore > 0
+          ? "Graded assignments"
+          : "No grades yet",
+
+      icon:
+        Award,
+
+      color:
+        "stat-orange",
+
+    },
+
+  ];
 
 
   return (
+
     <div className="dashboard-page">
 
 
@@ -320,11 +515,19 @@ function Dashboard() {
         <div>
 
           <h1>
-            {greeting}, {student.name} 👋
+
+            {greeting},{" "}
+            {student.name ||
+              "Student"} 👋
+
           </h1>
 
+
           <p>
-            Here's what is happening with your learning today.
+
+            Here's what is happening
+            with your learning today.
+
           </p>
 
         </div>
@@ -332,7 +535,9 @@ function Dashboard() {
 
         <div className="dashboard-date">
 
-          <CalendarDays size={16} />
+          <CalendarDays
+            size={16}
+          />
 
           {currentDate}
 
@@ -350,13 +555,19 @@ function Dashboard() {
 
         {stats.map((stat) => {
 
-          const Icon = stat.icon;
+          const Icon =
+            stat.icon;
 
 
           return (
+
             <div
-              className={`stat-card ${stat.color}`}
-              key={stat.label}
+              className={
+                `stat-card ${stat.color}`
+              }
+              key={
+                stat.label
+              }
             >
 
               <div className="stat-icon">
@@ -372,22 +583,29 @@ function Dashboard() {
               <div className="stat-content">
 
                 <p className="stat-value">
+
                   {stat.value}
+
                 </p>
 
 
                 <p className="stat-label">
+
                   {stat.label}
+
                 </p>
 
 
                 <span className="stat-small">
+
                   {stat.description}
+
                 </span>
 
               </div>
 
             </div>
+
           );
 
         })}
@@ -412,7 +630,8 @@ function Dashboard() {
             </h2>
 
             <p>
-              Pick up where you left off.
+              Courses available for your
+              degree and batch.
             </p>
 
           </div>
@@ -427,136 +646,187 @@ function Dashboard() {
 
             View all
 
-            <ArrowRight size={15} />
+            <ArrowRight
+              size={15}
+            />
 
           </button>
 
         </div>
 
 
+        {courses.length === 0 ? (
 
-        <div className="dashboard-courses">
+          <div
+            className="dashboard-panel"
+            style={{
+              textAlign: "center",
+              padding: "35px",
+            }}
+          >
 
-          {courses.map((course) => {
+            No courses have been
+            assigned to your degree
+            and batch yet.
 
-            const CourseIcon =
-              course.icon;
+          </div>
 
+        ) : (
 
-            return (
-              <article
-                className="dashboard-course-card"
-                key={course.id}
-              >
+          <div className="dashboard-courses">
 
-                <div
-                  className={
-                    `course-cover ${course.cover}`
-                  }
-                >
+            {courses.map(
+              (
+                course,
+                index
+              ) => {
 
-                  <div className="course-cover-icon">
-
-                    <CourseIcon
-                      size={27}
-                      strokeWidth={1.8}
-                    />
-
-                  </div>
-
-                </div>
-
-
-
-                <div className="course-card-body">
+                const style =
+                  courseStyles[
+                    index %
+                    courseStyles.length
+                  ];
 
 
-                  <span className="course-category">
-
-                    {course.category}
-
-                  </span>
+                const CourseIcon =
+                  style.icon;
 
 
-                  <h3>
+                return (
 
-                    {course.title}
-
-                  </h3>
-
-
-                  <p className="course-instructor">
-
-                    {course.instructor}
-
-                  </p>
-
-
-
-                  <div className="course-progress-info">
-
-                    <span>
-                      Course progress
-                    </span>
-
-                    <strong>
-                      {course.progress}%
-                    </strong>
-
-                  </div>
-
-
-
-                  <div className="course-progress-track">
+                  <article
+                    className="dashboard-course-card"
+                    key={
+                      course.id
+                    }
+                  >
 
                     <div
-                      className="course-progress-bar"
-                      style={{
-                        width:
-                          `${course.progress}%`,
-                      }}
-                    />
-
-                  </div>
-
-
-
-                  <div className="course-footer">
-
-                    <button
-                      className="continue-button"
-                      onClick={() =>
-                        navigate("/courses")
+                      className={
+                        `course-cover ${style.cover}`
                       }
                     >
 
-                      Continue
+                      <div className="course-cover-icon">
 
-                      <ArrowRight
-                        size={14}
-                      />
+                        <CourseIcon
+                          size={27}
+                          strokeWidth={
+                            1.8
+                          }
+                        />
 
-                    </button>
+                      </div>
+
+                    </div>
 
 
-                    <span className="course-percentage">
+                    <div className="course-card-body">
 
-                      {course.progress}%
-                      {" "}
-                      complete
 
-                    </span>
+                      <span className="course-category">
 
-                  </div>
+                        {course.degree ||
+                          "Course"}
 
-                </div>
+                      </span>
 
-              </article>
-            );
 
-          })}
+                      <h3>
 
-        </div>
+                        {course.title}
+
+                      </h3>
+
+
+                      <p className="course-instructor">
+
+                        {course
+                          .lecturer_name ||
+                          "Not assigned"}
+
+                      </p>
+
+
+                      <div className="course-progress-info">
+
+                        <span>
+
+                          Overall assignment
+                          progress
+
+                        </span>
+
+                        <strong>
+
+                          {overallProgress}%
+
+                        </strong>
+
+                      </div>
+
+
+                      <div className="course-progress-track">
+
+                        <div
+                          className="course-progress-bar"
+                          style={{
+                            width:
+                              `${overallProgress}%`,
+                          }}
+                        />
+
+                      </div>
+
+
+                      <div className="course-footer">
+
+                        <button
+                          className="continue-button"
+                          onClick={() =>
+                            navigate(
+                              "/courses"
+                            )
+                          }
+                        >
+
+                          Continue
+
+                          <ArrowRight
+                            size={14}
+                          />
+
+                        </button>
+
+
+                        <span className="course-percentage">
+
+                          {
+                            course.lesson_count
+                          }{" "}
+                          {
+                            course.lesson_count ===
+                            1
+                              ? "lesson"
+                              : "lessons"
+                          }
+
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                  </article>
+
+                );
+
+              }
+            )}
+
+          </div>
+
+        )}
 
       </section>
 
@@ -579,72 +849,109 @@ function Dashboard() {
           <div className="panel-header">
 
             <h2>
+
               Upcoming Assignments
+
             </h2>
 
 
             <button
               className="dashboard-text-button"
               onClick={() =>
-                navigate("/assignments")
+                navigate(
+                  "/assignments"
+                )
               }
             >
 
               View all
 
-              <ArrowRight size={14} />
+              <ArrowRight
+                size={14}
+              />
 
             </button>
 
           </div>
 
 
-
           <div className="assignment-list">
 
-            {assignments.map(
-              (assignment, index) => (
+            {assignments.length ===
+            0 ? (
 
-                <div
-                  className="assignment-item"
-                  key={index}
-                >
+              <div
+                style={{
+                  padding:
+                    "25px 10px",
+                  textAlign:
+                    "center",
+                }}
+              >
 
-                  <div className="assignment-icon">
+                No pending assignments.
+                🎉
 
-                    <ClipboardList
-                      size={18}
-                    />
+              </div>
+
+            ) : (
+
+              assignments.map(
+                (assignment) => (
+
+                  <div
+                    className="assignment-item"
+                    key={
+                      assignment.id
+                    }
+                  >
+
+                    <div className="assignment-icon">
+
+                      <ClipboardList
+                        size={18}
+                      />
+
+                    </div>
+
+
+                    <div className="assignment-details">
+
+                      <h4>
+
+                        {
+                          assignment.title
+                        }
+
+                      </h4>
+
+
+                      <p>
+
+                        {
+                          assignment.degree ||
+                          "Assignment"
+                        }
+
+                      </p>
+
+                    </div>
+
+
+                    <span className="assignment-due">
+
+                      {formatDueDate(
+                        assignment
+                          .due_date
+                      )}
+
+                    </span>
 
                   </div>
 
-
-                  <div className="assignment-details">
-
-                    <h4>
-
-                      {assignment.title}
-
-                    </h4>
-
-                    <p>
-
-                      {assignment.course}
-
-                    </p>
-
-                  </div>
-
-
-                  <span className="assignment-due">
-
-                    {assignment.due}
-
-                  </span>
-
-                </div>
-
+                )
               )
+
             )}
 
           </div>
@@ -663,11 +970,12 @@ function Dashboard() {
           <div className="panel-header">
 
             <h2>
+
               Learning Progress
+
             </h2>
 
           </div>
-
 
 
           <div className="progress-summary">
@@ -678,11 +986,15 @@ function Dashboard() {
               <div className="progress-ring-inner">
 
                 <strong>
-                  77%
+
+                  {overallProgress}%
+
                 </strong>
 
                 <span>
+
                   COMPLETED
+
                 </span>
 
               </div>
@@ -690,26 +1002,48 @@ function Dashboard() {
             </div>
 
 
-
             <p className="weekly-message">
 
-              You're making great progress.
-              Keep going! 🎉
+              {dashboardStats
+                .total_assignments ===
+              0
+
+                ? "No assignments are available yet."
+
+                : overallProgress ===
+                  100
+
+                  ? "All assignments submitted. Great work! 🎉"
+
+                  : overallProgress >=
+                    75
+
+                    ? "You're making great progress. Keep going! 🎉"
+
+                    : overallProgress >=
+                      40
+
+                      ? "Nice progress. Keep it up!"
+
+                      : "Keep working through your assignments."}
 
             </p>
-
 
 
             <button
               className="dashboard-text-button"
               onClick={() =>
-                navigate("/progress")
+                navigate(
+                  "/progress"
+                )
               }
             >
 
               View progress
 
-              <ArrowRight size={14} />
+              <ArrowRight
+                size={14}
+              />
 
             </button>
 
@@ -733,7 +1067,9 @@ function Dashboard() {
 
           <div className="ai-dashboard-icon">
 
-            <Sparkles size={25} />
+            <Sparkles
+              size={25}
+            />
 
           </div>
 
@@ -741,19 +1077,25 @@ function Dashboard() {
           <div>
 
             <h3>
-              Need help with your studies?
+
+              Need help with your
+              studies?
+
             </h3>
 
             <p>
-              Ask your AI Study Tutor questions,
-              explain difficult concepts, or get
-              help preparing for your next class.
+
+              Ask your AI Study Tutor
+              questions, explain
+              difficult concepts, or
+              get help preparing for
+              your next class.
+
             </p>
 
           </div>
 
         </div>
-
 
 
         <button
@@ -765,14 +1107,18 @@ function Dashboard() {
 
           Ask AI Tutor
 
-          <ArrowRight size={15} />
+          <ArrowRight
+            size={15}
+          />
 
         </button>
 
       </section>
 
     </div>
+
   );
+
 }
 
 

@@ -1,7 +1,11 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
+
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import {
   Users,
@@ -22,95 +26,21 @@ import "../styles/lecturerStudents.css";
 
 function LecturerStudents() {
 
-  /*
-    Temporary frontend data.
+  const navigate = useNavigate();
 
-    Later this will be replaced with
-    real PostgreSQL student data.
-  */
 
-  const [students] = useState([
-    {
-      id: 1,
-      name: "Movinya Perera",
-      studentId: "STU001",
-      initials: "MP",
-      email: "movinya@example.com",
-      degree: "BSc Software Engineering",
-      batch: "25.1",
-      course: "Software Engineering",
-      progress: 82,
-      submissions: 8,
-      graded: 6,
-      average: 84,
-      status: "Active",
-    },
+  /* ========================================
+     STATE
+  ======================================== */
 
-    {
-      id: 2,
-      name: "Amaya Silva",
-      studentId: "STU002",
-      initials: "AS",
-      email: "amaya@example.com",
-      degree: "BSc Information Technology",
-      batch: "25.1",
-      course: "Database Systems",
-      progress: 75,
-      submissions: 7,
-      graded: 5,
-      average: 78,
-      status: "Active",
-    },
+  const [students, setStudents] =
+    useState([]);
 
-    {
-      id: 3,
-      name: "Dinuka Fernando",
-      studentId: "STU003",
-      initials: "DF",
-      email: "dinuka@example.com",
-      degree: "BSc Software Engineering",
-      batch: "25.2",
-      course: "Web Development",
-      progress: 91,
-      submissions: 9,
-      graded: 8,
-      average: 88,
-      status: "Active",
-    },
+  const [loading, setLoading] =
+    useState(true);
 
-    {
-      id: 4,
-      name: "Nethmi Jayasinghe",
-      studentId: "STU004",
-      initials: "NJ",
-      email: "nethmi@example.com",
-      degree: "BSc Data Science",
-      batch: "25.2",
-      course: "Artificial Intelligence",
-      progress: 68,
-      submissions: 6,
-      graded: 5,
-      average: 74,
-      status: "Active",
-    },
-
-    {
-      id: 5,
-      name: "Kavindu Perera",
-      studentId: "STU005",
-      initials: "KP",
-      email: "kavindu@example.com",
-      degree: "BSc Software Engineering",
-      batch: "25.1",
-      course: "Software Engineering",
-      progress: 63,
-      submissions: 5,
-      graded: 4,
-      average: 69,
-      status: "Active",
-    },
-  ]);
-
+  const [error, setError] =
+    useState("");
 
   const [searchTerm, setSearchTerm] =
     useState("");
@@ -123,20 +53,247 @@ function LecturerStudents() {
 
 
   /* ========================================
+     LOAD REAL STUDENTS
+  ======================================== */
+
+  useEffect(() => {
+
+    const loadStudents = async () => {
+
+      try {
+
+        setLoading(true);
+        setError("");
+
+
+        const token =
+          localStorage.getItem("token");
+
+
+        if (!token) {
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        const response =
+          await axios.get(
+            "http://localhost:5000/lecturer/students",
+            {
+              headers: {
+                Authorization:
+                  `Bearer ${token}`,
+              },
+            }
+          );
+
+
+        const realStudents =
+          Array.isArray(
+            response.data?.students
+          )
+            ? response.data.students
+            : [];
+
+
+        const formattedStudents =
+          realStudents.map(
+            (student) => ({
+              id:
+                student.id,
+
+              name:
+                student.name ||
+                "Student",
+
+              studentId:
+                `Student ID ${student.id}`,
+
+              initials:
+                getInitials(
+                  student.name
+                ),
+
+              email:
+                student.email ||
+                "No email",
+
+              degree:
+                student.degree ||
+                "No degree",
+
+              batch:
+                student.batch ||
+                "No batch",
+
+              course:
+                student.courses ||
+                "No courses",
+
+              courseCount:
+                Number(
+                  student.course_count ||
+                  0
+                ),
+
+              progress:
+                Number(
+                  student.progress ||
+                  0
+                ),
+
+              submissions:
+                Number(
+                  student.submissions ||
+                  0
+                ),
+
+              graded:
+                Number(
+                  student.graded ||
+                  0
+                ),
+
+              average:
+                student.average_score !== null &&
+                student.average_score !== undefined
+                  ? Number(
+                      student.average_score
+                    )
+                  : null,
+
+              status:
+                student.is_active === false
+                  ? "Inactive"
+                  : "Active",
+            })
+          );
+
+
+        setStudents(
+          formattedStudents
+        );
+
+
+      } catch (loadError) {
+
+        console.error(
+          "Failed to load lecturer students:",
+          loadError
+        );
+
+
+        if (
+          loadError.response?.status === 401 ||
+          loadError.response?.status === 403
+        ) {
+
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+          return;
+
+        }
+
+
+        setError(
+          loadError.response?.data?.error ||
+          "Failed to load students."
+        );
+
+
+      } finally {
+
+        setLoading(false);
+
+      }
+
+    };
+
+
+    loadStudents();
+
+  }, [navigate]);
+
+
+  /* ========================================
+     INITIALS
+  ======================================== */
+
+  function getInitials(name) {
+
+    if (!name) {
+      return "ST";
+    }
+
+
+    return name
+      .split(" ")
+      .filter(Boolean)
+      .map(
+        (word) =>
+          word.charAt(0)
+      )
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  }
+
+
+  /* ========================================
+     BATCH OPTIONS
+  ======================================== */
+
+  const batchOptions =
+    useMemo(() => {
+
+      return [
+        ...new Set(
+          students
+            .map(
+              (student) =>
+                student.batch
+            )
+            .filter(
+              (batch) =>
+                batch &&
+                batch !== "No batch"
+            )
+        ),
+      ].sort();
+
+    }, [students]);
+
+
+  /* ========================================
      FILTER STUDENTS
   ======================================== */
 
   const filteredStudents =
     useMemo(() => {
 
+      const search =
+        searchTerm
+          .trim()
+          .toLowerCase();
+
+
       return students.filter(
         (student) => {
 
-          const search =
-            searchTerm.toLowerCase();
-
-
           const matchesSearch =
+
             student.name
               .toLowerCase()
               .includes(search) ||
@@ -151,11 +308,17 @@ function LecturerStudents() {
 
             student.degree
               .toLowerCase()
+              .includes(search) ||
+
+            student.email
+              .toLowerCase()
               .includes(search);
 
 
           const matchesBatch =
+
             batchFilter === "All" ||
+
             student.batch ===
               batchFilter;
 
@@ -183,30 +346,6 @@ function LecturerStudents() {
     students.length;
 
 
-  const averageProgress =
-    Math.round(
-      students.reduce(
-        (total, student) =>
-          total +
-          student.progress,
-        0
-      ) /
-        students.length
-    );
-
-
-  const averagePerformance =
-    Math.round(
-      students.reduce(
-        (total, student) =>
-          total +
-          student.average,
-        0
-      ) /
-        students.length
-    );
-
-
   const activeStudents =
     students.filter(
       (student) =>
@@ -214,7 +353,49 @@ function LecturerStudents() {
     ).length;
 
 
+  const averageProgress =
+
+    students.length > 0
+
+      ? Math.round(
+          students.reduce(
+            (total, student) =>
+              total +
+              student.progress,
+            0
+          ) /
+          students.length
+        )
+
+      : 0;
+
+
+  const studentsWithScores =
+    students.filter(
+      (student) =>
+        student.average !== null
+    );
+
+
+  const averagePerformance =
+
+    studentsWithScores.length > 0
+
+      ? Math.round(
+          studentsWithScores.reduce(
+            (total, student) =>
+              total +
+              student.average,
+            0
+          ) /
+          studentsWithScores.length
+        )
+
+      : null;
+
+
   return (
+
     <div className="lecturer-students-page">
 
 
@@ -243,9 +424,11 @@ function LecturerStudents() {
 
           <Users size={16} />
 
-          {totalStudents}
-          {" "}
-          Students
+          {totalStudents}{" "}
+
+          {totalStudents === 1
+            ? "Student"
+            : "Students"}
 
         </div>
 
@@ -271,7 +454,9 @@ function LecturerStudents() {
           <div>
 
             <strong>
-              {totalStudents}
+              {loading
+                ? "..."
+                : totalStudents}
             </strong>
 
             <span>
@@ -281,6 +466,7 @@ function LecturerStudents() {
           </div>
 
         </div>
+
 
 
         <div className="lst-summary-card lst-green">
@@ -296,7 +482,9 @@ function LecturerStudents() {
           <div>
 
             <strong>
-              {activeStudents}
+              {loading
+                ? "..."
+                : activeStudents}
             </strong>
 
             <span>
@@ -306,6 +494,7 @@ function LecturerStudents() {
           </div>
 
         </div>
+
 
 
         <div className="lst-summary-card lst-purple">
@@ -321,7 +510,11 @@ function LecturerStudents() {
           <div>
 
             <strong>
-              {averageProgress}%
+
+              {loading
+                ? "..."
+                : `${averageProgress}%`}
+
             </strong>
 
             <span>
@@ -331,6 +524,7 @@ function LecturerStudents() {
           </div>
 
         </div>
+
 
 
         <div className="lst-summary-card lst-orange">
@@ -344,7 +538,13 @@ function LecturerStudents() {
           <div>
 
             <strong>
-              {averagePerformance}%
+
+              {loading
+                ? "..."
+                : averagePerformance !== null
+                  ? `${averagePerformance}%`
+                  : "—"}
+
             </strong>
 
             <span>
@@ -397,21 +597,21 @@ function LecturerStudents() {
             All Batches
           </option>
 
-          <option value="25.1">
-            Batch 25.1
-          </option>
 
-          <option value="25.2">
-            Batch 25.2
-          </option>
+          {batchOptions.map(
+            (batch) => (
 
-          <option value="26.1">
-            Batch 26.1
-          </option>
+              <option
+                key={batch}
+                value={batch}
+              >
 
-          <option value="26.2">
-            Batch 26.2
-          </option>
+                Batch {batch}
+
+              </option>
+
+            )
+          )}
 
         </select>
 
@@ -420,201 +620,257 @@ function LecturerStudents() {
 
 
       {/* ====================================
+          LOADING
+      ==================================== */}
+
+      {loading && (
+
+        <div className="lst-empty">
+
+          <Users size={28} />
+
+          <h3>
+            Loading students...
+          </h3>
+
+          <p>
+            Please wait while student
+            information is loaded.
+          </p>
+
+        </div>
+
+      )}
+
+
+
+      {/* ====================================
+          ERROR
+      ==================================== */}
+
+      {!loading && error && (
+
+        <div className="lst-empty">
+
+          <Users size={28} />
+
+          <h3>
+            Unable to load students
+          </h3>
+
+          <p>
+            {error}
+          </p>
+
+        </div>
+
+      )}
+
+
+
+      {/* ====================================
           STUDENT GRID
       ==================================== */}
 
-      <section className="lst-grid">
+      {!loading && !error && (
 
-        {filteredStudents.map(
-          (student) => (
+        <section className="lst-grid">
 
-            <article
-              className="lst-student-card"
-              key={student.id}
-            >
+          {filteredStudents.map(
+            (student) => (
 
-
-              {/* TOP */}
-
-              <div className="lst-student-top">
-
-                <div className="lst-avatar">
-
-                  {student.initials}
-
-                </div>
-
-
-                <span className="lst-active-badge">
-
-                  {student.status}
-
-                </span>
-
-              </div>
-
-
-
-              {/* DETAILS */}
-
-              <h3>
-                {student.name}
-              </h3>
-
-
-              <p className="lst-student-id">
-
-                {student.studentId}
-
-              </p>
-
-
-              <div className="lst-student-details">
-
-
-                <div>
-
-                  <GraduationCap
-                    size={13}
-                  />
-
-                  <span>
-                    {student.degree}
-                  </span>
-
-                </div>
-
-
-                <div>
-
-                  <BookOpen
-                    size={13}
-                  />
-
-                  <span>
-                    {student.course}
-                  </span>
-
-                </div>
-
-
-                <div>
-
-                  <Users size={13} />
-
-                  <span>
-                    Batch{" "}
-                    {student.batch}
-                  </span>
-
-                </div>
-
-              </div>
-
-
-
-              {/* PROGRESS */}
-
-              <div className="lst-progress">
-
-                <div className="lst-progress-info">
-
-                  <span>
-                    Learning Progress
-                  </span>
-
-                  <strong>
-                    {student.progress}%
-                  </strong>
-
-                </div>
-
-
-                <div className="lst-progress-track">
-
-                  <div
-                    className="lst-progress-fill"
-                    style={{
-                      width:
-                        `${student.progress}%`,
-                    }}
-                  />
-
-                </div>
-
-              </div>
-
-
-
-              {/* PERFORMANCE */}
-
-              <div className="lst-performance">
-
-                <div>
-
-                  <strong>
-                    {student.submissions}
-                  </strong>
-
-                  <span>
-                    Submissions
-                  </span>
-
-                </div>
-
-
-                <div>
-
-                  <strong>
-                    {student.graded}
-                  </strong>
-
-                  <span>
-                    Graded
-                  </span>
-
-                </div>
-
-
-                <div>
-
-                  <strong>
-                    {student.average}%
-                  </strong>
-
-                  <span>
-                    Average
-                  </span>
-
-                </div>
-
-              </div>
-
-
-
-              {/* ACTION */}
-
-              <button
-                className="lst-view-button"
-                onClick={() =>
-                  setSelectedStudent(
-                    student
-                  )
-                }
+              <article
+                className="lst-student-card"
+                key={student.id}
               >
 
-                <Eye size={14} />
 
-                View Student
+                {/* TOP */}
 
-              </button>
+                <div className="lst-student-top">
 
-            </article>
+                  <div className="lst-avatar">
 
-          )
-        )}
+                    {student.initials}
 
-      </section>
+                  </div>
+
+
+                  <span className="lst-active-badge">
+
+                    {student.status}
+
+                  </span>
+
+                </div>
+
+
+
+                {/* DETAILS */}
+
+                <h3>
+                  {student.name}
+                </h3>
+
+
+                <p className="lst-student-id">
+
+                  {student.studentId}
+
+                </p>
+
+
+                <div className="lst-student-details">
+
+
+                  <div>
+
+                    <GraduationCap
+                      size={13}
+                    />
+
+                    <span>
+                      {student.degree}
+                    </span>
+
+                  </div>
+
+
+                  <div>
+
+                    <BookOpen
+                      size={13}
+                    />
+
+                    <span>
+                      {student.course}
+                    </span>
+
+                  </div>
+
+
+                  <div>
+
+                    <Users size={13} />
+
+                    <span>
+                      Batch {student.batch}
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+
+                {/* PROGRESS */}
+
+                <div className="lst-progress">
+
+                  <div className="lst-progress-info">
+
+                    <span>
+                      Learning Progress
+                    </span>
+
+                    <strong>
+                      {student.progress}%
+                    </strong>
+
+                  </div>
+
+
+                  <div className="lst-progress-track">
+
+                    <div
+                      className="lst-progress-fill"
+                      style={{
+                        width:
+                          `${student.progress}%`,
+                      }}
+                    />
+
+                  </div>
+
+                </div>
+
+
+
+                {/* PERFORMANCE */}
+
+                <div className="lst-performance">
+
+                  <div>
+
+                    <strong>
+                      {student.submissions}
+                    </strong>
+
+                    <span>
+                      Submissions
+                    </span>
+
+                  </div>
+
+
+                  <div>
+
+                    <strong>
+                      {student.graded}
+                    </strong>
+
+                    <span>
+                      Graded
+                    </span>
+
+                  </div>
+
+
+                  <div>
+
+                    <strong>
+
+                      {student.average !== null
+                        ? `${student.average}%`
+                        : "—"}
+
+                    </strong>
+
+                    <span>
+                      Average
+                    </span>
+
+                  </div>
+
+                </div>
+
+
+
+                {/* ACTION */}
+
+                <button
+                  className="lst-view-button"
+                  onClick={() =>
+                    setSelectedStudent(
+                      student
+                    )
+                  }
+                >
+
+                  <Eye size={14} />
+
+                  View Student
+
+                </button>
+
+              </article>
+
+            )
+          )}
+
+        </section>
+
+      )}
 
 
 
@@ -622,7 +878,9 @@ function LecturerStudents() {
           EMPTY STATE
       ==================================== */}
 
-      {filteredStudents.length === 0 && (
+      {!loading &&
+        !error &&
+        filteredStudents.length === 0 && (
 
         <div className="lst-empty">
 
@@ -704,24 +962,30 @@ function LecturerStudents() {
               <div>
 
                 <h3>
+
                   {
                     selectedStudent.name
                   }
+
                 </h3>
 
                 <p>
+
                   {
                     selectedStudent.studentId
                   }
+
                 </p>
 
               </div>
 
 
               <span>
+
                 {
                   selectedStudent.status
                 }
+
               </span>
 
             </div>
@@ -744,9 +1008,11 @@ function LecturerStudents() {
                   </span>
 
                   <strong>
+
                     {
                       selectedStudent.email
                     }
+
                   </strong>
 
                 </div>
@@ -767,9 +1033,11 @@ function LecturerStudents() {
                   </span>
 
                   <strong>
+
                     {
                       selectedStudent.degree
                     }
+
                   </strong>
 
                 </div>
@@ -786,13 +1054,15 @@ function LecturerStudents() {
                 <div>
 
                   <span>
-                    Course
+                    Courses
                   </span>
 
                   <strong>
+
                     {
                       selectedStudent.course
                     }
+
                   </strong>
 
                 </div>
@@ -811,9 +1081,11 @@ function LecturerStudents() {
                   </span>
 
                   <strong>
+
                     {
                       selectedStudent.batch
                     }
+
                   </strong>
 
                 </div>
@@ -838,16 +1110,18 @@ function LecturerStudents() {
 
                   <p>
                     Current overall
-                    course progress.
+                    assignment completion.
                   </p>
 
                 </div>
 
 
                 <strong>
+
                   {
                     selectedStudent.progress
                   }%
+
                 </strong>
 
               </div>
@@ -880,9 +1154,11 @@ function LecturerStudents() {
                 />
 
                 <strong>
+
                   {
                     selectedStudent.submissions
                   }
+
                 </strong>
 
                 <span>
@@ -899,9 +1175,11 @@ function LecturerStudents() {
                 />
 
                 <strong>
+
                   {
                     selectedStudent.graded
                   }
+
                 </strong>
 
                 <span>
@@ -916,9 +1194,11 @@ function LecturerStudents() {
                 <Award size={18} />
 
                 <strong>
-                  {
-                    selectedStudent.average
-                  }%
+
+                  {selectedStudent.average !== null
+                    ? `${selectedStudent.average}%`
+                    : "—"}
+
                 </strong>
 
                 <span>
@@ -956,7 +1236,9 @@ function LecturerStudents() {
       )}
 
     </div>
+
   );
+
 }
 
 

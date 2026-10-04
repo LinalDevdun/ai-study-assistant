@@ -3,7 +3,7 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
@@ -2240,13 +2240,15 @@ app.post(
 
         try {
 
-            const {
-                title,
-                description,
-                dueDate,
-                degree,
-                batch
-            } = req.body;
+        const {
+            title,
+            description,
+            dueDate,
+            degree,
+            batch,
+            courseId,
+            maxMarks
+} = req.body;
 
 
             const file =
@@ -2280,7 +2282,9 @@ app.post(
                         degree,
                         batch,
                         file_path,
-                        lecturer_id
+                        lecturer_id,
+                        course_id,
+                        max_marks
                     )
                     VALUES
                     (
@@ -2290,7 +2294,9 @@ app.post(
                         $4,
                         $5,
                         $6,
-                        $7
+                        $7,
+                        $8,
+                        $9
                     )
                     RETURNING *
                     `,
@@ -2301,9 +2307,57 @@ app.post(
                         degree,
                         batch,
                         file.path,
-                        lecturerId
+                        lecturerId,
+                        courseId
+                            ? Number(courseId)
+                            : null,
+                        maxMarks
+                            ? Number(maxMarks)
+                            : 100
                     ]
                 );
+
+                /* =========================================
+                    NOTIFY MATCHING STUDENTS
+                    ========================================= */
+
+                    const notificationMessage =
+                        `New assignment "${title}" has been published for ${degree}, Batch ${batch}.`;
+
+
+                    await pool.query(
+                        `
+                        INSERT INTO notifications
+                        (
+                            user_id,
+                            type,
+                            title,
+                            message,
+                            category,
+                            is_read
+                        )
+
+                        SELECT
+                            id,
+                            'assignment',
+                            'New Assignment Available',
+                            $1,
+                            'Assignment',
+                            FALSE
+
+                        FROM users
+
+                        WHERE
+                            role = 'STUDENT'
+                            AND degree = $2
+                            AND batch = $3
+                        `,
+                        [
+                            notificationMessage,
+                            degree,
+                            batch
+                        ]
+                    );
 
 
             res
@@ -2361,9 +2415,32 @@ app.get(
                 const assignments =
                     await pool.query(
                         `
-                        SELECT *
-                        FROM assignments
-                        ORDER BY due_date ASC
+                        SELECT
+                            a.*,
+
+                            (
+                                SELECT COUNT(*)
+                                FROM users u
+
+                                WHERE
+                                    u.role = 'STUDENT'
+                                    AND u.degree = a.degree
+                                    AND u.batch = a.batch
+                                    AND u.is_active = TRUE
+                            )::int AS student_count,
+
+                            (
+                                SELECT COUNT(*)
+                                FROM submissions s
+
+                                WHERE
+                                    s.assignment_id = a.id
+                            )::int AS submission_count
+
+                        FROM assignments a
+
+                        ORDER BY
+                            a.due_date ASC
                         `
                     );
 
@@ -2719,25 +2796,195 @@ app.get(
 
 app.put(
     '/submissions/:id/grade',
+
     authenticateToken,
+
     authorizeRoles(
         'LECTURER',
         'ADMIN'
     ),
+
     async (req, res) => {
 
         try {
 
-            const {
-                id
-            } = req.params;
+            const { id } =
+                req.params;
 
 
             const {
-                grade,
+                marks_awarded,
                 feedback
             } = req.body;
 
+
+            /* ==============================
+               GET SUBMISSION DETAILS
+            ============================== */
+
+            const submissionResult =
+                await pool.query(
+                    `
+                    SELECT
+                        s.id,
+                        s.assignment_id,
+                        a.max_marks,
+                        a.lecturer_id
+
+                    FROM submissions s
+
+                    JOIN assignments a
+                        ON a.id =
+                           s.assignment_id
+
+                    WHERE s.id = $1
+                    `,
+                    [
+                        id
+                    ]
+                );
+
+
+            if (
+                submissionResult.rows.length === 0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Submission not found'
+                    });
+
+            }
+
+
+            const submission =
+                submissionResult.rows[0];
+
+
+            /* ==============================
+               CHECK LECTURER OWNERSHIP
+            ============================== */
+
+            if (
+                req.user.role === 'LECTURER' &&
+                Number(
+                    submission.lecturer_id
+                ) !==
+                Number(
+                    req.user.user_id
+                )
+            ) {
+
+                return res
+                    .status(403)
+                    .json({
+                        error:
+                            'You cannot grade this submission.'
+                    });
+
+            }
+
+
+            /* ==============================
+               VALIDATE MARKS
+            ============================== */
+
+            const marks =
+                Number(
+                    marks_awarded
+                );
+
+
+            const maxMarks =
+                Number(
+                    submission.max_marks
+                );
+
+
+            if (
+                marks_awarded === undefined ||
+                marks_awarded === null ||
+                marks_awarded === '' ||
+                Number.isNaN(marks)
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Please enter valid marks.'
+                    });
+
+            }
+
+
+            if (
+                marks < 0 ||
+                marks > maxMarks
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            `Marks must be between 0 and ${maxMarks}.`
+                    });
+
+            }
+
+
+            /* ==============================
+               CALCULATE PERCENTAGE
+            ============================== */
+
+            const percentage =
+                Math.round(
+                    (
+                        marks /
+                        maxMarks
+                    ) * 100
+                );
+
+
+            /* ==============================
+               CALCULATE GRADE
+            ============================== */
+
+            let grade = 'F';
+
+
+            if (
+                percentage >= 80
+            ) {
+
+                grade = 'A';
+
+            } else if (
+                percentage >= 70
+            ) {
+
+                grade = 'B';
+
+            } else if (
+                percentage >= 60
+            ) {
+
+                grade = 'C';
+
+            } else if (
+                percentage >= 50
+            ) {
+
+                grade = 'D';
+
+            }
+
+
+            /* ==============================
+               UPDATE SUBMISSION
+            ============================== */
 
             const updatedSubmission =
                 await pool.query(
@@ -2745,16 +2992,18 @@ app.put(
                     UPDATE submissions
 
                     SET
-                        grade = $1,
-                        feedback = $2
+                        marks_awarded = $1,
+                        grade = $2,
+                        feedback = $3
 
-                    WHERE id = $3
+                    WHERE id = $4
 
                     RETURNING *
                     `,
                     [
+                        marks,
                         grade,
-                        feedback,
+                        feedback || '',
                         id
                     ]
                 );
@@ -2773,6 +3022,75 @@ app.put(
                     });
 
             }
+
+            /* =========================================
+                NOTIFY STUDENT ABOUT GRADE
+                ========================================= */
+
+                const gradedSubmission =
+                    updatedSubmission.rows[0];
+
+
+                const assignmentResult =
+                    await pool.query(
+                        `
+                        SELECT title
+                        FROM assignments
+                        WHERE id = $1
+                        `,
+                        [
+                            gradedSubmission.assignment_id
+                        ]
+                    );
+
+
+                const assignmentTitle =
+                    assignmentResult.rows.length > 0
+                        ? assignmentResult.rows[0].title
+                        : 'your assignment';
+
+
+                const gradeNotificationMessage =
+                    `Your assignment "${assignmentTitle}" has been graded. Visit the Grades page to view your result.`;
+
+
+                await pool.query(
+                    `
+                    INSERT INTO notifications
+                    (
+                        user_id,
+                        type,
+                        title,
+                        message,
+                        category,
+                        is_read
+                    )
+
+                    SELECT
+                        $1,
+                        'grade',
+                        'Assignment Graded',
+                        $2,
+                        'Grade',
+                        FALSE
+
+                    WHERE NOT EXISTS
+                    (
+                        SELECT 1
+
+                        FROM notifications
+
+                        WHERE
+                            user_id = $1
+                            AND type = 'grade'
+                            AND message = $2
+                    )
+                    `,
+                    [
+                        gradedSubmission.student_id,
+                        gradeNotificationMessage
+                    ]
+                );
 
 
             res.json({
@@ -2829,24 +3147,62 @@ app.get(
 
                         s.submitted_at,
 
+                        s.marks_awarded,
+
                         s.grade,
 
                         s.feedback,
 
                         a.title
-                            AS assignment_title
+                            AS assignment_title,
+
+                        a.max_marks,
+
+                        CASE
+
+                            WHEN
+                                s.marks_awarded
+                                IS NOT NULL
+
+                                AND
+                                a.max_marks
+                                IS NOT NULL
+
+                                AND
+                                a.max_marks > 0
+
+                            THEN
+
+                                ROUND(
+                                    (
+                                        s.marks_awarded::numeric
+                                        /
+                                        a.max_marks::numeric
+                                    ) * 100,
+                                    2
+                                )
+
+                            ELSE NULL
+
+                        END
+                            AS percentage
 
                     FROM submissions s
 
                     JOIN assignments a
+
                         ON s.assignment_id =
                            a.id
 
                     WHERE
+
                         s.student_id = $1
-                        AND s.grade IS NOT NULL
+
+                        AND
+                        s.grade IS NOT NULL
 
                     ORDER BY
+
                         s.submitted_at DESC
                     `,
                     [
@@ -2879,9 +3235,433 @@ app.get(
     }
 );
 
+/* =========================================
+   STUDENT NOTIFICATIONS
+========================================= */
+
 
 /* =========================================
-   AI TUTOR
+   GET MY NOTIFICATIONS
+========================================= */
+
+app.get(
+    '/notifications',
+    authenticateToken,
+    authorizeRoles('STUDENT'),
+    async (req, res) => {
+
+        try {
+
+            const studentId =
+                req.user.user_id;
+
+
+            const notifications =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        type,
+                        title,
+                        message,
+                        category,
+                        is_read,
+                        created_at
+
+                    FROM notifications
+
+                    WHERE user_id = $1
+
+                    ORDER BY
+                        created_at DESC
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            res.json(
+                notifications.rows
+            );
+
+
+        } catch (err) {
+
+            console.error(
+                'Fetch Notifications Error:',
+                err.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while loading notifications'
+                });
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   MARK ONE NOTIFICATION AS READ
+========================================= */
+
+app.put(
+    '/notifications/:id/read',
+    authenticateToken,
+    authorizeRoles('STUDENT'),
+    async (req, res) => {
+
+        try {
+
+            const studentId =
+                req.user.user_id;
+
+            const notificationId =
+                req.params.id;
+
+
+            const result =
+                await pool.query(
+                    `
+                    UPDATE notifications
+
+                    SET is_read = TRUE
+
+                    WHERE
+                        id = $1
+                        AND user_id = $2
+
+                    RETURNING *
+                    `,
+                    [
+                        notificationId,
+                        studentId
+                    ]
+                );
+
+
+            if (
+                result.rows.length === 0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Notification not found'
+                    });
+
+            }
+
+
+            res.json({
+                message:
+                    'Notification marked as read',
+                notification:
+                    result.rows[0]
+            });
+
+
+        } catch (err) {
+
+            console.error(
+                'Mark Notification Error:',
+                err.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while updating notification'
+                });
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   MARK ALL NOTIFICATIONS AS READ
+========================================= */
+
+app.put(
+    '/notifications/read-all',
+    authenticateToken,
+    authorizeRoles('STUDENT'),
+    async (req, res) => {
+
+        try {
+
+            const studentId =
+                req.user.user_id;
+
+
+            await pool.query(
+                `
+                UPDATE notifications
+
+                SET is_read = TRUE
+
+                WHERE
+                    user_id = $1
+                    AND is_read = FALSE
+                `,
+                [
+                    studentId
+                ]
+            );
+
+
+            res.json({
+                message:
+                    'All notifications marked as read'
+            });
+
+
+        } catch (err) {
+
+            console.error(
+                'Mark All Notifications Error:',
+                err.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while updating notifications'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   AI STUDY TUTOR
+========================================= */
+
+/* =========================================
+   AI STUDY TUTOR
+========================================= */
+
+
+/* =========================================
+   WAIT HELPER
+========================================= */
+
+const wait = (milliseconds) => {
+
+    return new Promise(
+        (resolve) =>
+            setTimeout(
+                resolve,
+                milliseconds
+            )
+    );
+
+};
+
+
+/* =========================================
+   CHECK TEMPORARY GEMINI ERRORS
+========================================= */
+
+const isTemporaryGeminiError = (
+    error
+) => {
+
+    const status =
+        Number(
+            error?.status ||
+            error?.code ||
+            error?.response?.status
+        );
+
+
+    return (
+        status === 408 ||
+        status === 429 ||
+        (
+            status >= 500 &&
+            status <= 599
+        )
+    );
+
+};
+
+
+/* =========================================
+   ASK MODEL WITH AUTOMATIC RETRY
+========================================= */
+
+const askGeminiWithRetry =
+    async (
+        ai,
+        model,
+        question,
+        systemInstruction,
+        maxAttempts = 3
+    ) => {
+
+        let lastError;
+
+
+        for (
+            let attempt = 1;
+            attempt <= maxAttempts;
+            attempt++
+        ) {
+
+            try {
+
+                console.log(
+                    `AI Tutor: using ${model}, attempt ${attempt}/${maxAttempts}`
+                );
+
+
+                const response =
+                    await ai.models.generateContent({
+
+                        model:
+                            model,
+
+                        contents:
+                            question,
+
+                        config: {
+
+                            systemInstruction:
+                                systemInstruction
+
+                        }
+
+                    });
+
+
+                const answer =
+                    response.text
+                        ?.trim();
+
+
+                if (!answer) {
+
+                    throw new Error(
+                        'Gemini returned an empty response.'
+                    );
+
+                }
+
+
+                return answer;
+
+
+            } catch (error) {
+
+                lastError =
+                    error;
+
+
+                const status =
+                    Number(
+                        error?.status ||
+                        error?.code ||
+                        error?.response?.status
+                    );
+
+
+                console.error(
+                    `Gemini ${model} error on attempt ${attempt}:`,
+                    status || error.message
+                );
+
+
+                /*
+                    Do not keep retrying
+                    permanent errors such as
+                    invalid authentication.
+                */
+
+                if (
+                    !isTemporaryGeminiError(
+                        error
+                    )
+                ) {
+
+                    throw error;
+
+                }
+
+
+                /*
+                    Last attempt:
+                    stop retrying this model.
+                */
+
+                if (
+                    attempt ===
+                    maxAttempts
+                ) {
+
+                    break;
+
+                }
+
+
+                /*
+                    Exponential backoff:
+
+                    Attempt 1 -> about 1 sec
+                    Attempt 2 -> about 2 sec
+
+                    Small random jitter is
+                    added as recommended for
+                    retry systems.
+                */
+
+                const delay =
+                    1000 *
+                    Math.pow(
+                        2,
+                        attempt - 1
+                    ) +
+                    Math.floor(
+                        Math.random() *
+                        400
+                    );
+
+
+                console.log(
+                    `Gemini busy. Retrying in ${delay}ms...`
+                );
+
+
+                await wait(
+                    delay
+                );
+
+            }
+
+        }
+
+
+        throw lastError;
+
+    };
+
+
+/* =========================================
+   TUTOR ENDPOINT
 ========================================= */
 
 app.post(
@@ -2894,73 +3674,377 @@ app.post(
             const {
                 question,
                 context
-            } = req.body;
+            } =
+                req.body;
 
 
-            const genAI =
-                new GoogleGenerativeAI(
-                    process.env
-                        .GEMINI_API_KEY
+            /* -------------------------------
+               VALIDATE QUESTION
+            ------------------------------- */
+
+            if (
+                !question ||
+                !question.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Please enter a question.'
+                    });
+
+            }
+
+
+            /* -------------------------------
+               CHECK API KEY
+            ------------------------------- */
+
+            if (
+                !process.env
+                    .GEMINI_API_KEY
+            ) {
+
+                console.error(
+                    'GEMINI_API_KEY is missing.'
                 );
 
 
-            const model =
-                genAI.getGenerativeModel({
-                    model:
-                        'gemini-3.6-flash'
+                return res
+                    .status(500)
+                    .json({
+                        error:
+                            'AI service is not configured.'
+                    });
+
+            }
+
+
+            /* -------------------------------
+               GEMINI CLIENT
+            ------------------------------- */
+
+            const ai =
+                new GoogleGenAI({
+
+                    apiKey:
+                        process.env
+                            .GEMINI_API_KEY
+
                 });
 
 
-            const systemPrompt =
-                `
-                You are an expert, encouraging AI Study Tutor.
+            /* -------------------------------
+               STUDY TUTOR INSTRUCTIONS
+            ------------------------------- */
 
-                Your goal is to help a student
-                understand academic concepts
-                simply and clearly.
+/* -------------------------------
+   ROLE-AWARE AI INSTRUCTIONS
+------------------------------- */
 
-                Break down complex topics into
-                beginner-friendly explanations.
-
-                Context provided from the lesson:
-                "${context ||
-                    'No specific lesson context provided.'}"
-
-                Here is the student's question:
-                "${question}"
-                `;
+const userRole =
+    req.user.role;
 
 
-            const result =
-                await model
-                    .generateContent(
-                        systemPrompt
+const systemInstruction =
+    userRole === 'LECTURER'
+
+        ? `
+You are CampusLearn AI, an AI Teaching Assistant
+for university lecturers.
+
+Your goal is to help lecturers prepare teaching
+materials and manage academic work efficiently.
+
+You can help with:
+
+- explaining academic and technical concepts
+- creating lesson plans
+- generating assignment ideas
+- creating assignment questions
+- creating quiz and exam questions
+- generating model answers
+- creating marking criteria and rubrics
+- suggesting classroom activities
+- summarizing teaching topics
+- generating discussion questions
+- improving assignment instructions
+- giving ideas for student exercises
+- helping prepare lecture content
+
+RESPONSE STYLE:
+
+- Answer the lecturer's request directly.
+- Use clear professional English.
+- Keep answers concise but useful.
+- Use proper Markdown formatting.
+- Use headings when useful.
+- Use bullet points for important information.
+- Use numbered lists for steps.
+- Use tables when they make information clearer.
+- Use fenced code blocks only for actual code.
+- Give practical teaching examples when useful.
+- Avoid unnecessary long explanations.
+
+IMPORTANT:
+
+When creating assignments, quizzes, exams,
+rubrics or teaching materials, organize the
+content clearly so the lecturer can easily
+reuse or edit it.
+
+If the lecturer asks for questions, do not
+automatically include answers unless they
+request answers.
+
+If marks are requested, make sure the total
+marks are clear and consistent.
+
+COURSE / CONTENT CONTEXT:
+
+${context || 'No specific course or teaching context was provided.'}
+        `.trim()
+
+        : `
+You are CampusLearn AI, a friendly and engaging
+AI Study Tutor for university students.
+
+Your goal is to make studying easy, clear and
+interesting.
+
+RESPONSE STYLE:
+
+- Answer the question directly.
+- Use simple beginner-friendly English.
+- Keep normal answers concise but useful.
+- Use proper Markdown formatting.
+- Use clear headings with ## or ### when useful.
+- Use **bold text** for important terms.
+- Use bullet points for key facts.
+- Use numbered lists for steps and processes.
+- Use code blocks only when showing actual code.
+- Leave comfortable spacing between sections.
+- Avoid large walls of text.
+- Give simple real-world examples.
+- Explain difficult technical terms simply.
+
+EMOJIS:
+
+Use a few relevant emojis to make studying
+more engaging.
+
+Do not add an emoji to every sentence.
+
+FOR EXPLANATIONS:
+
+Explain the concept clearly, provide a simple
+example when useful, highlight important points,
+and finish with a short summary when appropriate.
+
+FOR PROGRAMMING QUESTIONS:
+
+- Explain what the code does.
+- Use proper fenced code blocks.
+- Explain important lines after the code.
+- Keep examples clean and beginner-friendly.
+
+FOR EXAM QUESTIONS:
+
+Focus on:
+- definitions
+- important concepts
+- short explanations
+- memorable examples
+- likely revision points
+
+LESSON CONTEXT:
+
+${context || 'No specific lesson context was provided.'}
+        `.trim();
+
+
+            /* -------------------------------
+               PRIMARY + FALLBACK MODELS
+            ------------------------------- */
+
+            const models = [
+            { name: "gemini-3.8-flash", attempts: 2 },
+            { name: "gemini-3.7-flash", attempts: 2 },
+            { name: "gemini-3.6-flash", attempts: 2 },
+            { name: "gemini-3.5-flash", attempts: 2 },
+            { name: "gemini-3.5-flash-lite", attempts: 2 },
+            ];
+
+
+            let answer =
+                null;
+
+            let lastError =
+                null;
+
+
+            /* -------------------------------
+               TRY MODELS
+            ------------------------------- */
+
+            for (
+                const model of models
+            ) {
+
+                try {
+
+                    answer =
+                        await askGeminiWithRetry(
+
+                            ai,
+
+                            model.name,
+
+                            question.trim(),
+
+                            systemInstruction,
+
+                            model.attempts
+
+                        );
+
+
+                    if (answer) {
+
+                        console.log(
+                            `AI Tutor response generated with ${model.name}`
+                        );
+
+                        break;
+
+                    }
+
+
+                } catch (error) {
+
+                    lastError =
+                        error;
+
+
+                    console.error(
+                        `${model.name} failed:`,
+                        error?.message ||
+                        error
                     );
 
 
-            const responseText =
-                result.response.text();
+                    /*
+                        Only move to another
+                        model when this looks
+                        like a temporary Gemini
+                        service problem.
+                    */
 
+                    if (
+                        !isTemporaryGeminiError(
+                            error
+                        )
+                    ) {
+
+                        throw error;
+
+                    }
+
+
+                    console.log(
+                        `Switching from ${model.name} to fallback model...`
+                    );
+
+                }
+
+            }
+
+
+            /* -------------------------------
+               BOTH MODELS FAILED
+            ------------------------------- */
+
+            if (!answer) {
+
+                console.error(
+                    'All Gemini models failed:',
+                    lastError
+                );
+
+
+                return res
+                    .status(503)
+                    .json({
+                        error:
+                            'The AI service is temporarily busy. Please try again in a few seconds.'
+                    });
+
+            }
+
+
+            /* -------------------------------
+               SUCCESS
+            ------------------------------- */
 
             res.json({
                 answer:
-                    responseText
+                    answer
             });
 
 
-        } catch (err) {
+        } catch (error) {
 
             console.error(
-                'AI API ERROR:',
-                err.message
+                'AI TUTOR FINAL ERROR:',
+                error
             );
+
+
+            const status =
+                Number(
+                    error?.status ||
+                    error?.code ||
+                    error?.response?.status
+                );
+
+
+            if (
+                status === 401 ||
+                status === 403
+            ) {
+
+                return res
+                    .status(500)
+                    .json({
+                        error:
+                            'The AI service authentication failed.'
+                    });
+
+            }
+
+
+            if (
+                isTemporaryGeminiError(
+                    error
+                )
+            ) {
+
+                return res
+                    .status(503)
+                    .json({
+                        error:
+                            'The AI service is temporarily busy. Please try again in a few seconds.'
+                    });
+
+            }
 
 
             res
                 .status(500)
                 .json({
                     error:
-                        'AI failed to respond.'
+                        'The AI tutor could not respond. Please try again.'
                 });
 
         }
@@ -3151,26 +4235,27 @@ app.get(
                             ------------------------- */
 
                             COALESCE(
-
                                 (
                                     SELECT
                                         ROUND(
                                             AVG(
-
                                                 CASE
 
                                                     WHEN
-                                                        s.grade::text
-                                                        ~
-                                                        '^[0-9]+([.][0-9]+)?$'
+                                                        s.marks_awarded IS NOT NULL
+                                                        AND a.max_marks IS NOT NULL
+                                                        AND a.max_marks > 0
 
                                                     THEN
-                                                        s.grade::text::numeric
+                                                        (
+                                                            s.marks_awarded::numeric
+                                                            /
+                                                            a.max_marks::numeric
+                                                        ) * 100
 
                                                     ELSE NULL
 
                                                 END
-
                                             ),
                                             2
                                         )
@@ -3179,14 +4264,11 @@ app.get(
 
                                     JOIN assignments a
                                         ON a.id =
-                                           s.assignment_id
+                                        s.assignment_id
 
                                     WHERE
                                         s.student_id =
                                             u.id
-
-                                        AND s.grade
-                                            IS NOT NULL
 
                                         AND a.degree =
                                             u.degree
@@ -3196,7 +4278,6 @@ app.get(
                                 ),
 
                                 0
-
                             )::float
                             AS average_score
 
@@ -4112,12 +5193,16 @@ app.get(
                                     CASE
 
                                         WHEN
-                                            grade::text
-                                            ~
-                                            '^[0-9]+([.][0-9]+)?$'
+                                            s.marks_awarded IS NOT NULL
+                                            AND a.max_marks IS NOT NULL
+                                            AND a.max_marks > 0
 
                                         THEN
-                                            grade::text::numeric
+                                            (
+                                                s.marks_awarded::numeric
+                                                /
+                                                a.max_marks::numeric
+                                            ) * 100
 
                                         ELSE
                                             NULL
@@ -4130,10 +5215,14 @@ app.get(
                         )::float
                             AS average_score
 
-                    FROM submissions
+                    FROM submissions s
+
+                    JOIN assignments a
+                        ON a.id =
+                        s.assignment_id
 
                     WHERE
-                        grade IS NOT NULL
+                        s.marks_awarded IS NOT NULL
                     `
                 ),
 
@@ -5252,6 +6341,2977 @@ app.put(
                 .json({
                     error:
                         'Server error while changing password.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   STUDENT DASHBOARD
+========================================= */
+
+app.get(
+    '/student/dashboard',
+    authenticateToken,
+    authorizeRoles('STUDENT'),
+    async (req, res) => {
+
+        try {
+
+            const studentId =
+                req.user.user_id;
+
+
+            /* =====================================
+               STUDENT PROFILE
+            ===================================== */
+
+            const studentResult =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        name,
+                        email,
+                        degree,
+                        batch
+
+                    FROM users
+
+                    WHERE
+                        id = $1
+                        AND role = 'STUDENT'
+                    `,
+                    [
+                        studentId
+                    ]
+                );
+
+
+            if (
+                studentResult.rows.length ===
+                0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Student profile not found.'
+                    });
+
+            }
+
+
+            const student =
+                studentResult.rows[0];
+
+
+            const {
+                degree,
+                batch
+            } = student;
+
+
+            /* =====================================
+               COURSES
+            ===================================== */
+
+            const coursesResult =
+                await pool.query(
+                    `
+                    SELECT
+
+                        c.id,
+
+                        c.title,
+
+                        c.degree,
+
+                        c.batch,
+
+                        c.file_path,
+
+                        c.lecturer_id,
+
+                        COALESCE(
+                            lecturer.name,
+                            'Not assigned'
+                        )
+                            AS lecturer_name,
+
+
+                        (
+                            SELECT COUNT(*)
+
+                            FROM lessons l
+
+                            WHERE
+                                l.course_id =
+                                c.id
+
+                        )::int
+                            AS lesson_count
+
+
+                    FROM courses c
+
+
+                    LEFT JOIN users lecturer
+
+                        ON lecturer.id =
+                           c.lecturer_id
+
+
+                    WHERE
+                        c.degree = $1
+                        AND c.batch = $2
+
+
+                    ORDER BY
+                        c.id ASC
+                    `,
+                    [
+                        degree,
+                        batch
+                    ]
+                );
+
+
+            /* =====================================
+               ASSIGNMENTS
+            ===================================== */
+
+            const assignmentsResult =
+                await pool.query(
+                    `
+                    SELECT
+
+                        a.id,
+
+                        a.title,
+
+                        a.description,
+
+                        a.due_date,
+
+                        a.degree,
+
+                        a.batch,
+
+                        a.file_path,
+
+                        COALESCE(
+                            lecturer.name,
+                            'Not assigned'
+                        )
+                            AS lecturer_name,
+
+
+                        EXISTS (
+
+                            SELECT 1
+
+                            FROM submissions s
+
+                            WHERE
+                                s.assignment_id =
+                                a.id
+
+                                AND
+
+                                s.student_id =
+                                $3
+
+                        )
+                            AS is_submitted,
+
+
+                        EXISTS (
+
+                            SELECT 1
+
+                            FROM submissions s
+
+                            WHERE
+                                s.assignment_id =
+                                a.id
+
+                                AND
+
+                                s.student_id =
+                                $3
+
+                                AND
+
+                                s.grade
+                                IS NOT NULL
+
+                        )
+                            AS is_graded
+
+
+                    FROM assignments a
+
+
+                    LEFT JOIN users lecturer
+
+                        ON lecturer.id =
+                           a.lecturer_id
+
+
+                    WHERE
+                        a.degree = $1
+
+                        AND
+
+                        a.batch = $2
+
+
+                    ORDER BY
+                        a.due_date ASC
+                    `,
+                    [
+                        degree,
+                        batch,
+                        studentId
+                    ]
+                );
+
+
+            const assignments =
+                assignmentsResult.rows;
+
+
+            /* =====================================
+               ASSIGNMENT COUNTS
+            ===================================== */
+
+            const totalAssignments =
+                assignments.length;
+
+
+            const submittedAssignments =
+                assignments.filter(
+                    (assignment) =>
+                        assignment.is_submitted
+                ).length;
+
+
+            const pendingAssignments =
+                assignments.filter(
+                    (assignment) =>
+                        !assignment.is_submitted
+                ).length;
+
+
+            /* =====================================
+               DUE THIS WEEK
+
+               Only count assignments that:
+               - are not submitted
+               - are due today or later
+               - are due within next 7 days
+            ===================================== */
+
+            const now =
+                new Date();
+
+
+            const sevenDaysLater =
+                new Date();
+
+
+            sevenDaysLater.setDate(
+                now.getDate() + 7
+            );
+
+
+            const dueThisWeek =
+                assignments.filter(
+                    (assignment) => {
+
+                        if (
+                            assignment.is_submitted ||
+                            !assignment.due_date
+                        ) {
+
+                            return false;
+
+                        }
+
+
+                        const dueDate =
+                            new Date(
+                                assignment.due_date
+                            );
+
+
+                        return (
+                            dueDate >= now &&
+                            dueDate <=
+                                sevenDaysLater
+                        );
+
+                    }
+                ).length;
+
+
+            /* =====================================
+               OVERALL ASSIGNMENT PROGRESS
+            ===================================== */
+
+            const overallProgress =
+                totalAssignments === 0
+
+                    ? 0
+
+                    : Math.round(
+
+                        (
+                            submittedAssignments /
+                            totalAssignments
+                        )
+
+                        * 100
+
+                    );
+
+
+            /* =====================================
+               AVERAGE NUMERIC SCORE
+            ===================================== */
+
+            /* =====================================
+            AVERAGE SCORE
+
+            Calculate percentage using the
+            awarded marks and assignment max marks.
+            ===================================== */
+
+            const scoreResult =
+                await pool.query(
+                    `
+                    SELECT
+
+                        COALESCE(
+                            ROUND(
+                                AVG(
+                                    CASE
+
+                                        WHEN
+                                            s.marks_awarded
+                                            IS NOT NULL
+
+                                            AND
+                                            a.max_marks
+                                            IS NOT NULL
+
+                                            AND
+                                            a.max_marks > 0
+
+                                        THEN
+                                            (
+                                                s.marks_awarded::numeric
+                                                /
+                                                a.max_marks::numeric
+                                            ) * 100
+
+                                        ELSE
+                                            NULL
+
+                                    END
+                                ),
+                                2
+                            ),
+                            0
+                        )::float
+                        AS average_score
+
+                    FROM submissions s
+
+                    JOIN assignments a
+                        ON a.id =
+                        s.assignment_id
+
+                    WHERE
+                        s.student_id = $1
+
+                        AND
+                        a.degree = $2
+
+                        AND
+                        a.batch = $3
+
+                        AND
+                        s.grade IS NOT NULL
+                    `,
+                    [
+                        studentId,
+                        degree,
+                        batch
+                    ]
+                );
+
+
+            const averageScore =
+                Number(
+                    scoreResult.rows[0]
+                        .average_score
+                ) || 0;
+
+
+            /* =====================================
+               UPCOMING ASSIGNMENTS
+
+               Show only unsubmitted assignments.
+            ===================================== */
+
+            const upcomingAssignments =
+                assignments
+
+                    .filter(
+                        (assignment) =>
+                            !assignment.is_submitted
+                    )
+
+                    .slice(
+                        0,
+                        4
+                    );
+
+
+            /* =====================================
+               RESPONSE
+            ===================================== */
+
+            res.json({
+
+                student: {
+
+                    id:
+                        student.id,
+
+                    name:
+                        student.name,
+
+                    email:
+                        student.email,
+
+                    degree:
+                        student.degree,
+
+                    batch:
+                        student.batch
+
+                },
+
+
+                stats: {
+
+                    enrolled_courses:
+                        coursesResult.rows
+                            .length,
+
+                    total_assignments:
+                        totalAssignments,
+
+                    pending_assignments:
+                        pendingAssignments,
+
+                    due_this_week:
+                        dueThisWeek,
+
+                    submitted_assignments:
+                        submittedAssignments,
+
+                    overall_progress:
+                        overallProgress,
+
+                    average_score:
+                        averageScore
+
+                },
+
+
+                courses:
+
+                    coursesResult.rows
+                        .map(
+                            (course) => ({
+
+                                id:
+                                    course.id,
+
+                                title:
+                                    course.title,
+
+                                degree:
+                                    course.degree,
+
+                                batch:
+                                    course.batch,
+
+                                lecturer_id:
+                                    course.lecturer_id,
+
+                                lecturer_name:
+                                    course.lecturer_name,
+
+                                lesson_count:
+                                    Number(
+                                        course.lesson_count
+                                    ) || 0,
+
+                                has_material:
+                                    Boolean(
+                                        course.file_path
+                                    )
+
+                            })
+                        ),
+
+
+                upcoming_assignments:
+
+                    upcomingAssignments
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Student Dashboard Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while loading student dashboard.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   LECTURER DASHBOARD
+========================================= */
+
+app.get(
+    '/lecturer/dashboard',
+    authenticateToken,
+    authorizeRoles(
+        'LECTURER',
+        'ADMIN'
+    ),
+    async (req, res) => {
+
+        try {
+
+            const lecturerId =
+                req.user.user_id;
+
+
+            /* =================================
+               LECTURER COURSES
+            ================================= */
+
+            const coursesResult =
+                await pool.query(
+                    `
+                    SELECT
+                        c.id,
+                        c.title,
+                        c.degree,
+                        c.batch,
+
+                        (
+                            SELECT COUNT(*)
+                            FROM users u
+                            WHERE
+                                u.role = 'STUDENT'
+                                AND u.degree = c.degree
+                                AND u.batch = c.batch
+                        )::int AS student_count
+
+                    FROM courses c
+
+                    WHERE
+                        c.lecturer_id = $1
+
+                    ORDER BY
+                        c.id ASC
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            /* =================================
+               UNIQUE STUDENTS
+               belonging to lecturer cohorts
+            ================================= */
+
+            const studentsResult =
+                await pool.query(
+                    `
+                    WITH lecturer_students AS (
+
+                        SELECT DISTINCT
+                            u.id,
+                            u.name,
+                            u.email,
+                            u.degree,
+                            u.batch
+
+                        FROM users u
+
+                        WHERE
+                            u.role = 'STUDENT'
+
+                            AND EXISTS (
+
+                                SELECT 1
+
+                                FROM courses c
+
+                                WHERE
+                                    c.lecturer_id = $1
+                                    AND c.degree = u.degree
+                                    AND c.batch = u.batch
+                            )
+                    ),
+
+                    student_progress AS (
+
+                        SELECT
+                            ls.*,
+
+                            (
+                                SELECT COUNT(*)
+
+                                FROM assignments a
+
+                                WHERE
+                                    a.lecturer_id = $1
+                                    AND a.degree = ls.degree
+                                    AND a.batch = ls.batch
+                            )::int
+                            AS total_assignments,
+
+
+                            (
+                                SELECT
+                                    COUNT(
+                                        DISTINCT s.assignment_id
+                                    )
+
+                                FROM submissions s
+
+                                JOIN assignments a
+                                    ON a.id =
+                                       s.assignment_id
+
+                                WHERE
+                                    s.student_id = ls.id
+                                    AND a.lecturer_id = $1
+                                    AND a.degree = ls.degree
+                                    AND a.batch = ls.batch
+                            )::int
+                            AS submitted_assignments
+
+                        FROM lecturer_students ls
+                    )
+
+                    SELECT
+                        *,
+
+                        CASE
+
+                            WHEN
+                                total_assignments = 0
+                            THEN 0
+
+                            ELSE
+                                ROUND(
+                                    (
+                                        submitted_assignments::numeric
+                                        /
+                                        total_assignments
+                                    ) * 100
+                                )::int
+
+                        END
+                        AS progress
+
+                    FROM student_progress
+
+                    ORDER BY
+                        id ASC
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            /* =================================
+               LECTURER SUBMISSIONS
+            ================================= */
+
+            const submissionsResult =
+                await pool.query(
+                    `
+                    SELECT
+                        s.id
+                            AS submission_id,
+
+                        s.student_id,
+                        s.assignment_id,
+                        s.file_path,
+                        s.submitted_at,
+                        s.grade,
+                        s.feedback,
+
+                        a.title
+                            AS assignment_title,
+
+                        a.degree,
+                        a.batch,
+
+                        u.name
+                            AS student_name
+
+                    FROM submissions s
+
+                    JOIN assignments a
+                        ON a.id =
+                           s.assignment_id
+
+                    JOIN users u
+                        ON u.id =
+                           s.student_id
+
+                    WHERE
+                        a.lecturer_id = $1
+
+                    ORDER BY
+                        s.submitted_at DESC
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            /* =================================
+               WEEKLY SUBMISSION ACTIVITY
+            ================================= */
+
+            const activityResult =
+                await pool.query(
+                    `
+                    SELECT
+                        EXTRACT(
+                            ISODOW
+                            FROM s.submitted_at
+                        )::int
+                        AS day_number,
+
+                        COUNT(*)::int
+                        AS submission_count
+
+                    FROM submissions s
+
+                    JOIN assignments a
+                        ON a.id =
+                           s.assignment_id
+
+                    WHERE
+                        a.lecturer_id = $1
+
+                        AND s.submitted_at >=
+                            date_trunc(
+                                'week',
+                                CURRENT_DATE
+                            )
+
+                        AND s.submitted_at <
+                            date_trunc(
+                                'week',
+                                CURRENT_DATE
+                            )
+                            +
+                            INTERVAL '7 days'
+
+                    GROUP BY
+                        day_number
+
+                    ORDER BY
+                        day_number
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            /* =================================
+               ASSIGNMENTS CREATED BY LECTURER
+            ================================= */
+
+            const assignmentCountResult =
+                await pool.query(
+                    `
+                    SELECT
+                        COUNT(*)::int
+                        AS total_assignments
+
+                    FROM assignments
+
+                    WHERE
+                        lecturer_id = $1
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            /* =================================
+               NUMERIC AVERAGE SCORE
+
+               Some current grades are letters
+               such as A/B, so only numeric
+               grades are averaged.
+            ================================= */
+
+            const averageResult =
+                await pool.query(
+                    `
+                    SELECT
+                        ROUND(
+                            AVG(
+                                CASE
+
+                                    WHEN
+                                        s.marks_awarded IS NOT NULL
+                                        AND a.max_marks IS NOT NULL
+                                        AND a.max_marks > 0
+
+                                    THEN
+                                        (
+                                            s.marks_awarded::numeric
+                                            /
+                                            a.max_marks::numeric
+                                        ) * 100
+
+                                    ELSE
+                                        NULL
+
+                                END
+                            ),
+                            1
+                        )
+                        AS average_score
+
+                    FROM submissions s
+
+                    JOIN assignments a
+                        ON a.id =
+                        s.assignment_id
+
+                    WHERE
+                        a.lecturer_id = $1
+                        AND s.marks_awarded IS NOT NULL
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+                /* =================================
+   ACADEMIC REMINDERS
+
+   These are returned only when the
+   lecturer has Academic Reminders ON.
+================================= */
+
+const remindersResult =
+    await pool.query(
+        `
+        SELECT
+            a.id,
+            a.title,
+            a.due_date,
+            a.course_id,
+            a.degree,
+            a.batch,
+
+            COALESCE(
+                c.title,
+                CONCAT(
+                    a.degree,
+                    ' - Batch ',
+                    a.batch
+                )
+            )
+            AS course_title,
+
+            (
+                SELECT COUNT(*)
+                FROM submissions pending
+                WHERE
+                    pending.assignment_id =
+                        a.id
+
+                    AND (
+                        pending.grade IS NULL
+                        OR pending.grade = ''
+                    )
+            )::int
+            AS waiting_to_grade,
+
+            (
+                a.due_date::date -
+                CURRENT_DATE
+            )::int
+            AS days_until_due,
+
+            CASE
+
+                WHEN
+                    a.due_date::date <
+                    CURRENT_DATE
+                THEN 'overdue'
+
+                WHEN
+                    a.due_date::date =
+                    CURRENT_DATE
+                THEN 'due_today'
+
+                WHEN
+                    a.due_date::date <=
+                    CURRENT_DATE +
+                    INTERVAL '7 days'
+                THEN 'due_soon'
+
+                ELSE 'grading'
+
+            END
+            AS reminder_type
+
+        FROM assignments a
+
+        LEFT JOIN courses c
+            ON c.id =
+               a.course_id
+
+        WHERE
+            a.lecturer_id = $1
+
+            AND COALESCE(
+                (
+                    SELECT
+                        academic_reminders
+
+                    FROM user_settings
+
+                    WHERE user_id = $1
+                ),
+                TRUE
+            ) = TRUE
+
+            AND (
+                a.due_date::date
+                    BETWEEN
+                        CURRENT_DATE -
+                        INTERVAL '7 days'
+                    AND
+                        CURRENT_DATE +
+                        INTERVAL '7 days'
+
+                OR EXISTS (
+                    SELECT 1
+                    FROM submissions pending
+
+                    WHERE
+                        pending.assignment_id =
+                            a.id
+
+                        AND (
+                            pending.grade IS NULL
+                            OR pending.grade = ''
+                        )
+                )
+            )
+
+                ORDER BY
+                    CASE
+
+                        WHEN
+                            a.due_date::date <
+                            CURRENT_DATE
+                        THEN 1
+
+                        WHEN
+                            a.due_date::date =
+                            CURRENT_DATE
+                        THEN 2
+
+                        WHEN
+                            a.due_date::date <=
+                            CURRENT_DATE +
+                            INTERVAL '7 days'
+                        THEN 3
+
+                        ELSE 4
+
+                    END,
+
+                    a.due_date ASC
+
+                LIMIT 6
+                `,
+                [
+                    lecturerId
+                ]
+            );
+
+
+            const submissions =
+                submissionsResult.rows;
+
+
+            const waitingToGrade =
+                submissions.filter(
+                    (submission) =>
+                        submission.grade === null ||
+                        submission.grade === ""
+                ).length;
+
+
+            const gradedSubmissions =
+                submissions.filter(
+                    (submission) =>
+                        submission.grade !== null &&
+                        submission.grade !== ""
+                ).length;
+
+
+            const averageScore =
+                averageResult.rows[0]
+                    .average_score === null
+
+                    ? null
+
+                    : Number(
+                        averageResult.rows[0]
+                            .average_score
+                    );
+
+
+            /* =================================
+               RESPONSE
+            ================================= */
+
+            res.json({
+
+                stats: {
+
+                    active_courses:
+                        coursesResult.rows.length,
+
+                    total_students:
+                        studentsResult.rows.length,
+
+                    total_submissions:
+                        submissions.length,
+
+                    waiting_to_grade:
+                        waitingToGrade,
+
+                    total_assignments:
+                        assignmentCountResult
+                            .rows[0]
+                            .total_assignments,
+
+                    graded_submissions:
+                        gradedSubmissions,
+
+                    average_score:
+                        averageScore
+                },
+
+
+                courses:
+                    coursesResult.rows,
+
+
+                students:
+                    studentsResult.rows,
+
+
+                recent_submissions:
+                    submissions.slice(
+                        0,
+                        5
+                    ),
+
+
+                activity:
+                    activityResult.rows,
+
+                reminders:
+                    remindersResult.rows
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Lecturer Dashboard Error:',
+                error
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Failed to load lecturer dashboard.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   LECTURER COURSES
+========================================= */
+
+app.get(
+    '/lecturer/courses',
+    authenticateToken,
+    authorizeRoles(
+        'LECTURER',
+        'ADMIN'
+    ),
+    async (req, res) => {
+
+        try {
+
+            const lecturerId =
+                req.user.user_id;
+
+
+            /* =================================
+               COURSES OWNED BY THIS LECTURER
+            ================================= */
+
+            const coursesResult =
+                await pool.query(
+                    `
+                    SELECT
+
+                        c.id,
+                        c.title,
+                        c.degree,
+                        c.batch,
+                        c.file_path,
+                        c.lecturer_id,
+
+
+                        /* =====================
+                           MATCHING STUDENTS
+                        ===================== */
+
+                        (
+                            SELECT
+                                COUNT(*)
+
+                            FROM users student
+
+                            WHERE
+                                student.role = 'STUDENT'
+
+                                AND student.degree =
+                                    c.degree
+
+                                AND student.batch =
+                                    c.batch
+                        )::int
+                        AS student_count,
+
+
+                        /* =====================
+                           LESSON COUNT
+                        ===================== */
+
+                        (
+                            SELECT
+                                COUNT(*)
+
+                            FROM lessons l
+
+                            WHERE
+                                l.course_id =
+                                    c.id
+                        )::int
+                        AS lesson_count,
+
+
+                        /* =====================
+                           MATERIAL COUNT
+
+                           Main course file = 1
+                           Each lesson = 1
+                        ===================== */
+
+                        (
+                            (
+                                CASE
+
+                                    WHEN
+                                        c.file_path
+                                        IS NOT NULL
+
+                                        AND
+                                        c.file_path <> ''
+
+                                    THEN 1
+
+                                    ELSE 0
+
+                                END
+                            )
+
+                            +
+
+                            (
+                                SELECT
+                                    COUNT(*)
+
+                                FROM lessons l
+
+                                WHERE
+                                    l.course_id =
+                                        c.id
+                            )
+
+                        )::int
+                        AS material_count
+
+
+                    FROM courses c
+
+                    WHERE
+                        c.lecturer_id = $1
+
+                    ORDER BY
+                        c.id ASC
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            /* =================================
+               UNIQUE STUDENT COUNT
+
+               Do not simply add course student
+               counts because the same student
+               can belong to several courses.
+            ================================= */
+
+            const studentsResult =
+                await pool.query(
+                    `
+                    SELECT
+                        COUNT(
+                            DISTINCT student.id
+                        )::int
+                        AS total_students
+
+                    FROM users student
+
+                    WHERE
+                        student.role = 'STUDENT'
+
+                        AND EXISTS (
+
+                            SELECT 1
+
+                            FROM courses c
+
+                            WHERE
+                                c.lecturer_id = $1
+
+                                AND c.degree =
+                                    student.degree
+
+                                AND c.batch =
+                                    student.batch
+                        )
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            /* =================================
+               TOTAL MATERIALS
+            ================================= */
+
+            const materialResult =
+                await pool.query(
+                    `
+                    SELECT
+
+                        COALESCE(
+                            SUM(
+
+                                (
+                                    CASE
+
+                                        WHEN
+                                            c.file_path
+                                            IS NOT NULL
+
+                                            AND
+                                            c.file_path <> ''
+
+                                        THEN 1
+
+                                        ELSE 0
+
+                                    END
+                                )
+
+                                +
+
+                                (
+                                    SELECT
+                                        COUNT(*)
+
+                                    FROM lessons l
+
+                                    WHERE
+                                        l.course_id =
+                                            c.id
+                                )
+
+                            ),
+                            0
+                        )::int
+                        AS total_materials
+
+                    FROM courses c
+
+                    WHERE
+                        c.lecturer_id = $1
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            /* =================================
+               RESPONSE
+            ================================= */
+
+            res.json({
+
+                summary: {
+
+                    active_courses:
+                        coursesResult
+                            .rows
+                            .length,
+
+                    total_students:
+                        studentsResult
+                            .rows[0]
+                            .total_students,
+
+                    learning_materials:
+                        materialResult
+                            .rows[0]
+                            .total_materials
+
+                },
+
+
+                courses:
+                    coursesResult.rows
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Lecturer Courses Error:',
+                error
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Failed to load lecturer courses.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   UPDATE COURSE BY LECTURER
+========================================= */
+
+app.put(
+    '/lecturer/courses/:id',
+    authenticateToken,
+    authorizeRoles('LECTURER'),
+    upload.single('file'),
+    async (req, res) => {
+
+        try {
+
+            const { id } = req.params;
+
+            const {
+                courseTitle,
+                degree,
+                batch
+            } = req.body;
+
+            const lecturerId =
+                req.user.user_id;
+
+
+            /* ==============================
+               CHECK COURSE
+            ============================== */
+
+            const existingCourse =
+                await pool.query(
+                    `
+                    SELECT *
+                    FROM courses
+                    WHERE id = $1
+                    AND lecturer_id = $2
+                    `,
+                    [
+                        id,
+                        lecturerId
+                    ]
+                );
+
+
+            if (
+                existingCourse.rows.length === 0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Course not found or you do not have permission to edit it.'
+                    });
+
+            }
+
+
+            /* ==============================
+               VALIDATION
+            ============================== */
+
+            if (
+                !courseTitle ||
+                !courseTitle.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Course title is required.'
+                    });
+
+            }
+
+
+            if (
+                !degree ||
+                !degree.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Degree is required.'
+                    });
+
+            }
+
+
+            if (
+                !batch ||
+                !batch.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Batch is required.'
+                    });
+
+            }
+
+
+            /* ==============================
+               MATERIAL
+            ============================== */
+
+            let finalFilePath =
+                existingCourse
+                    .rows[0]
+                    .file_path;
+
+
+            if (req.file) {
+
+                finalFilePath =
+                    req.file.path;
+
+            }
+
+
+            /* ==============================
+               UPDATE
+            ============================== */
+
+            const updatedCourse =
+                await pool.query(
+                    `
+                    UPDATE courses
+
+                    SET
+                        title = $1,
+                        degree = $2,
+                        batch = $3,
+                        file_path = $4
+
+                    WHERE id = $5
+                    AND lecturer_id = $6
+
+                    RETURNING *
+                    `,
+                    [
+                        courseTitle.trim(),
+                        degree.trim(),
+                        batch.trim(),
+                        finalFilePath,
+                        id,
+                        lecturerId
+                    ]
+                );
+
+
+            res.json({
+                message:
+                    'Course updated successfully! 🎉',
+
+                course:
+                    updatedCourse.rows[0]
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Lecturer Update Course Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while updating course.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   LECTURER SUBMISSIONS
+========================================= */
+
+app.get(
+    '/lecturer/submissions',
+    authenticateToken,
+    authorizeRoles('LECTURER'),
+    async (req, res) => {
+
+        try {
+
+            const lecturerId =
+                req.user.user_id;
+
+
+            const result =
+                await pool.query(
+                    `
+            SELECT
+                s.id AS submission_id,
+                s.assignment_id,
+                s.student_id,
+                s.file_path,
+                s.submitted_at,
+                s.marks_awarded,
+                s.grade,
+                s.feedback,
+
+                a.title AS assignment_title,
+                a.degree,
+                a.batch,
+                a.due_date,
+                a.max_marks,
+
+                u.name AS student_name,
+                u.email AS student_email,
+
+                CASE
+                    WHEN s.grade IS NULL
+                    THEN 'To Grade'
+                    ELSE 'Graded'
+                END AS status
+
+            FROM submissions s
+
+            JOIN assignments a
+                ON a.id = s.assignment_id
+
+            JOIN users u
+                ON u.id = s.student_id
+
+            WHERE
+                a.lecturer_id = $1
+
+            ORDER BY
+                s.submitted_at DESC
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            const submissions =
+                result.rows;
+
+
+            const totalSubmissions =
+                submissions.length;
+
+
+            const toGrade =
+                submissions.filter(
+                    (submission) =>
+                        submission.grade === null
+                ).length;
+
+
+            const graded =
+                submissions.filter(
+                    (submission) =>
+                        submission.grade !== null
+                ).length;
+
+
+            const uniqueStudents =
+                new Set(
+                    submissions.map(
+                        (submission) =>
+                            submission.student_id
+                    )
+                ).size;
+
+
+            res.json({
+
+                submissions,
+
+                summary: {
+                    total_submissions:
+                        totalSubmissions,
+
+                    to_grade:
+                        toGrade,
+
+                    graded,
+
+                    students:
+                        uniqueStudents
+                }
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Lecturer Submissions Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Failed to load lecturer submissions.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   LECTURER STUDENTS
+========================================= */
+
+app.get(
+    '/lecturer/students',
+
+    authenticateToken,
+
+    authorizeRoles('LECTURER'),
+
+    async (req, res) => {
+
+        try {
+
+            const lecturerId =
+                req.user.user_id;
+
+
+            const result =
+                await pool.query(
+                    `
+                    WITH lecturer_courses AS (
+
+                        SELECT
+                            id,
+                            title,
+                            degree,
+                            batch
+
+                        FROM courses
+
+                        WHERE lecturer_id = $1
+                    ),
+
+                    lecturer_students AS (
+
+                        SELECT DISTINCT
+                            u.id,
+                            u.name,
+                            u.email,
+                            u.degree,
+                            u.batch,
+                            u.is_active
+
+                        FROM users u
+
+                        WHERE
+                            u.role = 'STUDENT'
+
+                            AND EXISTS (
+
+                                SELECT 1
+
+                                FROM lecturer_courses c
+
+                                WHERE
+                                    c.degree = u.degree
+                                    AND c.batch = u.batch
+                            )
+                    ),
+
+                    course_info AS (
+
+                        SELECT
+                            ls.id AS student_id,
+
+                            COUNT(
+                                DISTINCT c.id
+                            )::int AS course_count,
+
+                            STRING_AGG(
+                                DISTINCT c.title,
+                                ', '
+                                ORDER BY c.title
+                            ) AS courses
+
+                        FROM lecturer_students ls
+
+                        JOIN lecturer_courses c
+                            ON c.degree = ls.degree
+                            AND c.batch = ls.batch
+
+                        GROUP BY
+                            ls.id
+                    ),
+
+                    student_stats AS (
+
+                        SELECT
+                            ls.id AS student_id,
+
+                            COUNT(
+                                DISTINCT a.id
+                            )::int
+                            AS total_assignments,
+
+                            COUNT(
+                                DISTINCT s.id
+                            )::int
+                            AS submissions,
+
+                            COUNT(
+                                DISTINCT s.id
+                            )
+                            FILTER (
+                                WHERE s.grade IS NOT NULL
+                            )::int
+                            AS graded,
+
+                            ROUND(
+                                AVG(
+                                    CASE
+
+                                        WHEN
+                                            s.marks_awarded
+                                                IS NOT NULL
+                                            AND
+                                            a.max_marks > 0
+
+                                        THEN
+                                            (
+                                                s.marks_awarded
+                                                /
+                                                a.max_marks
+                                            ) * 100
+
+                                        ELSE NULL
+
+                                    END
+                                ),
+                                0
+                            )
+                            AS average_score
+
+                        FROM lecturer_students ls
+
+                        LEFT JOIN assignments a
+                            ON a.lecturer_id = $1
+                            AND a.degree = ls.degree
+                            AND a.batch = ls.batch
+
+                        LEFT JOIN submissions s
+                            ON s.assignment_id = a.id
+                            AND s.student_id = ls.id
+
+                        GROUP BY
+                            ls.id
+                    )
+
+                    SELECT
+                        ls.id,
+                        ls.name,
+                        ls.email,
+                        ls.degree,
+                        ls.batch,
+                        ls.is_active,
+
+                        ci.course_count,
+                        ci.courses,
+
+                        ss.total_assignments,
+                        ss.submissions,
+                        ss.graded,
+                        ss.average_score,
+
+                        CASE
+
+                            WHEN
+                                ss.total_assignments > 0
+
+                            THEN
+                                ROUND(
+                                    (
+                                        ss.submissions::numeric
+                                        /
+                                        ss.total_assignments
+                                    ) * 100
+                                )
+
+                            ELSE 0
+
+                        END AS progress
+
+                    FROM lecturer_students ls
+
+                    LEFT JOIN course_info ci
+                        ON ci.student_id = ls.id
+
+                    LEFT JOIN student_stats ss
+                        ON ss.student_id = ls.id
+
+                    ORDER BY
+                        ls.name ASC
+                    `,
+                    [
+                        lecturerId
+                    ]
+                );
+
+
+            const students =
+                result.rows;
+
+
+            const totalStudents =
+                students.length;
+
+
+            const activeStudents =
+                students.filter(
+                    (student) =>
+                        student.is_active !== false
+                ).length;
+
+
+            const averageProgress =
+                students.length > 0
+                    ? Math.round(
+                        students.reduce(
+                            (total, student) =>
+                                total +
+                                Number(
+                                    student.progress || 0
+                                ),
+                            0
+                        ) /
+                        students.length
+                    )
+                    : 0;
+
+
+            const studentsWithScores =
+                students.filter(
+                    (student) =>
+                        student.average_score !== null &&
+                        student.average_score !== undefined
+                );
+
+
+            const averageScore =
+                studentsWithScores.length > 0
+                    ? Math.round(
+                        studentsWithScores.reduce(
+                            (total, student) =>
+                                total +
+                                Number(
+                                    student.average_score
+                                ),
+                            0
+                        ) /
+                        studentsWithScores.length
+                    )
+                    : null;
+
+
+            res.json({
+
+                students,
+
+                summary: {
+
+                    total_students:
+                        totalStudents,
+
+                    active_students:
+                        activeStudents,
+
+                    average_progress:
+                        averageProgress,
+
+                    average_score:
+                        averageScore
+                }
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Lecturer Students Error:',
+                error
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Failed to load lecturer students.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   CHANGE LOGGED-IN USER PASSWORD
+========================================= */
+
+app.put(
+    '/change-password',
+
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const userId =
+                req.user.user_id;
+
+
+            const {
+                currentPassword,
+                newPassword
+            } = req.body;
+
+
+            /* ==============================
+               VALIDATION
+            ============================== */
+
+            if (
+                !currentPassword ||
+                !newPassword
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Current password and new password are required.'
+                    });
+
+            }
+
+
+            if (
+                newPassword.length < 6
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'New password must contain at least 6 characters.'
+                    });
+
+            }
+
+
+            if (
+                currentPassword ===
+                newPassword
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'New password must be different from the current password.'
+                    });
+
+            }
+
+
+            /* ==============================
+               GET USER PASSWORD
+            ============================== */
+
+            const userResult =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        password_hash
+
+                    FROM users
+
+                    WHERE id = $1
+                    `,
+                    [
+                        userId
+                    ]
+                );
+
+
+            if (
+                userResult.rows.length === 0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'User not found.'
+                    });
+
+            }
+
+
+            /* ==============================
+               CHECK CURRENT PASSWORD
+            ============================== */
+
+            const passwordMatches =
+                await bcrypt.compare(
+                    currentPassword,
+                    userResult.rows[0]
+                        .password_hash
+                );
+
+
+            if (!passwordMatches) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Current password is incorrect.'
+                    });
+
+            }
+
+
+            /* ==============================
+               HASH NEW PASSWORD
+            ============================== */
+
+            const salt =
+                await bcrypt.genSalt(10);
+
+
+            const hashedPassword =
+                await bcrypt.hash(
+                    newPassword,
+                    salt
+                );
+
+
+            /* ==============================
+               UPDATE PASSWORD
+            ============================== */
+
+            await pool.query(
+                `
+                UPDATE users
+
+                SET password_hash = $1
+
+                WHERE id = $2
+                `,
+                [
+                    hashedPassword,
+                    userId
+                ]
+            );
+
+
+            res.json({
+                message:
+                    'Password changed successfully!'
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Change Password Error:',
+                error
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Failed to change password.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   GET LOGGED-IN USER SETTINGS
+========================================= */
+
+app.get(
+    '/user/settings',
+
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const userId =
+                req.user.user_id;
+
+
+            /*
+              Create default settings
+              automatically if this user
+              does not have a row yet.
+            */
+
+            await pool.query(
+                `
+                INSERT INTO user_settings (
+                    user_id,
+                    email_notifications,
+                    submission_alerts,
+                    academic_reminders
+                )
+
+                VALUES (
+                    $1,
+                    TRUE,
+                    TRUE,
+                    TRUE
+                )
+
+                ON CONFLICT (user_id)
+                DO NOTHING
+                `,
+                [
+                    userId
+                ]
+            );
+
+
+            const result =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        user_id,
+                        email_notifications,
+                        submission_alerts,
+                        academic_reminders,
+                        updated_at
+
+                    FROM user_settings
+
+                    WHERE user_id = $1
+                    `,
+                    [
+                        userId
+                    ]
+                );
+
+
+            res.json(
+                result.rows[0]
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                'Get User Settings Error:',
+                error
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Failed to load settings.'
+                });
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   UPDATE LOGGED-IN USER SETTINGS
+========================================= */
+
+app.put(
+    '/user/settings',
+
+    authenticateToken,
+
+    async (req, res) => {
+
+        try {
+
+            const userId =
+                req.user.user_id;
+
+
+            const {
+                email_notifications,
+                submission_alerts,
+                academic_reminders
+            } = req.body;
+
+
+            const result =
+                await pool.query(
+                    `
+                    INSERT INTO user_settings (
+                        user_id,
+                        email_notifications,
+                        submission_alerts,
+                        academic_reminders,
+                        updated_at
+                    )
+
+                    VALUES (
+                        $1,
+                        $2,
+                        $3,
+                        $4,
+                        CURRENT_TIMESTAMP
+                    )
+
+                    ON CONFLICT (user_id)
+
+                    DO UPDATE SET
+                        email_notifications =
+                            EXCLUDED.email_notifications,
+
+                        submission_alerts =
+                            EXCLUDED.submission_alerts,
+
+                        academic_reminders =
+                            EXCLUDED.academic_reminders,
+
+                        updated_at =
+                            CURRENT_TIMESTAMP
+
+                    RETURNING
+                        id,
+                        user_id,
+                        email_notifications,
+                        submission_alerts,
+                        academic_reminders,
+                        updated_at
+                    `,
+                    [
+                        userId,
+
+                        Boolean(
+                            email_notifications
+                        ),
+
+                        Boolean(
+                            submission_alerts
+                        ),
+
+                        Boolean(
+                            academic_reminders
+                        )
+                    ]
+                );
+
+
+            res.json({
+                message:
+                    'Settings saved successfully!',
+
+                settings:
+                    result.rows[0]
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Update User Settings Error:',
+                error
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Failed to save settings.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   UPDATE ASSIGNMENT BY LECTURER
+========================================= */
+
+app.put(
+    '/lecturer/assignments/:id',
+
+    authenticateToken,
+
+    authorizeRoles('LECTURER'),
+
+    upload.single('file'),
+
+    async (req, res) => {
+
+        try {
+
+            const { id } =
+                req.params;
+
+
+            const {
+                title,
+                description,
+                dueDate,
+                courseId,
+                maxMarks
+            } = req.body;
+
+
+            /* ==============================
+               VALIDATION
+            ============================== */
+
+            if (
+                !title ||
+                !title.trim()
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Assignment title is required.'
+                    });
+
+            }
+
+
+            if (!dueDate) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Due date is required.'
+                    });
+
+            }
+
+
+            if (!courseId) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Please select a course.'
+                    });
+
+            }
+
+
+            const numericMaxMarks =
+                Number(maxMarks);
+
+
+            if (
+                !Number.isFinite(
+                    numericMaxMarks
+                ) ||
+                numericMaxMarks <= 0
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Maximum marks must be greater than 0.'
+                    });
+
+            }
+
+
+            /* ==============================
+               CHECK ASSIGNMENT OWNERSHIP
+            ============================== */
+
+            const existingAssignment =
+                await pool.query(
+                    `
+                    SELECT *
+                    FROM assignments
+
+                    WHERE
+                        id = $1
+                        AND lecturer_id = $2
+                    `,
+                    [
+                        id,
+                        req.user.user_id
+                    ]
+                );
+
+
+            if (
+                existingAssignment.rows.length ===
+                0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Assignment not found or you do not have permission to edit it.'
+                    });
+
+            }
+
+            /* ==============================
+   PREVENT COURSE CHANGE
+   AFTER SUBMISSIONS
+============================== */
+
+const submissionCheck =
+    await pool.query(
+        `
+        SELECT COUNT(*)::int
+            AS submission_count
+
+        FROM submissions
+
+        WHERE assignment_id = $1
+        `,
+        [id]
+    );
+
+
+const submissionCount =
+    submissionCheck.rows[0]
+        .submission_count;
+
+
+const oldCourseId =
+    existingAssignment.rows[0]
+        .course_id;
+
+
+const newCourseId =
+    Number(courseId);
+
+
+if (
+    submissionCount > 0 &&
+    oldCourseId !== null &&
+    Number(oldCourseId) !==
+        newCourseId
+) {
+
+    return res
+        .status(409)
+        .json({
+            error:
+                'The course cannot be changed because students have already submitted work.'
+        });
+
+}
+
+
+            /* ==============================
+               CHECK SELECTED COURSE
+            ============================== */
+
+            const selectedCourse =
+                await pool.query(
+                    `
+                    SELECT
+                        id,
+                        title,
+                        degree,
+                        batch
+
+                    FROM courses
+
+                    WHERE
+                        id = $1
+                        AND lecturer_id = $2
+                    `,
+                    [
+                        courseId,
+                        req.user.user_id
+                    ]
+                );
+
+
+            if (
+                selectedCourse.rows.length ===
+                0
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'The selected course is not valid.'
+                    });
+
+            }
+
+
+            const course =
+                selectedCourse.rows[0];
+
+
+            /* ==============================
+               PROTECT EXISTING GRADES
+            ============================== */
+
+            const awardedMarksResult =
+                await pool.query(
+                    `
+                    SELECT
+                        MAX(marks_awarded)
+                            AS highest_marks
+
+                    FROM submissions
+
+                    WHERE assignment_id = $1
+                    `,
+                    [
+                        id
+                    ]
+                );
+
+
+            const highestMarks =
+                Number(
+                    awardedMarksResult
+                        .rows[0]
+                        ?.highest_marks || 0
+                );
+
+
+            if (
+                numericMaxMarks <
+                highestMarks
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            `Maximum marks cannot be lower than an existing student mark of ${highestMarks}.`
+                    });
+
+            }
+
+
+            /* ==============================
+               OPTIONAL NEW FILE
+            ============================== */
+
+            let finalFilePath =
+                existingAssignment
+                    .rows[0]
+                    .file_path;
+
+
+            if (req.file) {
+
+                finalFilePath =
+                    req.file.path;
+
+            }
+
+
+            /* ==============================
+               UPDATE ASSIGNMENT
+            ============================== */
+
+            const updatedAssignment =
+                await pool.query(
+                    `
+                    UPDATE assignments
+
+                    SET
+                        title = $1,
+                        description = $2,
+                        due_date = $3,
+                        degree = $4,
+                        batch = $5,
+                        course_id = $6,
+                        max_marks = $7,
+                        file_path = $8
+
+                    WHERE
+                        id = $9
+                        AND lecturer_id = $10
+
+                    RETURNING *
+                    `,
+                    [
+                        title.trim(),
+                        description || '',
+                        dueDate,
+                        course.degree,
+                        course.batch,
+                        Number(courseId),
+                        numericMaxMarks,
+                        finalFilePath,
+                        id,
+                        req.user.user_id
+                    ]
+                );
+
+
+            res.json({
+
+                message:
+                    'Assignment updated successfully!',
+
+                assignment:
+                    updatedAssignment.rows[0]
+
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Update Assignment Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while updating assignment.'
+                });
+
+        }
+
+    }
+);
+
+/* =========================================
+   DELETE ASSIGNMENT BY LECTURER
+========================================= */
+
+app.delete(
+    '/lecturer/assignments/:id',
+
+    authenticateToken,
+
+    authorizeRoles('LECTURER'),
+
+    async (req, res) => {
+
+        try {
+
+            const { id } =
+                req.params;
+
+
+            /* ==============================
+               CHECK ASSIGNMENT OWNERSHIP
+            ============================== */
+
+            const assignmentResult =
+                await pool.query(
+                    `
+                    SELECT *
+                    FROM assignments
+
+                    WHERE
+                        id = $1
+                        AND lecturer_id = $2
+                    `,
+                    [
+                        id,
+                        req.user.user_id
+                    ]
+                );
+
+
+            if (
+                assignmentResult.rows.length ===
+                0
+            ) {
+
+                return res
+                    .status(404)
+                    .json({
+                        error:
+                            'Assignment not found or you do not have permission to delete it.'
+                    });
+
+            }
+
+
+            const assignment =
+                assignmentResult.rows[0];
+
+
+            /* ==============================
+               CHECK FOR STUDENT SUBMISSIONS
+            ============================== */
+
+            const submissions =
+                await pool.query(
+                    `
+                    SELECT COUNT(*)::int
+                        AS submission_count
+
+                    FROM submissions
+
+                    WHERE assignment_id = $1
+                    `,
+                    [id]
+                );
+
+
+            const submissionCount =
+                submissions.rows[0]
+                    .submission_count;
+
+
+            if (
+                submissionCount > 0
+            ) {
+
+                return res
+                    .status(409)
+                    .json({
+                        error:
+                            'This assignment cannot be deleted because students have already submitted work.'
+                    });
+
+            }
+
+
+            /* ==============================
+               DELETE ASSIGNMENT
+            ============================== */
+
+            await pool.query(
+                `
+                DELETE FROM assignments
+                WHERE id = $1
+                `,
+                [id]
+            );
+
+
+            /* ==============================
+               DELETE FILE
+            ============================== */
+
+            if (
+                assignment.file_path &&
+                fs.existsSync(
+                    assignment.file_path
+                )
+            ) {
+
+                try {
+
+                    fs.unlinkSync(
+                        assignment.file_path
+                    );
+
+                } catch (fileError) {
+
+                    console.error(
+                        'Assignment file cleanup warning:',
+                        fileError.message
+                    );
+
+                }
+
+            }
+
+
+            res.json({
+                message:
+                    'Assignment deleted successfully!'
+            });
+
+
+        } catch (error) {
+
+            console.error(
+                'Delete Assignment Error:',
+                error.message
+            );
+
+
+            res
+                .status(500)
+                .json({
+                    error:
+                        'Server error while deleting assignment.'
                 });
 
         }
