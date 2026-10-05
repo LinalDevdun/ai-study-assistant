@@ -13,6 +13,10 @@ import {
   BookOpen,
   Trophy,
   CircleCheckBig,
+  Sparkles,
+  FileText,
+  MessageCircle,
+  BarChart3,
 } from "lucide-react";
 
 import "../styles/grades.css";
@@ -188,6 +192,7 @@ function Grades() {
           result.marks_awarded
         );
 
+
       const maxMarks =
         Number(
           result.max_marks
@@ -242,6 +247,7 @@ function Grades() {
         Number(
           result.marks_awarded
         );
+
 
       const maxMarks =
         Number(
@@ -313,7 +319,14 @@ function Grades() {
     }
 
 
-    return "grade-c";
+    if (value) {
+
+      return "grade-c";
+
+    }
+
+
+    return "grade-neutral";
 
   };
 
@@ -325,6 +338,7 @@ function Grades() {
   const numericGrades =
     useMemo(
       () =>
+
         grades
           .map(
             (item) =>
@@ -336,6 +350,7 @@ function Grades() {
             (score) =>
               score !== null
           ),
+
       [grades]
     );
 
@@ -370,6 +385,30 @@ function Grades() {
         );
 
       },
+
+      [numericGrades]
+    );
+
+
+  const highestScore =
+    useMemo(
+      () => {
+
+        if (
+          numericGrades.length === 0
+        ) {
+
+          return null;
+
+        }
+
+
+        return Math.max(
+          ...numericGrades
+        );
+
+      },
+
       [numericGrades]
     );
 
@@ -377,6 +416,7 @@ function Grades() {
   const aGradeCount =
     useMemo(
       () =>
+
         grades.filter(
           (item) =>
             normalizeGrade(
@@ -385,8 +425,63 @@ function Grades() {
               .toUpperCase()
               .startsWith("A")
         ).length,
+
       [grades]
     );
+
+
+  const bGradeCount =
+    useMemo(
+      () =>
+
+        grades.filter(
+          (item) =>
+            normalizeGrade(
+              item.grade
+            )
+              .toUpperCase()
+              .startsWith("B")
+        ).length,
+
+      [grades]
+    );
+
+
+  const otherGradeCount =
+    Math.max(
+      grades.length -
+      aGradeCount -
+      bGradeCount,
+      0
+    );
+
+
+  /* ========================================
+     GRADE MIX PERCENTAGE
+  ======================================== */
+
+  const getGradeMixPercent = (
+    count
+  ) => {
+
+    if (
+      grades.length === 0
+    ) {
+
+      return 0;
+
+    }
+
+
+    return Math.round(
+      (
+        count /
+        grades.length
+      ) *
+      100
+    );
+
+  };
 
 
   /* ========================================
@@ -424,35 +519,239 @@ function Grades() {
 
 
       {/* ====================================
-          HEADER
+          ACADEMIC REPORT HEADER
       ==================================== */}
 
-      <section className="grades-header">
+      <section className="academic-report">
 
-        <div>
 
-          <h1>
-            Grades
-          </h1>
+        {/* REPORT COVER */}
 
-          <p>
-            Review your academic
-            performance, assignment
-            results and lecturer feedback.
-          </p>
+        <div className="report-cover">
+
+
+          <div className="report-cover-orb report-cover-orb-one" />
+
+          <div className="report-cover-orb report-cover-orb-two" />
+
+
+          <div className="report-cover-top">
+
+            <div className="report-cover-icon">
+
+              <GraduationCap
+                size={24}
+              />
+
+            </div>
+
+
+            <span>
+              CAMPUSLEARN
+            </span>
+
+          </div>
+
+
+          <div className="report-cover-content">
+
+            <div className="report-eyebrow">
+
+              <Sparkles
+                size={12}
+              />
+
+              ACADEMIC REPORT
+
+            </div>
+
+
+            <h1>
+              Grades & Results
+            </h1>
+
+
+            <p>
+
+              Review your assessed
+              coursework, scores and
+              lecturer feedback in one
+              organized academic record.
+
+            </p>
+
+          </div>
+
+
+          <div className="report-cover-bottom">
+
+            <div>
+
+              <span>
+                STATUS
+              </span>
+
+              <strong>
+
+                {grades.length > 0
+                  ? "Results Available"
+                  : "Awaiting Results"}
+
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                GPA
+              </span>
+
+              <strong>
+                Not calculated
+              </strong>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        <div className="grades-header-badge">
+        {/* PERFORMANCE SNAPSHOT */}
 
-          <TrendingUp
-            size={16}
-          />
+        <div className="report-snapshot">
 
-          {grades.length > 0
-            ? "Results Available"
-            : "Awaiting Results"}
+
+          <div className="report-snapshot-heading">
+
+            <div>
+
+              <span>
+                PERFORMANCE SNAPSHOT
+              </span>
+
+              <h2>
+                Your academic results
+              </h2>
+
+              <p>
+
+                Based only on coursework
+                currently graded by your
+                lecturers.
+
+              </p>
+
+            </div>
+
+
+            <div className="report-snapshot-icon">
+
+              <BarChart3
+                size={20}
+              />
+
+            </div>
+
+          </div>
+
+
+          <div className="report-average-area">
+
+
+            <div className="report-average-score">
+
+              <span>
+                AVERAGE SCORE
+              </span>
+
+
+              <strong>
+
+                {loading
+                  ? "..."
+                  : averageScore !== null
+                    ? `${averageScore}%`
+                    : "—"}
+
+              </strong>
+
+
+              <small>
+
+                {grades.length === 0
+                  ? "No graded results yet"
+                  : `${numericGrades.length} numeric ${
+                      numericGrades.length === 1
+                        ? "result"
+                        : "results"
+                    } included`}
+
+              </small>
+
+            </div>
+
+
+            <div className="report-mini-metrics">
+
+
+              <div>
+
+                <span>
+                  Graded
+                </span>
+
+                <strong>
+
+                  {loading
+                    ? "..."
+                    : grades.length}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Highest
+                </span>
+
+                <strong>
+
+                  {loading
+                    ? "..."
+                    : highestScore !== null
+                      ? `${highestScore}%`
+                      : "—"}
+
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  A Grades
+                </span>
+
+                <strong>
+
+                  {loading
+                    ? "..."
+                    : aGradeCount}
+
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
@@ -465,16 +764,7 @@ function Grades() {
 
       {error && (
 
-        <div
-          style={{
-            marginBottom: "18px",
-            padding: "12px 16px",
-            borderRadius: "12px",
-            background: "#fff1f2",
-            color: "#be123c",
-            fontSize: "14px",
-          }}
-        >
+        <div className="grades-error">
 
           {error}
 
@@ -484,200 +774,190 @@ function Grades() {
 
 
       {/* ====================================
-          SUMMARY
+          RESULT METRICS STRIP
       ==================================== */}
 
-      <section className="grades-summary">
+      <section className="results-metrics-strip">
 
 
-        {/* GPA */}
-
-        <div className="grade-summary-card grade-purple">
-
-          <div className="grade-summary-icon">
-
+        <ResultMetric
+          className="metric-purple"
+          icon={
             <GraduationCap
-              size={21}
+              size={19}
             />
-
-          </div>
-
-
-          <div>
-
-            <strong>
-              —
-            </strong>
-
-            <span>
-              GPA Not Calculated
-            </span>
-
-          </div>
-
-        </div>
+          }
+          eyebrow="ACADEMIC"
+          value="—"
+          label="GPA Not Calculated"
+        />
 
 
-        {/* GRADED RESULTS */}
-
-        <div className="grade-summary-card grade-blue">
-
-          <div className="grade-summary-icon">
-
+        <ResultMetric
+          className="metric-blue"
+          icon={
             <BookOpen
-              size={21}
+              size={19}
             />
-
-          </div>
-
-
-          <div>
-
-            <strong>
-
-              {loading
-                ? "..."
-                : grades.length}
-
-            </strong>
-
-            <span>
-              Graded Results
-            </span>
-
-          </div>
-
-        </div>
+          }
+          eyebrow="RESULTS"
+          value={
+            loading
+              ? "..."
+              : grades.length
+          }
+          label="Graded Results"
+        />
 
 
-        {/* AVERAGE SCORE */}
-
-        <div className="grade-summary-card grade-green">
-
-          <div className="grade-summary-icon">
-
+        <ResultMetric
+          className="metric-green"
+          icon={
             <CircleCheckBig
-              size={21}
+              size={19}
             />
-
-          </div>
-
-
-          <div>
-
-            <strong>
-
-              {loading
-                ? "..."
-                : averageScore !== null
-                  ? `${averageScore}%`
-                  : "—"}
-
-            </strong>
-
-            <span>
-              Average Score
-            </span>
-
-          </div>
-
-        </div>
+          }
+          eyebrow="PERFORMANCE"
+          value={
+            loading
+              ? "..."
+              : averageScore !== null
+                ? `${averageScore}%`
+                : "—"
+          }
+          label="Average Score"
+        />
 
 
-        {/* A GRADES */}
-
-        <div className="grade-summary-card grade-orange">
-
-          <div className="grade-summary-icon">
-
+        <ResultMetric
+          className="metric-orange"
+          icon={
             <Award
-              size={21}
+              size={19}
             />
-
-          </div>
-
-
-          <div>
-
-            <strong>
-
-              {loading
-                ? "..."
-                : aGradeCount}
-
-            </strong>
-
-            <span>
-              A Grades
-            </span>
-
-          </div>
-
-        </div>
+          }
+          eyebrow="ACHIEVEMENT"
+          value={
+            loading
+              ? "..."
+              : aGradeCount
+          }
+          label="A Grades"
+        />
 
       </section>
 
 
       {/* ====================================
-          MAIN
+          RESULTS WORKSPACE
       ==================================== */}
 
-      <section className="grades-main-grid">
+      <section className="grades-workspace">
 
 
-        {/* ====================================
+        {/* ==================================
             GRADED PERFORMANCE
-        ==================================== */}
+        ================================== */}
 
-        <div className="grades-panel">
+        <div className="grades-records-panel">
 
-          <div className="grades-panel-header">
 
-            <h2>
-              Graded Performance
-            </h2>
+          <div className="records-heading">
 
-            <p>
-              Your completed coursework
-              that has been graded.
-            </p>
+            <div>
+
+              <span>
+
+                <FileText
+                  size={13}
+                />
+
+                RESULT RECORD
+
+              </span>
+
+
+              <h2>
+                Graded Performance
+              </h2>
+
+
+              <p>
+
+                Coursework your lecturers
+                have reviewed and graded.
+
+              </p>
+
+            </div>
+
+
+            <strong>
+
+              {grades.length}{" "}
+
+              {grades.length === 1
+                ? "result"
+                : "results"}
+
+            </strong>
 
           </div>
 
 
           <div className="course-grades-list">
 
+
             {loading ? (
 
-              <div
-                style={{
-                  padding: "22px",
-                  color: "#7b8195",
-                }}
-              >
+              <div className="grades-empty-state">
 
-                Loading grades...
+                <div className="grades-loader" />
+
+                <h3>
+                  Loading your results...
+                </h3>
+
+                <p>
+                  Retrieving your graded
+                  coursework.
+                </p>
 
               </div>
 
             ) : grades.length === 0 ? (
 
-              <div
-                style={{
-                  padding: "22px",
-                  color: "#7b8195",
-                }}
-              >
+              <div className="grades-empty-state">
 
-                No graded assignments
-                are available yet.
+                <div className="grades-empty-icon">
+
+                  <FileText
+                    size={25}
+                  />
+
+                </div>
+
+                <h3>
+                  No graded results yet
+                </h3>
+
+                <p>
+
+                  Your assessed coursework
+                  will appear here after your
+                  lecturer completes grading.
+
+                </p>
 
               </div>
 
             ) : (
 
               grades.map(
-                (result) => {
+                (
+                  result,
+                  index
+                ) => {
 
                   const numericScore =
                     getResultPercentage(
@@ -694,48 +974,97 @@ function Grades() {
                       }
                     >
 
-                      <div className="course-grade-icon">
 
-                        <GraduationCap
-                          size={19}
-                        />
+                      <div className="result-number">
+
+                        <span>
+                          RESULT
+                        </span>
+
+                        <strong>
+
+                          {String(
+                            index + 1
+                          ).padStart(
+                            2,
+                            "0"
+                          )}
+
+                        </strong>
+
+                      </div>
+
+
+                      <div
+                        className={
+                          `course-grade-letter ${getGradeClass(
+                            result.grade
+                          )}`
+                        }
+                      >
+
+                        {normalizeGrade(
+                          result.grade
+                        ) || "—"}
 
                       </div>
 
 
                       <div className="course-grade-info">
 
+                        <span className="course-grade-label">
+                          ASSESSMENT
+                        </span>
+
+
                         <h3>
+
                           {
                             result.assignment_title
                           }
+
                         </h3>
 
-                        <p>
-                          Graded submission
-                        </p>
+
+                        <div className="course-grade-feedback">
+
+                          <MessageCircle
+                            size={11}
+                          />
+
+                          <span>
+
+                            {result.feedback ||
+                              "No lecturer feedback provided."}
+
+                          </span>
+
+                        </div>
 
                       </div>
 
 
                       <div className="course-grade-score">
 
-                        {numericScore !== null
-                          ? `${numericScore}%`
-                          : "Result"}
+                        <span>
+                          SCORE
+                        </span>
 
-                      </div>
+                        <strong>
 
+                          {numericScore !== null
+                            ? `${numericScore}%`
+                            : "Result"}
 
-                      <div
-                        className={`course-grade-letter ${getGradeClass(
-                          result.grade
-                        )}`}
-                      >
+                        </strong>
 
-                        {normalizeGrade(
-                          result.grade
-                        ) || "—"}
+                        <small>
+
+                          {getScoreDisplay(
+                            result
+                          )}
+
+                        </small>
 
                       </div>
 
@@ -753,65 +1082,126 @@ function Grades() {
         </div>
 
 
-        {/* ====================================
-            RESULTS OVERVIEW
-        ==================================== */}
+        {/* ==================================
+            GRADE MIX
+        ================================== */}
 
-        <div className="grades-panel">
-
-          <div className="grades-panel-header">
-
-            <h2>
-              Results Overview
-            </h2>
-
-            <p>
-              Current graded coursework.
-            </p>
-
-          </div>
+        <aside className="grade-mix-panel">
 
 
-          <div className="gpa-card">
+          <div className="grade-mix-heading">
 
-            <div className="gpa-circle">
+            <div className="grade-mix-icon">
 
-              <div className="gpa-circle-inner">
-
-                <strong>
-
-                  {loading
-                    ? "..."
-                    : grades.length}
-
-                </strong>
-
-                <span>
-                  GRADED
-                </span>
-
-              </div>
+              <Award
+                size={19}
+              />
 
             </div>
 
 
-            <p className="gpa-message">
+            <div>
 
-              {loading
-                ? "Loading your results..."
-                : grades.length === 0
-                  ? "Your results will appear here after your lecturer grades your submissions."
-                  : `${grades.length} graded ${
-                      grades.length === 1
-                        ? "submission is"
-                        : "submissions are"
-                    } currently available.`}
+              <span>
+                GRADE PROFILE
+              </span>
 
-            </p>
+              <h2>
+                Grade Mix
+              </h2>
+
+            </div>
 
           </div>
 
-        </div>
+
+          <p className="grade-mix-copy">
+
+            Distribution of the letter
+            grades currently available in
+            your academic record.
+
+          </p>
+
+
+          <div className="grade-mix-list">
+
+
+            <GradeMixRow
+              className="mix-a"
+              label="A Grades"
+              count={
+                aGradeCount
+              }
+              percentage={
+                getGradeMixPercent(
+                  aGradeCount
+                )
+              }
+            />
+
+
+            <GradeMixRow
+              className="mix-b"
+              label="B Grades"
+              count={
+                bGradeCount
+              }
+              percentage={
+                getGradeMixPercent(
+                  bGradeCount
+                )
+              }
+            />
+
+
+            <GradeMixRow
+              className="mix-other"
+              label="Other Grades"
+              count={
+                otherGradeCount
+              }
+              percentage={
+                getGradeMixPercent(
+                  otherGradeCount
+                )
+              }
+            />
+
+          </div>
+
+
+          <div className="grade-mix-note">
+
+            <TrendingUp
+              size={15}
+            />
+
+
+            <div>
+
+              <strong>
+
+                {grades.length === 0
+                  ? "Waiting for results"
+                  : "Results updated"}
+
+              </strong>
+
+
+              <span>
+
+                {grades.length === 0
+                  ? "Grade distribution will appear after grading."
+                  : "This view updates from your real graded submissions."}
+
+              </span>
+
+            </div>
+
+          </div>
+
+        </aside>
 
       </section>
 
@@ -822,9 +1212,42 @@ function Grades() {
 
       <section className="recent-results-section">
 
-        <h2>
-          Recent Results
-        </h2>
+
+        <div className="recent-results-heading">
+
+          <div>
+
+            <span>
+
+              <BookOpen
+                size={13}
+              />
+
+              ACADEMIC RECORD
+
+            </span>
+
+
+            <h2>
+              Recent Results
+            </h2>
+
+
+            <p>
+              Detailed marks, grades and
+              lecturer comments.
+            </p>
+
+          </div>
+
+
+          <div className="results-count-badge">
+
+            {grades.length} entries
+
+          </div>
+
+        </div>
 
 
         <div className="results-table-wrapper">
@@ -868,10 +1291,7 @@ function Grades() {
 
                   <td
                     colSpan="5"
-                    style={{
-                      textAlign:
-                        "center",
-                    }}
+                    className="results-empty-cell"
                   >
 
                     Loading results...
@@ -886,10 +1306,7 @@ function Grades() {
 
                   <td
                     colSpan="5"
-                    style={{
-                      textAlign:
-                        "center",
-                    }}
+                    className="results-empty-cell"
                   >
 
                     No graded results
@@ -938,14 +1355,24 @@ function Grades() {
 
                         <td>
 
-                          {scoreDisplay}
+                          <span className="result-score">
+
+                            {scoreDisplay}
+
+                          </span>
 
                         </td>
 
 
                         <td>
 
-                          <span className="result-grade-badge">
+                          <span
+                            className={
+                              `result-grade-badge ${getGradeClass(
+                                result.grade
+                              )}`
+                            }
+                          >
 
                             {normalizeGrade(
                               result.grade
@@ -982,10 +1409,16 @@ function Grades() {
 
 
       {/* ====================================
-          BANNER
+          PERFORMANCE BANNER
       ==================================== */}
 
       <section className="grades-banner">
+
+
+        <div className="grades-banner-orb grades-banner-orb-one" />
+
+        <div className="grades-banner-orb grades-banner-orb-two" />
+
 
         <div className="grades-banner-icon">
 
@@ -998,11 +1431,17 @@ function Grades() {
 
         <div className="grades-banner-content">
 
+
+          <span>
+            ACADEMIC MOMENTUM
+          </span>
+
+
           <h3>
 
             {grades.length > 0
-              ? "Keep up the good work!"
-              : "Results coming soon"}
+              ? "Keep building on your results"
+              : "Your results are coming soon"}
 
           </h3>
 
@@ -1010,18 +1449,152 @@ function Grades() {
           <p>
 
             {grades.length > 0
+
               ? `You currently have ${grades.length} graded ${
                   grades.length === 1
                     ? "submission"
                     : "submissions"
                 }. Review your lecturer feedback to keep improving.`
-              : "Your grades and lecturer feedback will appear here after your submitted work has been graded."}
+
+              : "Your grades, marks and lecturer feedback will appear here after your submitted coursework has been graded."}
 
           </p>
 
         </div>
 
+
+        <div className="grades-banner-score">
+
+          <strong>
+
+            {averageScore !== null
+              ? `${averageScore}%`
+              : "—"}
+
+          </strong>
+
+          <span>
+            CURRENT AVERAGE
+          </span>
+
+        </div>
+
       </section>
+
+    </div>
+
+  );
+
+}
+
+
+/* ========================================
+   RESULT METRIC
+======================================== */
+
+function ResultMetric({
+  className,
+  icon,
+  eyebrow,
+  value,
+  label,
+}) {
+
+  return (
+
+    <div
+      className={
+        `result-metric ${className}`
+      }
+    >
+
+      <div className="result-metric-accent" />
+
+
+      <div className="result-metric-icon">
+
+        {icon}
+
+      </div>
+
+
+      <div>
+
+        <span className="result-metric-eyebrow">
+
+          {eyebrow}
+
+        </span>
+
+
+        <strong>
+          {value}
+        </strong>
+
+
+        <small>
+          {label}
+        </small>
+
+      </div>
+
+    </div>
+
+  );
+
+}
+
+
+/* ========================================
+   GRADE MIX ROW
+======================================== */
+
+function GradeMixRow({
+  className,
+  label,
+  count,
+  percentage,
+}) {
+
+  return (
+
+    <div
+      className={
+        `grade-mix-row ${className}`
+      }
+    >
+
+      <div className="grade-mix-row-top">
+
+        <span>
+          {label}
+        </span>
+
+        <strong>
+          {count}
+        </strong>
+
+      </div>
+
+
+      <div className="grade-mix-track">
+
+        <div
+          className="grade-mix-fill"
+          style={{
+            width:
+              `${percentage}%`,
+          }}
+        />
+
+      </div>
+
+
+      <small>
+
+        {percentage}% of results
+
+      </small>
 
     </div>
 
