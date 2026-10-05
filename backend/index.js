@@ -15,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+const crypto = require("crypto");
 
 /* =========================================
    POSTGRESQL CONNECTION
@@ -285,115 +286,8 @@ app.get(
 );
 
 
-/* =========================================
-   REGISTER
-========================================= */
-
-app.post(
-    '/register',
-    async (req, res) => {
-
-        try {
-
-            const {
-                name,
-                email,
-                password,
-                degree,
-                batch
-            } = req.body;
 
 
-            const userCheck =
-                await pool.query(
-                    'SELECT * FROM users WHERE email = $1',
-                    [email]
-                );
-
-
-            if (
-                userCheck.rows.length > 0
-            ) {
-
-                return res
-                    .status(400)
-                    .json({
-                        error:
-                            'User already exists!'
-                    });
-
-            }
-
-
-            const salt =
-                await bcrypt.genSalt(10);
-
-
-            const bcryptPassword =
-                await bcrypt.hash(
-                    password,
-                    salt
-                );
-
-
-            const newUser =
-                await pool.query(
-                    `
-                    INSERT INTO users
-                    (
-                        name,
-                        email,
-                        password_hash,
-                        degree,
-                        batch
-                    )
-                    VALUES
-                    (
-                        $1,
-                        $2,
-                        $3,
-                        $4,
-                        $5
-                    )
-                    RETURNING *
-                    `,
-                    [
-                        name,
-                        email,
-                        bcryptPassword,
-                        degree,
-                        batch
-                    ]
-                );
-
-
-            res.json({
-                message:
-                    'User registered successfully!',
-
-                user:
-                    newUser.rows[0]
-            });
-
-
-        } catch (err) {
-
-            console.error(
-                err.message
-            );
-
-
-            res
-                .status(500)
-                .json({
-                    error:
-                        'Server Error'
-                });
-
-        }
-
-    }
-);
 
 
 /* =========================================
@@ -412,10 +306,46 @@ app.post(
             } = req.body;
 
 
+            /* =========================================
+               REQUIRED FIELDS
+            ========================================= */
+
+            if (
+                !email ||
+                !password
+            ) {
+
+                return res
+                    .status(400)
+                    .json({
+                        error:
+                            'Email and password are required.'
+                    });
+
+            }
+
+
+            /* =========================================
+               FIND USER
+            ========================================= */
+
+            const cleanEmail =
+                email
+                    .trim()
+                    .toLowerCase();
+
+
             const user =
                 await pool.query(
-                    'SELECT * FROM users WHERE email = $1',
-                    [email]
+                    `
+                    SELECT *
+                    FROM users
+                    WHERE LOWER(email) =
+                          LOWER($1)
+                    `,
+                    [
+                        cleanEmail
+                    ]
                 );
 
 
@@ -431,29 +361,38 @@ app.post(
                     });
 
             }
-                /* =====================================
-                CHECK IF ACCOUNT IS ACTIVE
-                ===================================== */
 
-                if (
-                    user.rows[0].is_active === false
-                ) {
 
-                    return res
-                        .status(403)
-                        .json({
-                            error:
-                                'Your account has been disabled. Please contact an administrator.'
-                        });
+            const currentUser =
+                user.rows[0];
 
-                }
 
+            /* =========================================
+               CHECK IF ACCOUNT IS ACTIVE
+            ========================================= */
+
+            if (
+                currentUser.is_active === false
+            ) {
+
+                return res
+                    .status(403)
+                    .json({
+                        error:
+                            'Your account has been disabled. Please contact an administrator.'
+                    });
+
+            }
+
+
+            /* =========================================
+               CHECK PASSWORD
+            ========================================= */
 
             const validPassword =
                 await bcrypt.compare(
                     password,
-                    user.rows[0]
-                        .password_hash
+                    currentUser.password_hash
                 );
 
 
@@ -468,82 +407,58 @@ app.post(
 
             }
 
-            if (!validPassword) {
 
-    return res
-        .status(401)
-        .json({
-            error:
-                'Invalid email or password'
-        });
+            /* =========================================
+               MAINTENANCE MODE LOGIN CHECK
+            ========================================= */
 
-}
+            if (
+                currentUser.role !==
+                'ADMIN'
+            ) {
 
-
-/* =========================================
-   MAINTENANCE MODE LOGIN CHECK
-========================================= */
-
-if (
-    user.rows[0].role !==
-    'ADMIN'
-) {
-
-    const settings =
-        await pool.query(
-            `
-            SELECT
-                maintenance_mode
-            FROM system_settings
-            ORDER BY id ASC
-            LIMIT 1
-            `
-        );
+                const settings =
+                    await pool.query(
+                        `
+                        SELECT
+                            maintenance_mode
+                        FROM system_settings
+                        ORDER BY id ASC
+                        LIMIT 1
+                        `
+                    );
 
 
-    const maintenanceMode =
-        settings.rows.length >
-            0 &&
-        settings.rows[0]
-            .maintenance_mode ===
-            true;
+                const maintenanceMode =
+                    settings.rows.length >
+                        0 &&
+                    settings.rows[0]
+                        .maintenance_mode ===
+                        true;
 
 
-    if (
-        maintenanceMode
-    ) {
+                if (
+                    maintenanceMode
+                ) {
 
-        return res
-            .status(503)
-            .json({
-                error:
-                    'CampusLearn is currently under maintenance. Please try again later.',
+                    return res
+                        .status(503)
+                        .json({
+                            error:
+                                'CampusLearn is currently under maintenance. Please try again later.',
 
-                maintenanceMode:
-                    true
-            });
+                            maintenanceMode:
+                                true
+                        });
 
-    }
+                }
 
-}
+            }
 
 
-/* =========================================
-   UPDATE LAST LOGIN
-========================================= */
-
-await pool.query(
-    `
-    UPDATE users
-    SET last_login =
-        CURRENT_TIMESTAMP
-    WHERE id = $1
-    `,
-    [
-        user.rows[0].id
-    ]
-);
-
+            /* =========================================
+               UPDATE LAST LOGIN
+            ========================================= */
 
             await pool.query(
                 `
@@ -553,19 +468,23 @@ await pool.query(
                 WHERE id = $1
                 `,
                 [
-                    user.rows[0].id
+                    currentUser.id
                 ]
             );
 
+
+            /* =========================================
+               CREATE JWT TOKEN
+            ========================================= */
 
             const token =
                 jwt.sign(
                     {
                         user_id:
-                            user.rows[0].id,
+                            currentUser.id,
 
                         role:
-                            user.rows[0].role
+                            currentUser.role
                     },
 
                     process.env.JWT_SECRET,
@@ -576,35 +495,47 @@ await pool.query(
                 );
 
 
+            /* =========================================
+               LOGIN RESPONSE
+            ========================================= */
+
             res.json({
+
                 message:
                     'Login successful!',
 
                 token,
 
                 role:
-                    user.rows[0].role
+                    currentUser.role,
+
+                must_change_password:
+                    currentUser
+                        .must_change_password ===
+                    true
+
             });
 
 
         } catch (err) {
 
             console.error(
+                'Login Error:',
                 err.message
             );
 
 
             res
                 .status(500)
-                .send(
-                    'Server Error'
-                );
+                .json({
+                    error:
+                        'Server Error'
+                });
 
         }
 
     }
 );
-
 
 /* =========================================
    GET CURRENT LOGGED-IN USER
@@ -631,7 +562,10 @@ app.get(
                         role,
                         degree,
                         batch,
-                        last_login
+                        student_number,
+                        last_login,
+                        is_active,
+                        must_change_password
                     FROM users
                     WHERE id = $1
                     `,
@@ -4358,8 +4292,6 @@ app.post(
 
             const {
                 name,
-                email,
-                password,
                 role,
                 degree,
                 batch
@@ -4372,8 +4304,6 @@ app.post(
 
             if (
                 !name ||
-                !email ||
-                !password ||
                 !role
             ) {
 
@@ -4381,7 +4311,7 @@ app.post(
                     .status(400)
                     .json({
                         error:
-                            'Name, email, password and role are required.'
+                            'Name and role are required.'
                     });
 
             }
@@ -4390,6 +4320,12 @@ app.post(
             /* ------------------------------
                VALID ROLE
             ------------------------------ */
+
+            const cleanRole =
+                role
+                    .trim()
+                    .toUpperCase();
+
 
             const allowedRoles = [
                 'STUDENT',
@@ -4400,7 +4336,7 @@ app.post(
 
             if (
                 !allowedRoles.includes(
-                    role
+                    cleanRole
                 )
             ) {
 
@@ -4415,38 +4351,155 @@ app.post(
 
 
             /* ------------------------------
-               PASSWORD LENGTH
+               STUDENT DETAILS REQUIRED
             ------------------------------ */
 
             if (
-                password.length < 6
+                cleanRole === 'STUDENT' &&
+                (
+                    !degree ||
+                    !batch
+                )
             ) {
 
                 return res
                     .status(400)
                     .json({
                         error:
-                            'Password must contain at least 6 characters.'
+                            'Degree and batch are required for students.'
                     });
 
             }
 
 
             /* ------------------------------
-               NORMALIZE EMAIL
+               CREATE EMAIL USERNAME
             ------------------------------ */
 
-            const cleanEmail =
-                email
+            let emailName =
+                name
                     .trim()
-                    .toLowerCase();
+                    .toLowerCase()
+                    .replace(
+                        /[^a-z0-9]+/g,
+                        '.'
+                    )
+                    .replace(
+                        /^\.+|\.+$/g,
+                        ''
+                    );
+
+
+            if (!emailName) {
+
+                emailName =
+                    cleanRole === 'STUDENT'
+                        ? 'student'
+                        : cleanRole === 'LECTURER'
+                        ? 'lecturer'
+                        : 'admin';
+
+            }
 
 
             /* ------------------------------
-               CHECK EXISTING EMAIL
+               STUDENT NUMBER
             ------------------------------ */
 
-            const existingUser =
+            let studentNumber = null;
+
+
+            if (
+                cleanRole === 'STUDENT'
+            ) {
+
+                const studentNumberResult =
+                    await pool.query(
+                        `
+                        SELECT
+                            nextval(
+                                'student_number_seq'
+                            )
+                            AS student_number
+                        `
+                    );
+
+
+                studentNumber =
+                    Number(
+                        studentNumberResult
+                            .rows[0]
+                            .student_number
+                    );
+
+            }
+
+
+            /* ------------------------------
+               GENERATE EMAIL
+            ------------------------------ */
+
+            let generatedEmail = '';
+
+
+            if (
+                cleanRole === 'STUDENT'
+            ) {
+
+                generatedEmail =
+                    `${emailName}.${studentNumber}@campuslearn.edu`;
+
+            } else {
+
+                /*
+                   Lecturer/Admin currently
+                   keep random unique numbers.
+                */
+
+                let emailExists = true;
+
+
+                while (emailExists) {
+
+                    const randomNumber =
+                        crypto.randomInt(
+                            1000,
+                            10000
+                        );
+
+
+                    generatedEmail =
+                        `${emailName}.${randomNumber}@campuslearn.edu`;
+
+
+                    const emailCheck =
+                        await pool.query(
+                            `
+                            SELECT id
+                            FROM users
+                            WHERE LOWER(email) =
+                                  LOWER($1)
+                            `,
+                            [
+                                generatedEmail
+                            ]
+                        );
+
+
+                    emailExists =
+                        emailCheck.rows.length >
+                        0;
+
+                }
+
+            }
+
+
+            /* ------------------------------
+               CHECK GENERATED EMAIL
+            ------------------------------ */
+
+            const generatedEmailCheck =
                 await pool.query(
                     `
                     SELECT id
@@ -4455,24 +4508,34 @@ app.post(
                           LOWER($1)
                     `,
                     [
-                        cleanEmail
+                        generatedEmail
                     ]
                 );
 
 
             if (
-                existingUser.rows.length >
-                0
+                generatedEmailCheck
+                    .rows.length > 0
             ) {
 
                 return res
                     .status(400)
                     .json({
                         error:
-                            'A user with this email already exists.'
+                            'Generated email already exists. Please try again.'
                     });
 
             }
+
+
+            /* ------------------------------
+               GENERATE TEMPORARY PASSWORD
+            ------------------------------ */
+
+            const temporaryPassword =
+                `CL@${crypto
+                    .randomBytes(6)
+                    .toString('hex')}`;
 
 
             /* ------------------------------
@@ -4485,7 +4548,7 @@ app.post(
 
             const hashedPassword =
                 await bcrypt.hash(
-                    password,
+                    temporaryPassword,
                     salt
                 );
 
@@ -4504,7 +4567,9 @@ app.post(
                         password_hash,
                         role,
                         degree,
-                        batch
+                        batch,
+                        student_number,
+                        must_change_password
                     )
 
                     VALUES
@@ -4514,7 +4579,9 @@ app.post(
                         $3,
                         $4,
                         $5,
-                        $6
+                        $6,
+                        $7,
+                        TRUE
                     )
 
                     RETURNING
@@ -4524,28 +4591,57 @@ app.post(
                         role,
                         degree,
                         batch,
+                        student_number,
                         last_login,
-                        is_active
+                        is_active,
+                        must_change_password
                     `,
                     [
                         name.trim(),
-                        cleanEmail,
+                        generatedEmail,
                         hashedPassword,
-                        role,
-                        degree || null,
-                        batch || null
+                        cleanRole,
+
+                        cleanRole === 'STUDENT'
+                            ? degree.trim()
+                            : null,
+
+                        cleanRole === 'STUDENT'
+                            ? batch.trim()
+                            : null,
+
+                        studentNumber
                     ]
                 );
 
 
+            /* ------------------------------
+               SEND CREATED CREDENTIALS
+            ------------------------------ */
+
             res
                 .status(201)
                 .json({
+
                     message:
                         'User created successfully!',
 
                     user:
-                        newUser.rows[0]
+                        newUser.rows[0],
+
+                    credentials: {
+
+                        email:
+                            generatedEmail,
+
+                        temporaryPassword:
+                            temporaryPassword,
+
+                        studentNumber:
+                            studentNumber
+
+                    }
+
                 });
 
 
@@ -8553,7 +8649,9 @@ app.put(
                 `
                 UPDATE users
 
-                SET password_hash = $1
+                SET
+                    password_hash = $1,
+                    must_change_password = FALSE
 
                 WHERE id = $2
                 `,

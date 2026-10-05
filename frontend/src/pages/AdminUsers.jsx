@@ -21,6 +21,9 @@ import {
   UserX,
   X,
   Mail,
+  Copy,
+  CheckCircle2,
+  KeyRound,
 } from "lucide-react";
 
 import "../styles/adminUsers.css";
@@ -101,7 +104,7 @@ function AdminUsers() {
 
 
   /* ========================================
-     MODAL
+     ADD / EDIT MODAL
   ======================================== */
 
   const [modalOpen, setModalOpen] =
@@ -114,11 +117,25 @@ function AdminUsers() {
     useState({
       name: "",
       email: "",
-      password: "",
       role: "STUDENT",
       degree: "",
       batch: "",
     });
+
+
+  /* ========================================
+     CREATED ACCOUNT CREDENTIALS
+  ======================================== */
+
+  const [
+    createdCredentials,
+    setCreatedCredentials,
+  ] = useState(null);
+
+  const [
+    copiedField,
+    setCopiedField,
+  ] = useState("");
 
 
   /* ========================================
@@ -173,6 +190,7 @@ function AdminUsers() {
           );
 
         setUsers(databaseUsers);
+
       } catch (error) {
         console.error(
           "Failed to load users:",
@@ -200,6 +218,7 @@ function AdminUsers() {
           error.response?.data?.error ||
             "Failed to load users."
         );
+
       } finally {
         setLoading(false);
       }
@@ -305,7 +324,6 @@ function AdminUsers() {
     setFormData({
       name: "",
       email: "",
-      password: "",
       role: "STUDENT",
       degree: "",
       batch: "",
@@ -329,8 +347,6 @@ function AdminUsers() {
       email:
         user.email || "",
 
-      password: "",
-
       role:
         user.role || "STUDENT",
 
@@ -346,340 +362,353 @@ function AdminUsers() {
 
 
   /* ========================================
-     CREATE USER
+     COPY TO CLIPBOARD
   ======================================== */
 
-const handleSaveUser = async (event) => {
+  const copyToClipboard =
+    async (text, field) => {
 
-  event.preventDefault();
+      try {
+
+        await navigator.clipboard.writeText(
+          text
+        );
+
+        setCopiedField(field);
+
+        setTimeout(() => {
+          setCopiedField("");
+        }, 1800);
+
+      } catch (error) {
+
+        console.error(
+          "Clipboard copy failed:",
+          error
+        );
+
+
+        /* Fallback for browsers
+           where clipboard API fails */
+
+        const textarea =
+          document.createElement(
+            "textarea"
+          );
+
+        textarea.value = text;
+
+        textarea.style.position =
+          "fixed";
+
+        textarea.style.opacity =
+          "0";
+
+        document.body.appendChild(
+          textarea
+        );
+
+        textarea.focus();
+
+        textarea.select();
+
+        document.execCommand(
+          "copy"
+        );
+
+        document.body.removeChild(
+          textarea
+        );
+
+        setCopiedField(field);
+
+        setTimeout(() => {
+          setCopiedField("");
+        }, 1800);
+
+      }
+
+    };
 
 
   /* ========================================
-     BASIC VALIDATION
+     COPY ALL CREDENTIALS
   ======================================== */
 
-  if (
-    !formData.name.trim() ||
-    !formData.email.trim() ||
-    !formData.role
-  ) {
+/* ========================================
+   COPY ALL CREDENTIALS
+======================================== */
 
-    alert(
-      "Please enter name, email and role."
-    );
+const copyAllCredentials = () => {
 
+  if (!createdCredentials) {
     return;
   }
 
 
+  const studentNumberLine =
+    createdCredentials.role === "STUDENT" &&
+    createdCredentials.studentNumber
+      ? `Student Number: ${createdCredentials.studentNumber}\n`
+      : "";
+
+
+  const credentialText =
+    `CampusLearn AI Login Credentials
+
+Name: ${createdCredentials.name}
+Role: ${createdCredentials.role}
+${studentNumberLine}
+Email:
+${createdCredentials.email}
+
+Temporary Password:
+${createdCredentials.temporaryPassword}`;
+
+
+  copyToClipboard(
+    credentialText,
+    "all"
+  );
+
+};
+
+
   /* ========================================
-     STUDENT VALIDATION
+     CLOSE CREDENTIAL MODAL
   ======================================== */
 
-  if (
-    formData.role === "STUDENT" &&
-    (
-      !formData.degree.trim() ||
-      !formData.batch.trim()
-    )
-  ) {
-
-    alert(
-      "Please enter the student's degree and batch."
-    );
-
-    return;
-  }
+  const closeCredentialModal = () => {
+    setCreatedCredentials(null);
+    setCopiedField("");
+  };
 
 
   /* ========================================
-     PASSWORD VALIDATION FOR NEW USER ONLY
+     CREATE / UPDATE USER
   ======================================== */
 
-  if (
-    !editingUser &&
-    (
-      !formData.password ||
-      formData.password.length < 6
-    )
-  ) {
-
-    alert(
-      "Password must contain at least 6 characters."
-    );
-
-    return;
-  }
+  const handleSaveUser = async (event) => {
+    event.preventDefault();
 
 
-  try {
+    /* ========================================
+       BASIC VALIDATION
+    ======================================== */
 
-    setSaving(true);
-
-
-    const token =
-      localStorage.getItem("token");
-
-
-    if (!token) {
-
-      navigate("/login");
+    if (
+      !formData.name.trim() ||
+      !formData.role
+    ) {
+      alert(
+        "Please enter the user's name and role."
+      );
 
       return;
-
     }
 
 
     /* ========================================
-       EDIT EXISTING USER
+       EMAIL REQUIRED ONLY WHEN EDITING
     ======================================== */
 
-    if (editingUser) {
-
-      await axios.put(
-        `http://localhost:5000/admin/users/${editingUser.id}`,
-
-        {
-          name:
-            formData.name.trim(),
-
-          email:
-            formData.email
-              .trim()
-              .toLowerCase(),
-
-          role:
-            formData.role,
-
-          degree:
-            formData.role === "STUDENT"
-              ? formData.degree.trim()
-              : null,
-
-          batch:
-            formData.role === "STUDENT"
-              ? formData.batch.trim()
-              : null,
-        },
-
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        }
+    if (
+      editingUser &&
+      !formData.email.trim()
+    ) {
+      alert(
+        "Please enter the user's email address."
       );
+
+      return;
+    }
+
+
+    /* ========================================
+       STUDENT VALIDATION
+    ======================================== */
+
+    if (
+      formData.role === "STUDENT" &&
+      (
+        !formData.degree.trim() ||
+        !formData.batch.trim()
+      )
+    ) {
+      alert(
+        "Please enter the student's degree and batch."
+      );
+
+      return;
+    }
+
+
+    try {
+      setSaving(true);
+
+      const token =
+        localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+
+      /* ========================================
+         EDIT EXISTING USER
+      ======================================== */
+
+      if (editingUser) {
+        await axios.put(
+          `http://localhost:5000/admin/users/${editingUser.id}`,
+
+          {
+            name:
+              formData.name.trim(),
+
+            email:
+              formData.email
+                .trim()
+                .toLowerCase(),
+
+            role:
+              formData.role,
+
+            degree:
+              formData.role === "STUDENT"
+                ? formData.degree.trim()
+                : null,
+
+            batch:
+              formData.role === "STUDENT"
+                ? formData.batch.trim()
+                : null,
+          },
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+        await loadUsers();
+
+        setModalOpen(false);
+
+        setEditingUser(null);
+
+        alert(
+          "User updated successfully!"
+        );
+
+        return;
+      }
+
+
+      /* ========================================
+         CREATE NEW USER
+
+         Email + temporary password
+         are generated by backend
+      ======================================== */
+
+      const response =
+        await axios.post(
+          "http://localhost:5000/admin/users",
+
+          {
+            name:
+              formData.name.trim(),
+
+            role:
+              formData.role,
+
+            degree:
+              formData.role === "STUDENT"
+                ? formData.degree.trim()
+                : null,
+
+            batch:
+              formData.role === "STUDENT"
+                ? formData.batch.trim()
+                : null,
+          },
+
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
+
+
+      const generatedEmail =
+        response.data
+          ?.credentials
+          ?.email;
+
+      const temporaryPassword =
+        response.data
+          ?.credentials
+          ?.temporaryPassword;
 
 
       await loadUsers();
-
 
       setModalOpen(false);
 
       setEditingUser(null);
 
 
-      alert(
-        "User updated successfully!"
-      );
+      if (
+        generatedEmail &&
+        temporaryPassword
+      ) {
 
-      return;
-
-    }
-
-
-    /* ========================================
-       CREATE NEW USER
-    ======================================== */
-
-    await axios.post(
-      "http://localhost:5000/admin/users",
-
-      {
+      setCreatedCredentials({
         name:
+          response.data?.user?.name ||
           formData.name.trim(),
 
-        email:
-          formData.email
-            .trim()
-            .toLowerCase(),
-
-        password:
-          formData.password,
-
         role:
+          response.data?.user?.role ||
           formData.role,
 
-        degree:
-          formData.role === "STUDENT"
-            ? formData.degree.trim()
-            : null,
+        studentNumber:
+          response.data?.credentials?.studentNumber ??
+          response.data?.user?.student_number ??
+          null,
 
-        batch:
-          formData.role === "STUDENT"
-            ? formData.batch.trim()
-            : null,
-      },
+        email:
+          generatedEmail,
 
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
-      }
-    );
+        temporaryPassword:
+          temporaryPassword,
+      });
 
+      } else {
 
-    await loadUsers();
-
-
-    setModalOpen(false);
-
-
-    alert(
-      "User created successfully!"
-    );
-
-
-  } catch (error) {
-
-    console.error(
-      "Save user error:",
-      error
-    );
-
-
-    if (
-      error.response?.status === 401 ||
-      error.response?.status === 403
-    ) {
-
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-
-      navigate("/login");
-
-      return;
-
-    }
-
-
-    alert(
-      error.response?.data?.error ||
-      "Failed to save user."
-    );
-
-
-  } finally {
-
-    setSaving(false);
-
-  }
-
-};
-
-
-  /* ========================================
-     ENABLE / DISABLE
-     STEP 28D
-  ======================================== */
-
-const toggleUserStatus =
-  async (userId) => {
-
-    try {
-
-      const token =
-        localStorage.getItem("token");
-
-
-      if (!token) {
-
-        navigate("/login");
-
-        return;
-      }
-
-
-      const selectedUser =
-        users.find(
-          (user) =>
-            user.id === userId
+        alert(
+          "User created successfully!"
         );
 
-
-      if (!selectedUser) {
-        return;
       }
-
-
-      const newStatus =
-        selectedUser.status !==
-        "Active";
-
-
-      const actionName =
-        newStatus
-          ? "enable"
-          : "disable";
-
-
-      const confirmed =
-        window.confirm(
-          `Are you sure you want to ${actionName} ${selectedUser.name}?`
-        );
-
-
-      if (!confirmed) {
-        return;
-      }
-
-
-      await axios.put(
-        `http://localhost:5000/admin/users/${userId}/status`,
-
-        {
-          is_active:
-            newStatus,
-        },
-
-        {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        }
-      );
-
-
-      /*
-        Reload fresh data
-        from PostgreSQL
-      */
-
-      await loadUsers();
-
-
-      alert(
-        newStatus
-          ? "User enabled successfully!"
-          : "User disabled successfully!"
-      );
 
 
     } catch (error) {
-
       console.error(
-        "Update user status error:",
+        "Save user error:",
         error
       );
-
 
       if (
         error.response?.status === 401 ||
         error.response?.status === 403
       ) {
-
         localStorage.removeItem(
           "token"
         );
@@ -693,115 +722,204 @@ const toggleUserStatus =
         return;
       }
 
-
       alert(
         error.response?.data?.error ||
-        "Failed to update user status."
+          "Failed to save user."
       );
 
+    } finally {
+      setSaving(false);
     }
-
   };
 
 
   /* ========================================
-     DELETE USER
-     STEP 28E
+     ENABLE / DISABLE
   ======================================== */
 
-const deleteUser = async (userId) => {
+  const toggleUserStatus =
+    async (userId) => {
 
-  try {
+      try {
 
-    const token =
-      localStorage.getItem("token");
+        const token =
+          localStorage.getItem("token");
 
+        if (!token) {
+          navigate("/login");
+          return;
+        }
 
-    if (!token) {
+        const selectedUser =
+          users.find(
+            (user) =>
+              user.id === userId
+          );
 
-      navigate("/login");
+        if (!selectedUser) {
+          return;
+        }
 
-      return;
-    }
+        const newStatus =
+          selectedUser.status !==
+          "Active";
 
+        const actionName =
+          newStatus
+            ? "enable"
+            : "disable";
 
-    const selectedUser =
-      users.find(
-        (user) =>
-          user.id === userId
-      );
+        const confirmed =
+          window.confirm(
+            `Are you sure you want to ${actionName} ${selectedUser.name}?`
+          );
 
+        if (!confirmed) {
+          return;
+        }
 
-    if (!selectedUser) {
-      return;
-    }
+        await axios.put(
+          `http://localhost:5000/admin/users/${userId}/status`,
 
+          {
+            is_active:
+              newStatus,
+          },
 
-    const confirmed =
-      window.confirm(
-        `Are you sure you want to permanently delete ${selectedUser.name}?`
-      );
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
+        await loadUsers();
 
-    if (!confirmed) {
-      return;
-    }
+        alert(
+          newStatus
+            ? "User enabled successfully!"
+            : "User disabled successfully!"
+        );
 
+      } catch (error) {
 
-    await axios.delete(
-      `http://localhost:5000/admin/users/${userId}`,
-      {
-        headers: {
-          Authorization:
-            `Bearer ${token}`,
-        },
+        console.error(
+          "Update user status error:",
+          error
+        );
+
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+          return;
+        }
+
+        alert(
+          error.response?.data?.error ||
+            "Failed to update user status."
+        );
+
       }
-    );
+
+    };
 
 
-    /*
-      Reload users directly
-      from PostgreSQL
-    */
+  /* ========================================
+     DELETE USER
+  ======================================== */
 
-    await loadUsers();
+  const deleteUser =
+    async (userId) => {
 
+      try {
 
-    alert(
-      "User deleted successfully!"
-    );
+        const token =
+          localStorage.getItem("token");
 
+        if (!token) {
+          navigate("/login");
+          return;
+        }
 
-  } catch (error) {
+        const selectedUser =
+          users.find(
+            (user) =>
+              user.id === userId
+          );
 
-    console.error(
-      "Delete user error:",
-      error
-    );
+        if (!selectedUser) {
+          return;
+        }
 
+        const confirmed =
+          window.confirm(
+            `Are you sure you want to permanently delete ${selectedUser.name}?`
+          );
 
-    if (
-      error.response?.status === 401 ||
-      error.response?.status === 403
-    ) {
+        if (!confirmed) {
+          return;
+        }
 
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
+        await axios.delete(
+          `http://localhost:5000/admin/users/${userId}`,
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
-      navigate("/login");
+        await loadUsers();
 
-      return;
-    }
+        alert(
+          "User deleted successfully!"
+        );
 
+      } catch (error) {
 
-    alert(
-      error.response?.data?.error ||
-      "Failed to delete user."
-    );
+        console.error(
+          "Delete user error:",
+          error
+        );
 
-  }
+        if (
+          error.response?.status === 401 ||
+          error.response?.status === 403
+        ) {
+          localStorage.removeItem(
+            "token"
+          );
 
-};
+          localStorage.removeItem(
+            "role"
+          );
+
+          navigate("/login");
+
+          return;
+        }
+
+        alert(
+          error.response?.data?.error ||
+            "Failed to delete user."
+        );
+
+      }
+
+    };
 
 
   return (
@@ -843,7 +961,6 @@ const deleteUser = async (userId) => {
       </section>
 
 
-
       {/* ====================================
           SUMMARY
       ==================================== */}
@@ -876,7 +993,6 @@ const deleteUser = async (userId) => {
         </div>
 
 
-
         {/* STUDENTS */}
 
         <div className="au-summary-card au-purple">
@@ -904,7 +1020,6 @@ const deleteUser = async (userId) => {
         </div>
 
 
-
         {/* LECTURERS */}
 
         <div className="au-summary-card au-blue">
@@ -928,7 +1043,6 @@ const deleteUser = async (userId) => {
           </div>
 
         </div>
-
 
 
         {/* ADMINISTRATORS */}
@@ -960,7 +1074,6 @@ const deleteUser = async (userId) => {
       </section>
 
 
-
       {/* ====================================
           SEARCH + FILTER
       ==================================== */}
@@ -986,7 +1099,6 @@ const deleteUser = async (userId) => {
           />
 
         </div>
-
 
 
         {/* FILTERS */}
@@ -1024,7 +1136,6 @@ const deleteUser = async (userId) => {
           </select>
 
 
-
           {/* STATUS FILTER */}
 
           <select
@@ -1053,7 +1164,6 @@ const deleteUser = async (userId) => {
         </div>
 
       </section>
-
 
 
       {/* ====================================
@@ -1085,7 +1195,6 @@ const deleteUser = async (userId) => {
         )}
 
 
-
         {/* ERROR */}
 
         {!loading && error && (
@@ -1105,7 +1214,6 @@ const deleteUser = async (userId) => {
           </div>
 
         )}
-
 
 
         {/* TABLE */}
@@ -1169,7 +1277,9 @@ const deleteUser = async (userId) => {
                           <div>
 
                             <strong>
+
                               {user.name}
+
                             </strong>
 
                             <span>
@@ -1187,7 +1297,6 @@ const deleteUser = async (userId) => {
                       </td>
 
 
-
                       {/* ROLE */}
 
                       <td>
@@ -1203,13 +1312,13 @@ const deleteUser = async (userId) => {
                       </td>
 
 
-
                       {/* LAST LOGIN */}
 
                       <td>
-                        {user.lastLogin}
-                      </td>
 
+                        {user.lastLogin}
+
+                      </td>
 
 
                       {/* STATUS */}
@@ -1230,7 +1339,6 @@ const deleteUser = async (userId) => {
                         </span>
 
                       </td>
-
 
 
                       {/* ACTIONS */}
@@ -1257,7 +1365,6 @@ const deleteUser = async (userId) => {
                             />
 
                           </button>
-
 
 
                           {/* ENABLE / DISABLE */}
@@ -1295,7 +1402,6 @@ const deleteUser = async (userId) => {
                           </button>
 
 
-
                           {/* DELETE */}
 
                           <button
@@ -1328,7 +1434,6 @@ const deleteUser = async (userId) => {
             </table>
 
 
-
             {/* NO RESULTS */}
 
             {filteredUsers.length ===
@@ -1356,7 +1461,6 @@ const deleteUser = async (userId) => {
         )}
 
       </section>
-
 
 
       {/* ====================================
@@ -1388,7 +1492,7 @@ const deleteUser = async (userId) => {
 
                   {editingUser
                     ? "Update user account information."
-                    : "Create a new CampusLearn account."}
+                    : "Create a new CampusLearn account. Login credentials will be generated automatically."}
 
                 </p>
 
@@ -1407,7 +1511,6 @@ const deleteUser = async (userId) => {
               </button>
 
             </div>
-
 
 
             {/* ==================================
@@ -1451,73 +1554,37 @@ const deleteUser = async (userId) => {
               </div>
 
 
+              {/* EMAIL - ONLY WHEN EDITING */}
 
-              {/* EMAIL */}
-
-              <div className="au-form-group">
-
-                <label>
-                  Email Address
-                </label>
-
-                <input
-                  type="email"
-                  placeholder="Enter email address"
-                  value={
-                    formData.email
-                  }
-                  onChange={(event) =>
-                    setFormData({
-                      ...formData,
-
-                      email:
-                        event.target
-                          .value,
-                    })
-                  }
-                  required
-                />
-
-              </div>
-
-
-
-              {/* PASSWORD
-                  Only required when creating
-                  a new user.
-              */}
-
-              {!editingUser && (
+              {editingUser && (
 
                 <div className="au-form-group">
 
                   <label>
-                    Password
+                    Email Address
                   </label>
 
                   <input
-                    type="password"
-                    placeholder="Minimum 6 characters"
+                    type="email"
+                    placeholder="Enter email address"
                     value={
-                      formData.password
+                      formData.email
                     }
                     onChange={(event) =>
                       setFormData({
                         ...formData,
 
-                        password:
+                        email:
                           event.target
                             .value,
                       })
                     }
-                    minLength={6}
                     required
                   />
 
                 </div>
 
               )}
-
 
 
               {/* USER ROLE */}
@@ -1560,7 +1627,6 @@ const deleteUser = async (userId) => {
               </div>
 
 
-
               {/* ==================================
                   STUDENT DETAILS
               ================================== */}
@@ -1569,6 +1635,7 @@ const deleteUser = async (userId) => {
                 "STUDENT" && (
 
                 <>
+
 
                   {/* DEGREE */}
 
@@ -1597,7 +1664,6 @@ const deleteUser = async (userId) => {
                     />
 
                   </div>
-
 
 
                   {/* BATCH */}
@@ -1633,7 +1699,6 @@ const deleteUser = async (userId) => {
               )}
 
 
-
               {/* ==================================
                   BUTTONS
               ================================== */}
@@ -1660,19 +1725,448 @@ const deleteUser = async (userId) => {
                   disabled={saving}
                 >
 
-                {saving
-                  ? editingUser
-                    ? "Saving..."
-                    : "Creating..."
-                  : editingUser
-                    ? "Save Changes"
-                    : "Create User"}
+                  {saving
+                    ? editingUser
+                      ? "Saving..."
+                      : "Creating..."
+                    : editingUser
+                      ? "Save Changes"
+                      : "Create User"}
 
                 </button>
 
               </div>
 
             </form>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {/* ====================================
+          CREATED ACCOUNT CREDENTIALS MODAL
+      ==================================== */}
+
+      {createdCredentials && (
+
+        <div
+          className="au-modal-overlay"
+          style={{
+            zIndex: 2000,
+          }}
+        >
+
+          <div
+            className="au-modal"
+            style={{
+              maxWidth: "560px",
+            }}
+          >
+
+
+            {/* HEADER */}
+
+            <div className="au-modal-header">
+
+              <div>
+
+                <div
+                  style={{
+                    width: "46px",
+                    height: "46px",
+                    borderRadius: "14px",
+                    background:
+                      "rgba(16, 185, 129, 0.12)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "14px",
+                  }}
+                >
+
+                  <CheckCircle2
+                    size={25}
+                    style={{
+                      color: "#0f9f8f",
+                    }}
+                  />
+
+                </div>
+
+                <h2>
+                  Account Created
+                </h2>
+
+                <p>
+                  The CampusLearn account was
+                  created successfully. Copy these
+                  login credentials before closing.
+                </p>
+
+              </div>
+
+
+              <button
+                type="button"
+                onClick={
+                  closeCredentialModal
+                }
+              >
+
+                <X size={18} />
+
+              </button>
+
+            </div>
+
+
+            {/* USER INFORMATION */}
+
+            <div
+              style={{
+                marginBottom: "18px",
+                padding: "14px 16px",
+                borderRadius: "12px",
+                background: "#f8fafc",
+                border: "1px solid #e8edf3",
+              }}
+            >
+
+              <div
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "700",
+                  color: "#1e293b",
+                }}
+              >
+
+                {createdCredentials.name}
+
+              </div>
+
+              <div
+                style={{
+                  marginTop: "4px",
+                  fontSize: "12px",
+                  color: "#64748b",
+                }}
+              >
+
+                {createdCredentials.role}
+
+                {createdCredentials.role === "STUDENT" &&
+                  createdCredentials.studentNumber && (
+
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      fontSize: "12px",
+                      fontWeight: "700",
+                      color: "#4f46e5",
+                    }}
+                  >
+                    Student Number: {createdCredentials.studentNumber}
+                  </div>
+
+                )}
+
+              </div>
+
+            </div>
+
+
+            {/* EMAIL */}
+
+            <div
+              style={{
+                marginBottom: "16px",
+              }}
+            >
+
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "7px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  color: "#334155",
+                }}
+              >
+
+                Email Address
+
+              </label>
+
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "9px",
+                }}
+              >
+
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    padding: "13px 14px",
+                    borderRadius: "10px",
+                    border:
+                      "1px solid #dfe6ee",
+                    background: "#f8fafc",
+                    fontSize: "13px",
+                    color: "#1e293b",
+                    wordBreak: "break-all",
+                    userSelect: "text",
+                  }}
+                >
+
+                  {createdCredentials.email}
+
+                </div>
+
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyToClipboard(
+                      createdCredentials.email,
+                      "email"
+                    )
+                  }
+                  style={{
+                    minWidth: "92px",
+                    height: "45px",
+                    border: "none",
+                    borderRadius: "10px",
+                    cursor: "pointer",
+                    fontWeight: "700",
+                    fontSize: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    background:
+                      copiedField === "email"
+                        ? "#ecfdf5"
+                        : "#eef2ff",
+                    color:
+                      copiedField === "email"
+                        ? "#059669"
+                        : "#4f46e5",
+                  }}
+                >
+
+                  {copiedField === "email" ? (
+                    <>
+                      <CheckCircle2
+                        size={15}
+                      />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={15} />
+                      Copy
+                    </>
+                  )}
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            {/* TEMPORARY PASSWORD */}
+
+            <div
+              style={{
+                marginBottom: "22px",
+              }}
+            >
+
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: "7px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  color: "#334155",
+                }}
+              >
+
+                Temporary Password
+
+              </label>
+
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "9px",
+                }}
+              >
+
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    padding: "13px 14px",
+                    borderRadius: "10px",
+                    border:
+                      "1px solid #dfe6ee",
+                    background: "#f8fafc",
+                    fontSize: "13px",
+                    color: "#1e293b",
+                    wordBreak: "break-all",
+                    userSelect: "text",
+                    fontFamily:
+                      "Consolas, monospace",
+                  }}
+                >
+
+                  {createdCredentials
+                    .temporaryPassword}
+
+                </div>
+
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    copyToClipboard(
+                      createdCredentials
+                        .temporaryPassword,
+                      "password"
+                    )
+                  }
+                  style={{
+                    minWidth: "92px",
+                    height: "45px",
+                    border: "none",
+                    borderRadius: "10px",
+                    cursor: "pointer",
+                    fontWeight: "700",
+                    fontSize: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    background:
+                      copiedField === "password"
+                        ? "#ecfdf5"
+                        : "#eef2ff",
+                    color:
+                      copiedField === "password"
+                        ? "#059669"
+                        : "#4f46e5",
+                  }}
+                >
+
+                  {copiedField ===
+                  "password" ? (
+                    <>
+                      <CheckCircle2
+                        size={15}
+                      />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound
+                        size={15}
+                      />
+                      Copy
+                    </>
+                  )}
+
+                </button>
+
+              </div>
+
+            </div>
+
+
+            {/* WARNING */}
+
+            <div
+              style={{
+                padding: "12px 14px",
+                borderRadius: "10px",
+                background: "#fff7ed",
+                border:
+                  "1px solid #fed7aa",
+                marginBottom: "20px",
+                fontSize: "12px",
+                lineHeight: "1.6",
+                color: "#9a5416",
+              }}
+            >
+
+              Save or send these credentials
+              before closing this window.
+              The temporary password will not
+              be shown again from this screen.
+
+            </div>
+
+
+            {/* BUTTONS */}
+
+            <div className="au-modal-actions">
+
+              <button
+                type="button"
+                className="au-cancel-button"
+                onClick={
+                  closeCredentialModal
+                }
+              >
+
+                Close
+
+              </button>
+
+
+              <button
+                type="button"
+                className="au-save-button"
+                onClick={
+                  copyAllCredentials
+                }
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "7px",
+                }}
+              >
+
+                {copiedField === "all" ? (
+                  <>
+                    <CheckCircle2
+                      size={16}
+                    />
+
+                    Copied All
+                  </>
+                ) : (
+                  <>
+                    <Copy size={16} />
+
+                    Copy All
+                  </>
+                )}
+
+              </button>
+
+            </div>
 
           </div>
 

@@ -10,8 +10,8 @@ import {
 ========================================= */
 
 import Splash from "./pages/Splash";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Login from "./pages/Login.jsx";
+import SetNewPassword from "./pages/SetNewPassword.jsx";
 
 
 /* =========================================
@@ -96,9 +96,11 @@ function App() {
         />
 
         <Route
-          path="/register"
-          element={<Register />}
+          path="/set-new-password"
+          element={<SetNewPassword />}
         />
+
+
 
 
 

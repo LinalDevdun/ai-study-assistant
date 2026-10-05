@@ -10,3 +10,4 @@ frontend/.env
 
 # Ignore uploaded runtime files
 backend/uploads/
+
