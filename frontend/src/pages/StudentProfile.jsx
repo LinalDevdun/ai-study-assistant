@@ -14,6 +14,10 @@ import {
   Mail,
   GraduationCap,
   CalendarDays,
+  Hash,
+  ShieldCheck,
+  Sparkles,
+  BadgeCheck,
 } from "lucide-react";
 
 
@@ -153,12 +157,22 @@ function StudentProfile() {
   };
 
 
+  /* ========================================
+     LOADING
+  ======================================== */
+
   if (loading) {
 
     return (
 
-      <div style={styles.message}>
-        Loading profile...
+      <div className="student-profile-message">
+
+        <div className="profile-loader" />
+
+        <span>
+          Loading your profile...
+        </span>
+
       </div>
 
     );
@@ -166,17 +180,18 @@ function StudentProfile() {
   }
 
 
+  /* ========================================
+     ERROR
+  ======================================== */
+
   if (error) {
 
     return (
 
-      <div
-        style={{
-          ...styles.message,
-          color: "#dc2626",
-        }}
-      >
+      <div className="student-profile-error">
+
         {error}
+
       </div>
 
     );
@@ -186,129 +201,1366 @@ function StudentProfile() {
 
   return (
 
-    <div style={styles.page}>
+    <>
+
+      <style>{`
+
+        * {
+          box-sizing: border-box;
+        }
 
 
-      {/* ====================================
-          PAGE HEADER
-      ==================================== */}
+        /* =====================================
+           PAGE
+        ===================================== */
 
-      <div style={styles.pageHeader}>
+        .student-profile-page {
 
-        <h1 style={styles.title}>
-          My Profile
-        </h1>
+          width: 100%;
 
-        <p style={styles.subtitle}>
-          View your student account
-          information.
-        </p>
+          max-width: 1320px;
 
-      </div>
+          padding: 42px 48px 60px;
+
+        }
 
 
-      {/* ====================================
-          PROFILE CARD
-      ==================================== */}
+        /* =====================================
+           PAGE HEADER
+        ===================================== */
 
-      <div style={styles.profileCard}>
+        .student-profile-page-header {
+
+          display: flex;
+
+          align-items: flex-end;
+
+          justify-content: space-between;
+
+          gap: 24px;
+
+          margin-bottom: 28px;
+
+        }
 
 
-        {/* PROFILE BANNER */}
+        .student-profile-eyebrow {
 
-        <div style={styles.profileBanner}>
+          display: inline-flex;
+
+          align-items: center;
+
+          gap: 7px;
+
+          margin-bottom: 8px;
+
+          color: #6857ee;
+
+          font-size: 11px;
+
+          font-weight: 800;
+
+          letter-spacing: .11em;
+
+          text-transform: uppercase;
+
+        }
 
 
-          <div style={styles.avatar}>
+        .student-profile-title {
 
-            {getInitials(
-              student?.name
-            )}
+          margin: 0;
 
-          </div>
+          color: #101828;
 
+          font-size: 32px;
+
+          line-height: 1.15;
+
+          font-weight: 800;
+
+          letter-spacing: -.035em;
+
+        }
+
+
+        .student-profile-subtitle {
+
+          margin: 8px 0 0;
+
+          color: #7b879d;
+
+          font-size: 14px;
+
+          line-height: 1.6;
+
+        }
+
+
+        .profile-account-status {
+
+          display: inline-flex;
+
+          align-items: center;
+
+          gap: 8px;
+
+          padding: 10px 14px;
+
+          border-radius: 999px;
+
+          background: #ecfdf5;
+
+          border: 1px solid #d1fae5;
+
+          color: #047857;
+
+          font-size: 12px;
+
+          font-weight: 700;
+
+          box-shadow:
+            0 6px 18px
+            rgba(16, 185, 129, .07);
+
+        }
+
+
+        .profile-status-dot {
+
+          width: 7px;
+
+          height: 7px;
+
+          border-radius: 50%;
+
+          background: #10b981;
+
+          box-shadow:
+            0 0 0 4px
+            rgba(16, 185, 129, .10);
+
+        }
+
+
+        /* =====================================
+           MAIN PROFILE CARD
+        ===================================== */
+
+        .student-profile-card {
+
+          overflow: hidden;
+
+          border-radius: 25px;
+
+          border:
+            1px solid
+            rgba(224, 228, 239, .9);
+
+          background:
+            rgba(255, 255, 255, .96);
+
+          box-shadow:
+            0 22px 60px
+            rgba(44, 50, 100, .08);
+
+        }
+
+
+        /* =====================================
+           HERO / BANNER
+        ===================================== */
+
+        .student-profile-hero {
+
+          position: relative;
+
+          min-height: 225px;
+
+          overflow: hidden;
+
+          padding: 40px;
+
+          display: flex;
+
+          align-items: center;
+
+          justify-content: space-between;
+
+          gap: 30px;
+
+          background:
+
+            radial-gradient(
+              circle at 78% 20%,
+              rgba(121, 210, 255, .30),
+              transparent 28%
+            ),
+
+            radial-gradient(
+              circle at 15% 80%,
+              rgba(170, 136, 255, .34),
+              transparent 30%
+            ),
+
+            linear-gradient(
+              120deg,
+              #513ceb 0%,
+              #5c56ee 48%,
+              #527cec 100%
+            );
+
+        }
+
+
+        .profile-hero-grid {
+
+          position: absolute;
+
+          inset: 0;
+
+          opacity: .07;
+
+          background-image:
+
+            linear-gradient(
+              rgba(255,255,255,.6) 1px,
+              transparent 1px
+            ),
+
+            linear-gradient(
+              90deg,
+              rgba(255,255,255,.6) 1px,
+              transparent 1px
+            );
+
+          background-size:
+            55px 55px;
+
+        }
+
+
+        .profile-orb {
+
+          position: absolute;
+
+          border-radius: 50%;
+
+          background:
+            rgba(255,255,255,.08);
+
+          border:
+            1px solid
+            rgba(255,255,255,.12);
+
+          backdrop-filter:
+            blur(8px);
+
+        }
+
+
+        .profile-orb-one {
+
+          width: 170px;
+
+          height: 170px;
+
+          right: 70px;
+
+          top: -85px;
+
+        }
+
+
+        .profile-orb-two {
+
+          width: 105px;
+
+          height: 105px;
+
+          right: 220px;
+
+          bottom: -55px;
+
+        }
+
+
+        .profile-hero-left {
+
+          position: relative;
+
+          z-index: 2;
+
+          display: flex;
+
+          align-items: center;
+
+          gap: 23px;
+
+        }
+
+
+        .profile-avatar-wrap {
+
+          position: relative;
+
+          flex-shrink: 0;
+
+        }
+
+
+        .profile-avatar {
+
+          width: 92px;
+
+          height: 92px;
+
+          display: flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          border-radius: 25px;
+
+          color: white;
+
+          background:
+            linear-gradient(
+              145deg,
+              rgba(255,255,255,.22),
+              rgba(255,255,255,.09)
+            );
+
+          border:
+            1px solid
+            rgba(255,255,255,.28);
+
+          box-shadow:
+
+            0 18px 40px
+            rgba(31, 28, 110, .23),
+
+            inset 0 1px 0
+            rgba(255,255,255,.20);
+
+          backdrop-filter:
+            blur(18px);
+
+          font-size: 27px;
+
+          font-weight: 800;
+
+        }
+
+
+        .profile-avatar-badge {
+
+          position: absolute;
+
+          right: -6px;
+
+          bottom: -5px;
+
+          width: 30px;
+
+          height: 30px;
+
+          display: flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          border-radius: 10px;
+
+          color: #5b50e9;
+
+          background: white;
+
+          border:
+            3px solid
+            #6259eb;
+
+          box-shadow:
+            0 7px 18px
+            rgba(34, 31, 110, .20);
+
+        }
+
+
+        .profile-name {
+
+          margin: 0;
+
+          color: white;
+
+          font-size: 28px;
+
+          line-height: 1.2;
+
+          font-weight: 800;
+
+          letter-spacing: -.025em;
+
+        }
+
+
+        .profile-meta-row {
+
+          display: flex;
+
+          flex-wrap: wrap;
+
+          align-items: center;
+
+          gap: 9px;
+
+          margin-top: 11px;
+
+        }
+
+
+        .profile-role-pill,
+        .profile-number-pill {
+
+          display: inline-flex;
+
+          align-items: center;
+
+          gap: 6px;
+
+          padding: 7px 11px;
+
+          border-radius: 999px;
+
+          color:
+            rgba(255,255,255,.94);
+
+          background:
+            rgba(255,255,255,.10);
+
+          border:
+            1px solid
+            rgba(255,255,255,.16);
+
+          backdrop-filter:
+            blur(10px);
+
+          font-size: 11px;
+
+          font-weight: 700;
+
+        }
+
+
+        .profile-hero-right {
+
+          position: relative;
+
+          z-index: 2;
+
+          min-width: 235px;
+
+          padding: 18px 20px;
+
+          border-radius: 18px;
+
+          background:
+            rgba(255,255,255,.10);
+
+          border:
+            1px solid
+            rgba(255,255,255,.14);
+
+          backdrop-filter:
+            blur(14px);
+
+        }
+
+
+        .hero-mini-label {
+
+          display: block;
+
+          margin-bottom: 5px;
+
+          color:
+            rgba(255,255,255,.60);
+
+          font-size: 10px;
+
+          font-weight: 700;
+
+          text-transform: uppercase;
+
+          letter-spacing: .09em;
+
+        }
+
+
+        .hero-mini-value {
+
+          color: white;
+
+          font-size: 13px;
+
+          font-weight: 700;
+
+          line-height: 1.5;
+
+          word-break: break-word;
+
+        }
+
+
+        .hero-mini-divider {
+
+          height: 1px;
+
+          margin: 14px 0;
+
+          background:
+            rgba(255,255,255,.14);
+
+        }
+
+
+        /* =====================================
+           CONTENT AREA
+        ===================================== */
+
+        .profile-content {
+
+          padding: 30px;
+
+          background:
+
+            radial-gradient(
+              circle at top right,
+              rgba(102, 86, 238, .035),
+              transparent 24%
+            ),
+
+            white;
+
+        }
+
+
+        .profile-section-heading {
+
+          margin-bottom: 18px;
+
+        }
+
+
+        .profile-section-title {
+
+          display: flex;
+
+          align-items: center;
+
+          gap: 9px;
+
+          margin: 0;
+
+          color: #182230;
+
+          font-size: 16px;
+
+          font-weight: 800;
+
+        }
+
+
+        .profile-section-title svg {
+
+          color: #6255ea;
+
+        }
+
+
+        .profile-section-description {
+
+          margin:
+            5px 0 0;
+
+          color: #98a2b3;
+
+          font-size: 11px;
+
+          line-height: 1.5;
+
+        }
+
+
+        /* =====================================
+           INFORMATION GRID
+        ===================================== */
+
+        .profile-information-grid {
+
+          display: grid;
+
+          grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+          gap: 15px;
+
+        }
+
+
+        .profile-info-card {
+
+          position: relative;
+
+          min-height: 105px;
+
+          overflow: hidden;
+
+          display: flex;
+
+          align-items: center;
+
+          gap: 16px;
+
+          padding: 19px;
+
+          border-radius: 16px;
+
+          border:
+            1px solid #eaedf5;
+
+          background:
+
+            linear-gradient(
+              145deg,
+              #fafbff,
+              #ffffff
+            );
+
+          transition:
+            transform .2s ease,
+            border-color .2s ease,
+            box-shadow .2s ease;
+
+        }
+
+
+        .profile-info-card:hover {
+
+          transform:
+            translateY(-2px);
+
+          border-color:
+            #ddd9ff;
+
+          box-shadow:
+            0 12px 25px
+            rgba(76, 65, 185, .07);
+
+        }
+
+
+        .profile-info-card::after {
+
+          content: "";
+
+          position: absolute;
+
+          width: 75px;
+
+          height: 75px;
+
+          right: -35px;
+
+          bottom: -40px;
+
+          border-radius: 50%;
+
+          background:
+            rgba(104, 87, 238, .035);
+
+        }
+
+
+        .profile-info-icon {
+
+          width: 47px;
+
+          height: 47px;
+
+          flex-shrink: 0;
+
+          display: flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          border-radius: 13px;
+
+          color: #5b5ff0;
+
+          background:
+
+            linear-gradient(
+              145deg,
+              #efefff,
+              #f4f7ff
+            );
+
+          border:
+            1px solid
+            #e8e8ff;
+
+        }
+
+
+        .profile-info-content {
+
+          min-width: 0;
+
+        }
+
+
+        .profile-info-label {
+
+          display: block;
+
+          margin-bottom: 5px;
+
+          color: #98a2b3;
+
+          font-size: 10px;
+
+          font-weight: 600;
+
+          text-transform: uppercase;
+
+          letter-spacing: .055em;
+
+        }
+
+
+        .profile-info-value {
+
+          display: block;
+
+          color: #182230;
+
+          font-size: 14px;
+
+          font-weight: 750;
+
+          line-height: 1.45;
+
+          word-break: break-word;
+
+        }
+
+
+        /* =====================================
+           BOTTOM SECURITY NOTE
+        ===================================== */
+
+        .profile-security-note {
+
+          margin-top: 22px;
+
+          padding: 15px 17px;
+
+          display: flex;
+
+          align-items: center;
+
+          gap: 12px;
+
+          border-radius: 14px;
+
+          color: #657084;
+
+          background:
+            linear-gradient(
+              90deg,
+              #f7f7ff,
+              #f8fbff
+            );
+
+          border:
+            1px solid #e9ebf5;
+
+          font-size: 11px;
+
+          line-height: 1.55;
+
+        }
+
+
+        .profile-security-icon {
+
+          width: 35px;
+
+          height: 35px;
+
+          flex-shrink: 0;
+
+          display: flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          border-radius: 10px;
+
+          color: #5f56e8;
+
+          background: #ececff;
+
+        }
+
+
+        /* =====================================
+           LOADING / ERROR
+        ===================================== */
+
+        .student-profile-message {
+
+          min-height: 350px;
+
+          display: flex;
+
+          align-items: center;
+
+          justify-content: center;
+
+          gap: 10px;
+
+          color: #7c879e;
+
+          font-size: 13px;
+
+        }
+
+
+        .profile-loader {
+
+          width: 18px;
+
+          height: 18px;
+
+          border-radius: 50%;
+
+          border:
+            2px solid #e5e7ef;
+
+          border-top-color:
+            #6555ed;
+
+          animation:
+            studentProfileSpin
+            .8s linear infinite;
+
+        }
+
+
+        .student-profile-error {
+
+          margin: 45px;
+
+          padding: 14px 16px;
+
+          border-radius: 12px;
+
+          color: #c33c3c;
+
+          background: #fff2f2;
+
+          border:
+            1px solid #fee2e2;
+
+          font-size: 13px;
+
+        }
+
+
+        @keyframes studentProfileSpin {
+
+          to {
+            transform:
+              rotate(360deg);
+          }
+
+        }
+
+
+        /* =====================================
+           RESPONSIVE
+        ===================================== */
+
+        @media (max-width: 950px) {
+
+          .student-profile-page {
+
+            padding:
+              32px 30px 50px;
+
+          }
+
+
+          .student-profile-hero {
+
+            align-items:
+              flex-start;
+
+            flex-direction:
+              column;
+
+          }
+
+
+          .profile-hero-right {
+
+            width: 100%;
+
+          }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+          .student-profile-page {
+
+            padding:
+              26px 20px 45px;
+
+          }
+
+
+          .student-profile-page-header {
+
+            align-items:
+              flex-start;
+
+            flex-direction:
+              column;
+
+          }
+
+
+          .student-profile-title {
+
+            font-size:
+              28px;
+
+          }
+
+
+          .student-profile-hero {
+
+            padding:
+              30px 24px;
+
+          }
+
+
+          .profile-hero-left {
+
+            align-items:
+              flex-start;
+
+          }
+
+
+          .profile-avatar {
+
+            width: 76px;
+
+            height: 76px;
+
+            border-radius:
+              20px;
+
+            font-size:
+              22px;
+
+          }
+
+
+          .profile-name {
+
+            font-size:
+              23px;
+
+          }
+
+
+          .profile-information-grid {
+
+            grid-template-columns:
+              1fr;
+
+          }
+
+
+          .profile-content {
+
+            padding:
+              22px;
+
+          }
+
+        }
+
+
+        @media (max-width: 480px) {
+
+          .profile-hero-left {
+
+            flex-direction:
+              column;
+
+          }
+
+
+          .profile-meta-row {
+
+            margin-top:
+              9px;
+
+          }
+
+        }
+
+      `}</style>
+
+
+      <div className="student-profile-page">
+
+
+        {/* ====================================
+            PAGE HEADER
+        ==================================== */}
+
+        <div className="student-profile-page-header">
 
           <div>
 
-            <h2 style={styles.name}>
+            <div className="student-profile-eyebrow">
 
-              {student?.name ||
-                "Student"}
+              <Sparkles size={13} />
 
-            </h2>
+              Student account
+
+            </div>
 
 
-            <p style={styles.role}>
-              Student
+            <h1 className="student-profile-title">
+
+              My Profile
+
+            </h1>
+
+
+            <p className="student-profile-subtitle">
+
+              Your personal and academic
+              information in CampusLearn.
+
             </p>
 
           </div>
 
 
+          <div className="profile-account-status">
+
+            <span className="profile-status-dot" />
+
+            Active Student
+
+          </div>
+
         </div>
 
 
         {/* ====================================
-            PROFILE DETAILS
+            MAIN CARD
         ==================================== */}
 
-        <div style={styles.detailsArea}>
+        <div className="student-profile-card">
 
 
-          <ProfileItem
-            icon={
-              <User size={19} />
-            }
-            label="Full Name"
-            value={
-              student?.name || "—"
-            }
-          />
+          {/* ==================================
+              PROFILE HERO
+          ================================== */}
+
+          <div className="student-profile-hero">
 
 
-          <ProfileItem
-            icon={
-              <Mail size={19} />
-            }
-            label="Email Address"
-            value={
-              student?.email || "—"
-            }
-          />
+            {/* DECORATION */}
+
+            <div className="profile-hero-grid" />
+
+            <div
+              className="
+                profile-orb
+                profile-orb-one
+              "
+            />
+
+            <div
+              className="
+                profile-orb
+                profile-orb-two
+              "
+            />
 
 
-          <ProfileItem
-            icon={
-              <GraduationCap
-                size={19}
+            {/* LEFT */}
+
+            <div className="profile-hero-left">
+
+
+              <div className="profile-avatar-wrap">
+
+                <div className="profile-avatar">
+
+                  {getInitials(
+                    student?.name
+                  )}
+
+                </div>
+
+
+                <div className="profile-avatar-badge">
+
+                  <BadgeCheck size={16} />
+
+                </div>
+
+              </div>
+
+
+              <div>
+
+                <h2 className="profile-name">
+
+                  {student?.name ||
+                    "Student"}
+
+                </h2>
+
+
+                <div className="profile-meta-row">
+
+
+                  <span className="profile-role-pill">
+
+                    <GraduationCap
+                      size={13}
+                    />
+
+                    Student
+
+                  </span>
+
+
+                  <span className="profile-number-pill">
+
+                    <Hash size={12} />
+
+                    Student No.{" "}
+
+                    {student
+                      ?.student_number ??
+                      "—"}
+
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* RIGHT */}
+
+            <div className="profile-hero-right">
+
+              <span className="hero-mini-label">
+
+                Degree Programme
+
+              </span>
+
+
+              <div className="hero-mini-value">
+
+                {student?.degree ||
+                  "Not available"}
+
+              </div>
+
+
+              <div className="hero-mini-divider" />
+
+
+              <span className="hero-mini-label">
+
+                Academic Batch
+
+              </span>
+
+
+              <div className="hero-mini-value">
+
+                {student?.batch ||
+                  "Not available"}
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          {/* ==================================
+              PROFILE CONTENT
+          ================================== */}
+
+          <div className="profile-content">
+
+
+            <div className="profile-section-heading">
+
+              <h3 className="profile-section-title">
+
+                <User size={17} />
+
+                Account Information
+
+              </h3>
+
+
+              <p className="profile-section-description">
+
+                Your CampusLearn identity and
+                academic details.
+
+              </p>
+
+            </div>
+
+
+            <div className="profile-information-grid">
+
+
+              {/* FULL NAME */}
+
+              <ProfileItem
+                icon={
+                  <User size={19} />
+                }
+                label="Full Name"
+                value={
+                  student?.name || "—"
+                }
               />
-            }
-            label="Degree"
-            value={
-              student?.degree || "—"
-            }
-          />
 
 
-          <ProfileItem
-            icon={
-              <CalendarDays
-                size={19}
+              {/* EMAIL */}
+
+              <ProfileItem
+                icon={
+                  <Mail size={19} />
+                }
+                label="Campus Email"
+                value={
+                  student?.email || "—"
+                }
               />
-            }
-            label="Batch"
-            value={
-              student?.batch || "—"
-            }
-          />
 
+
+              {/* STUDENT NUMBER */}
+
+              <ProfileItem
+                icon={
+                  <Hash size={19} />
+                }
+                label="Student Number"
+                value={
+                  student
+                    ?.student_number ??
+                  "—"
+                }
+              />
+
+
+              {/* DEGREE */}
+
+              <ProfileItem
+                icon={
+                  <GraduationCap
+                    size={19}
+                  />
+                }
+                label="Degree Programme"
+                value={
+                  student?.degree || "—"
+                }
+              />
+
+
+              {/* BATCH */}
+
+              <ProfileItem
+                icon={
+                  <CalendarDays
+                    size={19}
+                  />
+                }
+                label="Academic Batch"
+                value={
+                  student?.batch || "—"
+                }
+              />
+
+
+            </div>
+
+
+            {/* SECURITY */}
+
+            <div className="profile-security-note">
+
+              <div className="profile-security-icon">
+
+                <ShieldCheck size={18} />
+
+              </div>
+
+
+              <div>
+
+                Your account information is
+                securely managed by CampusLearn.
+                Contact an administrator if any
+                academic information shown here
+                is incorrect.
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
-
       </div>
 
-    </div>
+    </>
 
   );
 
@@ -316,7 +1568,7 @@ function StudentProfile() {
 
 
 /* ========================================
-   PROFILE DETAIL CARD
+   PROFILE ITEM
 ======================================== */
 
 function ProfileItem({
@@ -327,26 +1579,25 @@ function ProfileItem({
 
   return (
 
-    <div style={styles.detailCard}>
+    <div className="profile-info-card">
 
-
-      <div style={styles.detailIcon}>
+      <div className="profile-info-icon">
 
         {icon}
 
       </div>
 
 
-      <div>
+      <div className="profile-info-content">
 
-        <span style={styles.detailLabel}>
+        <span className="profile-info-label">
 
           {label}
 
         </span>
 
 
-        <strong style={styles.detailValue}>
+        <strong className="profile-info-value">
 
           {value}
 
@@ -354,246 +1605,11 @@ function ProfileItem({
 
       </div>
 
-
     </div>
 
   );
 
 }
-
-
-/* ========================================
-   STYLES
-======================================== */
-
-const styles = {
-
-  /* PAGE */
-
-  page: {
-    padding: "48px 48px",
-    maxWidth: "1180px",
-  },
-
-
-  pageHeader: {
-    marginBottom: "28px",
-  },
-
-
-  /* PAGE TITLE */
-
-  title: {
-    margin: 0,
-
-    fontSize: "30px",
-    lineHeight: "1.15",
-
-    fontWeight: "800",
-
-    color: "#101828",
-  },
-
-
-  subtitle: {
-    margin: "8px 0 0",
-
-    fontSize: "14px",
-
-    lineHeight: "1.6",
-
-    color: "#667085",
-  },
-
-
-  /* ========================================
-     MAIN PROFILE CARD
-  ======================================== */
-
-  profileCard: {
-    maxWidth: "1080px",
-
-    overflow: "hidden",
-
-    background: "#ffffff",
-
-    borderRadius: "20px",
-
-    boxShadow:
-      "0 10px 35px rgba(20, 30, 70, 0.06)",
-  },
-
-
-  /* ========================================
-     PURPLE HEADER
-  ======================================== */
-
-  profileBanner: {
-    minHeight: "150px",
-
-    padding: "32px 36px",
-
-    display: "flex",
-
-    alignItems: "center",
-
-    gap: "20px",
-
-    background:
-      "linear-gradient(110deg, #5545ed 0%, #6678e8 100%)",
-  },
-
-
-  avatar: {
-    width: "72px",
-    height: "72px",
-
-    flexShrink: 0,
-
-    display: "flex",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    background:
-      "rgba(255,255,255,0.14)",
-
-    border:
-      "1px solid rgba(255,255,255,0.28)",
-
-    borderRadius: "17px",
-
-    color: "#ffffff",
-
-    fontSize: "20px",
-
-    fontWeight: "700",
-  },
-
-
-  name: {
-    margin: 0,
-
-    color: "#ffffff",
-
-    fontSize: "23px",
-
-    lineHeight: "1.25",
-
-    fontWeight: "800",
-  },
-
-
-  role: {
-    margin: "7px 0 0",
-
-    color:
-      "rgba(255,255,255,0.86)",
-
-    fontSize: "13px",
-
-    lineHeight: "1.5",
-  },
-
-
-  /* ========================================
-     PROFILE DETAILS
-  ======================================== */
-
-  detailsArea: {
-    padding: "30px",
-
-    display: "grid",
-
-    gridTemplateColumns:
-      "repeat(2, minmax(0, 1fr))",
-
-    gap: "16px",
-  },
-
-
-  detailCard: {
-    minHeight: "100px",
-
-    boxSizing: "border-box",
-
-    padding: "20px",
-
-    display: "flex",
-
-    alignItems: "center",
-
-    gap: "16px",
-
-    background: "#fafbff",
-
-    border:
-      "1px solid #edf0f7",
-
-    borderRadius: "14px",
-  },
-
-
-  detailIcon: {
-    width: "46px",
-    height: "46px",
-
-    flexShrink: 0,
-
-    display: "flex",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    background: "#eef1ff",
-
-    color: "#5266f2",
-
-    borderRadius: "12px",
-  },
-
-
-  detailLabel: {
-    display: "block",
-
-    marginBottom: "5px",
-
-    color: "#98a2b3",
-
-    fontSize: "11px",
-
-    lineHeight: "1.4",
-  },
-
-
-  detailValue: {
-    display: "block",
-
-    color: "#111827",
-
-    fontSize: "14px",
-
-    lineHeight: "1.45",
-
-    fontWeight: "700",
-
-    wordBreak: "break-word",
-  },
-
-
-  /* LOADING / ERROR */
-
-  message: {
-    padding: "48px",
-
-    color: "#667085",
-
-    fontSize: "14px",
-  },
-
-};
 
 
 export default StudentProfile;
