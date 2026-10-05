@@ -24,6 +24,11 @@ import {
   Globe2,
   Sigma,
   Network,
+  GraduationCap,
+  Clock3,
+  Target,
+  Zap,
+  CheckCircle2,
 } from "lucide-react";
 
 import "../styles/dashboard.css";
@@ -225,18 +230,15 @@ function Dashboard() {
 
 
       const dueOnly =
-        dueDate
-          .toDateString();
+        dueDate.toDateString();
 
 
       const todayOnly =
-        today
-          .toDateString();
+        today.toDateString();
 
 
       const tomorrowOnly =
-        tomorrow
-          .toDateString();
+        tomorrow.toDateString();
 
 
       if (
@@ -318,14 +320,13 @@ function Dashboard() {
 
       <div className="dashboard-page">
 
-        <div
-          style={{
-            padding: "40px",
-            textAlign: "center",
-          }}
-        >
+        <div className="dashboard-loading">
 
-          Loading dashboard...
+          <div className="dashboard-loader" />
+
+          <span>
+            Preparing your learning space...
+          </span>
 
         </div>
 
@@ -349,12 +350,7 @@ function Dashboard() {
 
       <div className="dashboard-page">
 
-        <div
-          style={{
-            padding: "40px",
-            textAlign: "center",
-          }}
-        >
+        <div className="dashboard-error">
 
           {error ||
             "Dashboard data unavailable."}
@@ -410,7 +406,6 @@ function Dashboard() {
   const stats = [
 
     {
-
       label:
         "Enrolled Courses",
 
@@ -427,10 +422,11 @@ function Dashboard() {
       color:
         "stat-purple",
 
+      smallIcon:
+        GraduationCap,
     },
 
     {
-
       label:
         "Assignments",
 
@@ -439,10 +435,8 @@ function Dashboard() {
           .total_assignments ?? 0,
 
       description:
-        `${
-          dashboardStats
-            .due_this_week ?? 0
-        } due this week`,
+        `${dashboardStats
+          .due_this_week ?? 0} due this week`,
 
       icon:
         ClipboardCheck,
@@ -450,10 +444,11 @@ function Dashboard() {
       color:
         "stat-blue",
 
+      smallIcon:
+        Clock3,
     },
 
     {
-
       label:
         "Overall Progress",
 
@@ -461,11 +456,9 @@ function Dashboard() {
         `${overallProgress}%`,
 
       description:
-        `${
-          dashboardStats
-            .submitted_assignments ??
-          0
-        } submitted`,
+        `${dashboardStats
+          .submitted_assignments ??
+          0} submitted`,
 
       icon:
         TrendingUp,
@@ -473,10 +466,11 @@ function Dashboard() {
       color:
         "stat-green",
 
+      smallIcon:
+        Target,
     },
 
     {
-
       label:
         "Average Score",
 
@@ -487,7 +481,7 @@ function Dashboard() {
 
       description:
         averageScore > 0
-          ? "Graded assignments"
+          ? "Graded work"
           : "No grades yet",
 
       icon:
@@ -496,6 +490,8 @@ function Dashboard() {
       color:
         "stat-orange",
 
+      smallIcon:
+        Award,
     },
 
   ];
@@ -507,44 +503,179 @@ function Dashboard() {
 
 
       {/* ====================================
-          WELCOME
+          HERO
       ==================================== */}
 
-      <section className="dashboard-welcome">
+      <section className="dashboard-hero">
 
-        <div>
+        <div className="dashboard-hero-grid" />
+
+        <div className="dashboard-hero-orb dashboard-orb-one" />
+
+        <div className="dashboard-hero-orb dashboard-orb-two" />
+
+
+        <div className="dashboard-hero-left">
+
+          <div className="dashboard-hero-badge">
+
+            <Sparkles size={13} />
+
+            Your learning space
+
+          </div>
+
 
           <h1>
 
             {greeting},{" "}
-            {student.name ||
-              "Student"} 👋
+
+            <span>
+              {student.name ||
+                "Student"}
+            </span>
+
+            <span className="dashboard-wave">
+              👋
+            </span>
 
           </h1>
 
 
-          <p>
+          <p className="dashboard-hero-description">
 
-            Here's what is happening
-            with your learning today.
+            Stay on top of your courses,
+            assignments and academic progress
+            with everything you need in one
+            place.
 
           </p>
+
+
+          <div className="dashboard-hero-chips">
+
+            <span>
+
+              <GraduationCap
+                size={14}
+              />
+
+              {student.degree ||
+                "Student"}
+
+            </span>
+
+
+            {student.batch && (
+
+              <span>
+
+                <CalendarDays
+                  size={14}
+                />
+
+                Batch {student.batch}
+
+              </span>
+
+            )}
+
+
+            <span>
+
+              <CheckCircle2
+                size={14}
+              />
+
+              Active student
+
+            </span>
+
+          </div>
 
         </div>
 
 
-        <div className="dashboard-date">
+        <div className="dashboard-hero-right">
 
-          <CalendarDays
-            size={16}
-          />
+          <div className="dashboard-date">
 
-          {currentDate}
+            <CalendarDays
+              size={15}
+            />
+
+            {currentDate}
+
+          </div>
+
+
+          <div className="hero-progress-card">
+
+            <div
+              className="hero-progress-ring"
+              style={{
+                background:
+                  `conic-gradient(
+                    #ffffff 0deg ${overallProgress * 3.6}deg,
+                    rgba(255,255,255,0.18) ${overallProgress * 3.6}deg 360deg
+                  )`,
+              }}
+            >
+
+              <div className="hero-progress-inner">
+
+                <strong>
+                  {overallProgress}%
+                </strong>
+
+                <span>
+                  PROGRESS
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div>
+
+              <span className="hero-progress-label">
+
+                Learning progress
+
+              </span>
+
+
+              <strong className="hero-progress-title">
+
+                {overallProgress === 100
+
+                  ? "All caught up!"
+
+                  : overallProgress >= 60
+
+                    ? "Great momentum"
+
+                    : "Keep moving forward"}
+
+              </strong>
+
+
+              <span className="hero-progress-copy">
+
+                {dashboardStats
+                  .submitted_assignments ?? 0}{" "}
+                assignments submitted
+
+              </span>
+
+            </div>
+
+          </div>
 
         </div>
 
       </section>
-
 
 
       {/* ====================================
@@ -558,6 +689,9 @@ function Dashboard() {
           const Icon =
             stat.icon;
 
+          const SmallIcon =
+            stat.smallIcon;
+
 
           return (
 
@@ -565,17 +699,28 @@ function Dashboard() {
               className={
                 `stat-card ${stat.color}`
               }
-              key={
-                stat.label
-              }
+              key={stat.label}
             >
 
-              <div className="stat-icon">
+              <div className="stat-top-line">
 
-                <Icon
-                  size={23}
-                  strokeWidth={2}
-                />
+                <div className="stat-icon">
+
+                  <Icon
+                    size={23}
+                    strokeWidth={2}
+                  />
+
+                </div>
+
+
+                <div className="stat-mini-badge">
+
+                  <SmallIcon
+                    size={11}
+                  />
+
+                </div>
 
               </div>
 
@@ -613,7 +758,6 @@ function Dashboard() {
       </section>
 
 
-
       {/* ====================================
           COURSES
       ==================================== */}
@@ -625,9 +769,19 @@ function Dashboard() {
 
           <div>
 
+            <div className="section-kicker">
+
+              <BookOpen size={13} />
+
+              Your learning
+
+            </div>
+
+
             <h2>
               Continue Learning
             </h2>
+
 
             <p>
               Courses available for your
@@ -657,17 +811,18 @@ function Dashboard() {
 
         {courses.length === 0 ? (
 
-          <div
-            className="dashboard-panel"
-            style={{
-              textAlign: "center",
-              padding: "35px",
-            }}
-          >
+          <div className="dashboard-empty">
 
-            No courses have been
-            assigned to your degree
-            and batch yet.
+            <BookOpen size={28} />
+
+            <h3>
+              No courses yet
+            </h3>
+
+            <p>
+              Courses have not been assigned
+              to your degree and batch yet.
+            </p>
 
           </div>
 
@@ -696,9 +851,7 @@ function Dashboard() {
 
                   <article
                     className="dashboard-course-card"
-                    key={
-                      course.id
-                    }
+                    key={course.id}
                   >
 
                     <div
@@ -707,22 +860,29 @@ function Dashboard() {
                       }
                     >
 
+                      <div className="course-cover-pattern" />
+
+
                       <div className="course-cover-icon">
 
                         <CourseIcon
                           size={27}
-                          strokeWidth={
-                            1.8
-                          }
+                          strokeWidth={1.8}
                         />
 
                       </div>
+
+
+                      <span className="course-cover-number">
+
+                        0{index + 1}
+
+                      </span>
 
                     </div>
 
 
                     <div className="course-card-body">
-
 
                       <span className="course-category">
 
@@ -739,28 +899,40 @@ function Dashboard() {
                       </h3>
 
 
-                      <p className="course-instructor">
+                      <div className="course-instructor-row">
 
-                        {course
-                          .lecturer_name ||
-                          "Not assigned"}
+                        <div className="course-lecturer-avatar">
 
-                      </p>
+                          {(
+                            course
+                              .lecturer_name ||
+                            "L"
+                          )
+                            .charAt(0)
+                            .toUpperCase()}
+
+                        </div>
+
+
+                        <span>
+
+                          {course
+                            .lecturer_name ||
+                            "Not assigned"}
+
+                        </span>
+
+                      </div>
 
 
                       <div className="course-progress-info">
 
                         <span>
-
-                          Overall assignment
-                          progress
-
+                          Assignment progress
                         </span>
 
                         <strong>
-
                           {overallProgress}%
-
                         </strong>
 
                       </div>
@@ -790,7 +962,7 @@ function Dashboard() {
                           }
                         >
 
-                          Continue
+                          Continue learning
 
                           <ArrowRight
                             size={14}
@@ -804,6 +976,7 @@ function Dashboard() {
                           {
                             course.lesson_count
                           }{" "}
+
                           {
                             course.lesson_count ===
                             1
@@ -831,28 +1004,38 @@ function Dashboard() {
       </section>
 
 
-
       {/* ====================================
-          ASSIGNMENTS + PROGRESS
+          BOTTOM GRID
       ==================================== */}
 
       <section className="dashboard-bottom-grid">
 
 
-        {/* ==================================
-            ASSIGNMENTS
-        ================================== */}
+        {/* ASSIGNMENTS */}
 
-        <div className="dashboard-panel">
+        <div className="dashboard-panel assignments-panel">
 
 
           <div className="panel-header">
 
-            <h2>
+            <div>
 
-              Upcoming Assignments
+              <div className="panel-kicker">
 
-            </h2>
+                <ClipboardList
+                  size={13}
+                />
+
+                Stay on track
+
+              </div>
+
+
+              <h2>
+                Upcoming Assignments
+              </h2>
+
+            </div>
 
 
             <button
@@ -880,24 +1063,29 @@ function Dashboard() {
             {assignments.length ===
             0 ? (
 
-              <div
-                style={{
-                  padding:
-                    "25px 10px",
-                  textAlign:
-                    "center",
-                }}
-              >
+              <div className="assignment-empty">
 
-                No pending assignments.
-                🎉
+                <CheckCircle2
+                  size={26}
+                />
+
+                <strong>
+                  You're all clear!
+                </strong>
+
+                <span>
+                  No pending assignments.
+                </span>
 
               </div>
 
             ) : (
 
               assignments.map(
-                (assignment) => (
+                (
+                  assignment,
+                  index
+                ) => (
 
                   <div
                     className="assignment-item"
@@ -906,10 +1094,22 @@ function Dashboard() {
                     }
                   >
 
+                    <div className="assignment-number">
+
+                      {String(
+                        index + 1
+                      ).padStart(
+                        2,
+                        "0"
+                      )}
+
+                    </div>
+
+
                     <div className="assignment-icon">
 
                       <ClipboardList
-                        size={18}
+                        size={17}
                       />
 
                     </div>
@@ -940,6 +1140,8 @@ function Dashboard() {
 
                     <span className="assignment-due">
 
+                      <Clock3 size={11} />
+
                       {formatDueDate(
                         assignment
                           .due_date
@@ -959,21 +1161,31 @@ function Dashboard() {
         </div>
 
 
-
-        {/* ==================================
-            PROGRESS
-        ================================== */}
+        {/* PROGRESS */}
 
         <div className="dashboard-panel weekly-progress-card">
 
 
           <div className="panel-header">
 
-            <h2>
+            <div>
 
-              Learning Progress
+              <div className="panel-kicker">
 
-            </h2>
+                <TrendingUp
+                  size={13}
+                />
+
+                Your momentum
+
+              </div>
+
+
+              <h2>
+                Learning Progress
+              </h2>
+
+            </div>
 
           </div>
 
@@ -981,7 +1193,16 @@ function Dashboard() {
           <div className="progress-summary">
 
 
-            <div className="progress-ring">
+            <div
+              className="progress-ring"
+              style={{
+                background:
+                  `conic-gradient(
+                    #6755ed 0deg ${overallProgress * 3.6}deg,
+                    #eeeeF6 ${overallProgress * 3.6}deg 360deg
+                  )`,
+              }}
+            >
 
               <div className="progress-ring-inner">
 
@@ -990,6 +1211,7 @@ function Dashboard() {
                   {overallProgress}%
 
                 </strong>
+
 
                 <span>
 
@@ -1013,25 +1235,25 @@ function Dashboard() {
                 : overallProgress ===
                   100
 
-                  ? "All assignments submitted. Great work! 🎉"
+                  ? "Everything submitted. Amazing work! 🎉"
 
                   : overallProgress >=
                     75
 
-                    ? "You're making great progress. Keep going! 🎉"
+                    ? "You're making excellent progress."
 
                     : overallProgress >=
                       40
 
-                      ? "Nice progress. Keep it up!"
+                      ? "Nice progress. Keep the momentum going!"
 
-                      : "Keep working through your assignments."}
+                      : "Every completed task moves you forward."}
 
             </p>
 
 
             <button
-              className="dashboard-text-button"
+              className="progress-button"
               onClick={() =>
                 navigate(
                   "/progress"
@@ -1039,7 +1261,7 @@ function Dashboard() {
               }
             >
 
-              View progress
+              View full progress
 
               <ArrowRight
                 size={14}
@@ -1054,7 +1276,6 @@ function Dashboard() {
       </section>
 
 
-
       {/* ====================================
           AI ASSISTANT
       ==================================== */}
@@ -1062,13 +1283,20 @@ function Dashboard() {
       <section className="ai-dashboard-banner">
 
 
+        <div className="ai-grid-pattern" />
+
+        <div className="ai-glow ai-glow-one" />
+
+        <div className="ai-glow ai-glow-two" />
+
+
         <div className="ai-dashboard-content">
 
 
           <div className="ai-dashboard-icon">
 
-            <Sparkles
-              size={25}
+            <BrainCircuit
+              size={27}
             />
 
           </div>
@@ -1076,19 +1304,27 @@ function Dashboard() {
 
           <div>
 
+            <div className="ai-banner-label">
+
+              <Zap size={12} />
+
+              AI-powered learning
+
+            </div>
+
+
             <h3>
 
-              Need help with your
-              studies?
+              Need help with your studies?
 
             </h3>
 
+
             <p>
 
-              Ask your AI Study Tutor
-              questions, explain
-              difficult concepts, or
-              get help preparing for
+              Ask CampusLearn AI to explain
+              difficult concepts, summarize
+              topics or help you prepare for
               your next class.
 
             </p>
@@ -1104,6 +1340,10 @@ function Dashboard() {
             navigate("/tutor")
           }
         >
+
+          <Sparkles
+            size={15}
+          />
 
           Ask AI Tutor
 

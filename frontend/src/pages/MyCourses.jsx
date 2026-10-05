@@ -20,6 +20,11 @@ import {
   CalendarDays,
   UserRound,
   FileText,
+  Sparkles,
+  SlidersHorizontal,
+  FolderOpen,
+  CheckCircle2,
+  CircleDot,
 } from "lucide-react";
 
 import "../styles/myCourses.css";
@@ -326,6 +331,7 @@ function MyCourses() {
           );
 
         },
+
         0
       );
 
@@ -359,122 +365,249 @@ function MyCourses() {
 
 
       {/* ====================================
-          HEADER
+          LIBRARY HEADER
       ==================================== */}
 
-      <section className="my-courses-header">
+      <section className="courses-library-header">
 
-        <div>
+
+        <div className="library-heading-area">
+
+          <div className="library-eyebrow">
+
+            <Sparkles size={13} />
+
+            Academic Library
+
+          </div>
+
 
           <h1>
+
             My Courses
+
           </h1>
 
 
           <p>
-            Access your enrolled modules,
-            learning materials and course
-            content.
+
+            Explore your enrolled modules,
+            course resources and learning
+            materials from one organized
+            space.
+
           </p>
+
+
+          <div className="library-quick-stats">
+
+            <div>
+
+              <strong>
+                {courses.length}
+              </strong>
+
+              <span>
+                Active modules
+              </span>
+
+            </div>
+
+
+            <div className="quick-stat-divider" />
+
+
+            <div>
+
+              <strong>
+                {learningResources}
+              </strong>
+
+              <span>
+                Resources
+              </span>
+
+            </div>
+
+
+            <div className="quick-stat-divider" />
+
+
+            <div>
+
+              <strong>
+                {student.batch ||
+                  "—"}
+              </strong>
+
+              <span>
+                Batch
+              </span>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        <div className="courses-count-badge">
+        {/* ACADEMIC PASSPORT */}
 
-          <BookOpen size={16} />
+        <div className="academic-passport">
 
-          {courses.length}{" "}
+          <div className="passport-decoration passport-decoration-one" />
 
-          {courses.length === 1
-            ? "Course"
-            : "Courses"}
+          <div className="passport-decoration passport-decoration-two" />
+
+
+          <div className="passport-top">
+
+            <div className="passport-icon">
+
+              <GraduationCap
+                size={22}
+              />
+
+            </div>
+
+
+            <span>
+              STUDENT PROGRAM
+            </span>
+
+          </div>
+
+
+          <div className="passport-degree">
+
+            {student.degree ||
+              "Degree not assigned"}
+
+          </div>
+
+
+          <div className="passport-bottom">
+
+            <div>
+
+              <span>
+                Academic Batch
+              </span>
+
+              <strong>
+
+                {student.batch ||
+                  "—"}
+
+              </strong>
+
+            </div>
+
+
+            <div className="passport-course-count">
+
+              <BookOpen size={15} />
+
+              {courses.length}
+
+            </div>
+
+          </div>
 
         </div>
 
       </section>
 
 
-
       {/* ====================================
-          SUMMARY
+          SUMMARY STRIP
       ==================================== */}
 
       <section className="courses-summary">
 
 
-        {/* ENROLLED COURSES */}
-
         <div className="course-summary-card summary-purple">
+
+          <div className="summary-accent" />
 
           <div className="course-summary-icon">
 
             <LibraryBig
-              size={22}
+              size={21}
             />
 
           </div>
 
 
           <div>
+
+            <span className="summary-label">
+              Course Library
+            </span>
 
             <strong>
               {courses.length}
             </strong>
 
-            <span>
-              Enrolled Courses
-            </span>
+            <small>
+              Enrolled courses
+            </small>
 
           </div>
 
         </div>
 
 
-
-        {/* LEARNING RESOURCES */}
-
         <div className="course-summary-card summary-blue">
+
+          <div className="summary-accent" />
 
           <div className="course-summary-icon">
 
             <FileText
-              size={22}
+              size={21}
             />
 
           </div>
 
 
           <div>
+
+            <span className="summary-label">
+              Learning Content
+            </span>
 
             <strong>
               {learningResources}
             </strong>
 
-            <span>
-              Learning Resources
-            </span>
+            <small>
+              Available resources
+            </small>
 
           </div>
 
         </div>
 
 
-
-        {/* BATCH */}
-
         <div className="course-summary-card summary-green">
+
+          <div className="summary-accent" />
 
           <div className="course-summary-icon">
 
             <Layers3
-              size={22}
+              size={21}
             />
 
           </div>
 
 
           <div>
+
+            <span className="summary-label">
+              Current Intake
+            </span>
 
             <strong>
 
@@ -483,9 +616,9 @@ function MyCourses() {
 
             </strong>
 
-            <span>
-              Current Batch
-            </span>
+            <small>
+              Academic batch
+            </small>
 
           </div>
 
@@ -494,71 +627,37 @@ function MyCourses() {
       </section>
 
 
-
-      {/* ====================================
-          STUDENT PROGRAM INFO
-      ==================================== */}
-
-      {student.degree && (
-
-        <section
-          className="courses-toolbar"
-          style={{
-            marginBottom: "18px",
-          }}
-        >
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-            }}
-          >
-
-            <GraduationCap
-              size={18}
-            />
-
-
-            <div>
-
-              <strong>
-                {student.degree}
-              </strong>
-
-
-              {student.batch && (
-
-                <span
-                  style={{
-                    marginLeft:
-                      "8px",
-                  }}
-                >
-
-                  • Batch{" "}
-                  {student.batch}
-
-                </span>
-
-              )}
-
-            </div>
-
-          </div>
-
-        </section>
-
-      )}
-
-
-
       {/* ====================================
           SEARCH + FILTER
       ==================================== */}
 
-      <section className="courses-toolbar">
+      <section className="course-discovery-bar">
+
+
+        <div className="course-discovery-title">
+
+          <div className="discovery-icon">
+
+            <SlidersHorizontal
+              size={18}
+            />
+
+          </div>
+
+
+          <div>
+
+            <strong>
+              Find a module
+            </strong>
+
+            <span>
+              Search your course library
+            </span>
+
+          </div>
+
+        </div>
 
 
         <div className="course-search">
@@ -570,13 +669,10 @@ function MyCourses() {
 
           <input
             type="text"
-
-            placeholder="Search your courses..."
-
+            placeholder="Search by course, lecturer or program..."
             value={
               searchTerm
             }
-
             onChange={
               (event) =>
                 setSearchTerm(
@@ -588,43 +684,94 @@ function MyCourses() {
         </div>
 
 
+        <div className="filter-wrapper">
 
-        <select
-          className="course-filter"
+          <GraduationCap
+            size={15}
+          />
 
-          value={
-            selectedDegree
-          }
 
-          onChange={
-            (event) =>
-              setSelectedDegree(
-                event.target.value
+          <select
+            className="course-filter"
+            value={
+              selectedDegree
+            }
+            onChange={
+              (event) =>
+                setSelectedDegree(
+                  event.target.value
+                )
+            }
+          >
+
+            {degreeOptions.map(
+              (degree) => (
+
+                <option
+                  value={degree}
+                  key={degree}
+                >
+
+                  {degree === "All"
+                    ? "All Programs"
+                    : degree}
+
+                </option>
+
               )
-          }
-        >
+            )}
 
-          {degreeOptions.map(
-            (degree) => (
+          </select>
 
-              <option
-                value={degree}
-                key={degree}
-              >
-
-                {degree === "All"
-                  ? "All Programs"
-                  : degree}
-
-              </option>
-
-            )
-          )}
-
-        </select>
+        </div>
 
       </section>
 
+
+      {/* ====================================
+          RESULTS HEADER
+      ==================================== */}
+
+      {!loading &&
+        !error && (
+
+          <div className="course-results-heading">
+
+            <div>
+
+              <span className="results-kicker">
+
+                <FolderOpen
+                  size={13}
+                />
+
+                Your modules
+
+              </span>
+
+
+              <h2>
+
+                Course Collection
+
+              </h2>
+
+            </div>
+
+
+            <span className="results-count">
+
+              {filteredCourses.length}{" "}
+
+              {filteredCourses.length === 1
+                ? "result"
+                : "results"}
+
+            </span>
+
+          </div>
+
+        )}
 
 
       {/* ====================================
@@ -640,22 +787,17 @@ function MyCourses() {
 
           <div className="courses-empty-state">
 
-            <div className="courses-empty-icon">
-
-              <BookOpen
-                size={26}
-              />
-
-            </div>
+            <div className="courses-loading-ring" />
 
 
             <h3>
-              Loading your courses...
+              Building your course library...
             </h3>
 
 
             <p>
-              Please wait a moment.
+              We're loading your enrolled
+              modules and resources.
             </p>
 
           </div>
@@ -668,7 +810,7 @@ function MyCourses() {
 
           <div className="courses-empty-state">
 
-            <div className="courses-empty-icon">
+            <div className="courses-empty-icon error">
 
               <BookOpen
                 size={26}
@@ -699,8 +841,8 @@ function MyCourses() {
 
             <div className="courses-empty-icon">
 
-              <BookOpen
-                size={26}
+              <Search
+                size={25}
               />
 
             </div>
@@ -752,7 +894,7 @@ function MyCourses() {
               const theme =
                 courseThemes[
                   index %
-                    courseThemes.length
+                  courseThemes.length
                 ];
 
 
@@ -762,10 +904,21 @@ function MyCourses() {
                 ) || 0;
 
 
+              const moduleNumber =
+                String(
+                  index + 1
+                ).padStart(
+                  2,
+                  "0"
+                );
+
+
               return (
 
                 <article
-                  className="my-course-card"
+                  className={
+                    `my-course-card ${theme}`
+                  }
                   key={
                     course.id
                   }
@@ -773,28 +926,39 @@ function MyCourses() {
 
 
                   {/* ==========================
-                      COVER
+                      COLOR RAIL
                   ========================== */}
 
-                  <div
-                    className={
-                      `my-course-cover ${theme}`
-                    }
-                  >
+                  <div className="course-color-rail" />
+
+
+                  {/* ==========================
+                      CARD HEADER
+                  ========================== */}
+
+                  <div className="course-card-top">
+
+                    <div className="module-number">
+
+                      MODULE
+
+                      <strong>
+                        {moduleNumber}
+                      </strong>
+
+                    </div>
+
 
                     <div className="my-course-icon">
 
                       <GraduationCap
-                        size={27}
-                        strokeWidth={
-                          1.8
-                        }
+                        size={23}
+                        strokeWidth={1.8}
                       />
 
                     </div>
 
                   </div>
-
 
 
                   {/* ==========================
@@ -804,8 +968,6 @@ function MyCourses() {
                   <div className="my-course-body">
 
 
-                    {/* META */}
-
                     <div className="my-course-meta">
 
                       {course.degree && (
@@ -813,7 +975,7 @@ function MyCourses() {
                         <span className="course-meta-badge">
 
                           <GraduationCap
-                            size={11}
+                            size={10}
                           />
 
                           {
@@ -830,10 +992,11 @@ function MyCourses() {
                         <span className="course-meta-badge">
 
                           <CalendarDays
-                            size={11}
+                            size={10}
                           />
 
                           Batch{" "}
+
                           {
                             course.batch
                           }
@@ -845,9 +1008,6 @@ function MyCourses() {
                     </div>
 
 
-
-                    {/* TITLE */}
-
                     <h3>
 
                       {course.title}
@@ -855,70 +1015,138 @@ function MyCourses() {
                     </h3>
 
 
+                    <div className="course-info-list">
 
-                    {/* REAL COURSE INFO */}
 
-                    <p className="my-course-description">
+                      <div className="course-info-row">
 
-                      <UserRound
-                        size={13}
-                        style={{
-                          marginRight:
-                            "5px",
-                          verticalAlign:
-                            "middle",
-                        }}
-                      />
+                        <div className="course-info-icon">
 
-                      Lecturer:{" "}
+                          <UserRound
+                            size={14}
+                          />
 
-                      {course
-                        .lecturer_name ||
-                        "Not assigned"}
+                        </div>
 
-                      <br />
 
-                      <BookOpen
-                        size={13}
-                        style={{
-                          marginRight:
-                            "5px",
-                          verticalAlign:
-                            "middle",
-                        }}
-                      />
+                        <div>
 
-                      {lessonCount}{" "}
+                          <span>
+                            Lecturer
+                          </span>
 
-                      {lessonCount === 1
-                        ? "lesson"
-                        : "lessons"}
+                          <strong>
 
-                    </p>
+                            {course
+                              .lecturer_name ||
+                              "Not assigned"}
 
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+
+                      <div className="course-info-row">
+
+                        <div className="course-info-icon">
+
+                          <BookOpen
+                            size={14}
+                          />
+
+                        </div>
+
+
+                        <div>
+
+                          <span>
+                            Course content
+                          </span>
+
+                          <strong>
+
+                            {lessonCount}{" "}
+
+                            {lessonCount ===
+                            1
+                              ? "lesson"
+                              : "lessons"}
+
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+
+                    {/* MATERIAL STATUS */}
+
+                    <div
+                      className={
+                        course.has_material
+                          ? "material-status available"
+                          : "material-status unavailable"
+                      }
+                    >
+
+                      {course.has_material ? (
+
+                        <CheckCircle2
+                          size={14}
+                        />
+
+                      ) : (
+
+                        <CircleDot
+                          size={14}
+                        />
+
+                      )}
+
+
+                      <div>
+
+                        <strong>
+
+                          {course.has_material
+                            ? "Learning material ready"
+                            : "Main material pending"}
+
+                        </strong>
+
+
+                        <span>
+
+                          {course.has_material
+                            ? "Resources are available inside this module."
+                            : "Additional materials may be added later."}
+
+                        </span>
+
+                      </div>
+
+                    </div>
 
 
                     {/* FOOTER */}
 
                     <div className="my-course-footer">
 
-
-                      <div className="course-status">
+                      <span className="course-status">
 
                         <span className="course-status-dot" />
 
+                        Active module
 
-                        {course.has_material
-                          ? "Material available"
-                          : "No main material"}
-
-                      </div>
-
+                      </span>
 
 
                       <button
                         className="open-course-button"
-
                         onClick={() =>
                           navigate(
                             `/course/${course.id}`
