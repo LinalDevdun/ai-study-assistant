@@ -5,61 +5,702 @@
 .deadlines-page {
   width: 100%;
   max-width: 1440px;
+
   margin: 0 auto;
-  padding: 34px 36px 50px;
+
+  padding: 34px 36px 55px;
 }
 
 
 /* =========================================
-   HEADER
+   DEADLINE RADAR HEADER
 ========================================= */
 
-.deadlines-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+.deadline-radar-header {
+  display: grid;
 
-  gap: 20px;
+  grid-template-columns:
+    minmax(0, 1fr)
+    315px;
 
-  margin-bottom: 28px;
+  gap: 18px;
+
+  margin-bottom: 22px;
 }
 
-.deadlines-header h1 {
+
+/* =========================================
+   RADAR MAIN
+========================================= */
+
+.deadline-radar-main {
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 260px;
+
+  padding: 29px 31px;
+
+  border:
+    1px solid #e5e8f1;
+
+  border-radius: 24px;
+
+  background:
+    radial-gradient(
+      circle at 92% 5%,
+      rgba(101, 87, 237, 0.08),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 10% 110%,
+      rgba(79, 123, 238, 0.055),
+      transparent 30%
+    ),
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fafaff
+    );
+
+  box-shadow:
+    0 17px 40px
+    rgba(47, 52, 105, 0.06);
+}
+
+
+.deadline-radar-main::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 6px;
+  height: 100%;
+
+  background:
+    linear-gradient(
+      180deg,
+      #5b45ee,
+      #685aed,
+      #4f7bee
+    );
+}
+
+
+.radar-decoration {
+  position: absolute;
+
+  pointer-events: none;
+
+  border-radius: 50%;
+}
+
+
+.radar-decoration-one {
+  width: 170px;
+  height: 170px;
+
+  right: -70px;
+  top: -95px;
+
+  border:
+    24px solid
+    rgba(101, 87, 237, 0.035);
+}
+
+
+.radar-decoration-two {
+  width: 100px;
+  height: 100px;
+
+  left: 48%;
+  bottom: -70px;
+
+  background:
+    rgba(79, 123, 238, 0.035);
+}
+
+
+/* =========================================
+   RADAR HEADING
+========================================= */
+
+.radar-heading {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 16px;
+}
+
+
+.radar-heading-icon {
+  width: 50px;
+  height: 50px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #5c48ed,
+      #6474ee
+    );
+
+  border-radius: 15px;
+
+  box-shadow:
+    0 10px 21px
+    rgba(91, 69, 238, 0.17);
+}
+
+
+.radar-eyebrow {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 6px;
+
+  color: #6656ed;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.11em;
+}
+
+
+.radar-heading h1 {
   margin: 0;
 
-  color: var(--text-primary);
+  color: #101828;
 
-  font-size: 30px;
+  font-size: 29px;
+
+  line-height: 1.2;
+
   font-weight: 800;
 
   letter-spacing: -0.8px;
 }
 
-.deadlines-header p {
+
+.radar-heading p {
+  max-width: 620px;
+
   margin: 8px 0 0;
 
-  color: var(--text-secondary);
+  color: #7b8698;
 
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 10px;
+
+  line-height: 1.65;
 }
 
-.deadlines-header-badge {
-  display: inline-flex;
+
+/* =========================================
+   WEEK STRIP
+========================================= */
+
+.deadline-week-strip {
+  position: relative;
+
+  z-index: 2;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(7, 1fr);
+
+  gap: 7px;
+
+  margin-top: 26px;
+}
+
+
+.week-day-card {
+  position: relative;
+
+  min-height: 68px;
+
+  display: flex;
+
+  flex-direction: column;
+
   align-items: center;
+  justify-content: center;
+
+  color: #98a2b3;
+
+  background: #f7f8fc;
+
+  border:
+    1px solid #eceef4;
+
+  border-radius: 11px;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.week-day-card:hover {
+  transform:
+    translateY(-2px);
+}
+
+
+.week-day-card span {
+  margin-bottom: 5px;
+
+  font-size: 6px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+}
+
+
+.week-day-card strong {
+  color: #344054;
+
+  font-size: 15px;
+
+  line-height: 1;
+
+  font-weight: 800;
+}
+
+
+.week-day-card.today {
+  color: #6758ed;
+
+  background: #f0efff;
+
+  border-color: #ddd8ff;
+}
+
+
+.week-day-card.today strong {
+  color: #5d4bea;
+}
+
+
+.week-day-card.has-deadline {
+  border-color:
+    rgba(101, 87, 237, 0.24);
+}
+
+
+.week-deadline-dot {
+  position: absolute;
+
+  bottom: 7px;
+
+  width: 5px;
+  height: 5px;
+
+  background: #6556ed;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(101, 86, 237, 0.09);
+}
+
+
+/* =========================================
+   RADAR FOOTER
+========================================= */
+
+.radar-footer {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  flex-wrap: wrap;
 
   gap: 8px;
 
-  padding: 10px 14px;
+  margin-top: 14px;
+}
 
-  color: #d97706;
-  background: #fff7e6;
 
-  border: 1px solid #fde8b2;
-  border-radius: 11px;
+.radar-footer span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  padding: 6px 8px;
+
+  color: #778195;
+
+  background: white;
+
+  border:
+    1px solid #eceef4;
+
+  border-radius: 8px;
+
+  font-size: 7px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================
+   NEXT PRIORITY CARD
+========================================= */
+
+.deadline-priority-card {
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 260px;
+
+  padding: 22px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      145deg,
+      #5944ed 0%,
+      #6558ee 52%,
+      #547def 100%
+    );
+
+  border-radius: 23px;
+
+  box-shadow:
+    0 18px 38px
+    rgba(84, 68, 210, 0.18);
+}
+
+
+.deadline-priority-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 170px;
+  height: 170px;
+
+  right: -85px;
+  top: -95px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.16);
+
+  border-radius: 50%;
+}
+
+
+.deadline-priority-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 110px;
+  height: 110px;
+
+  left: -60px;
+  bottom: -65px;
+
+  background:
+    rgba(255,255,255,.07);
+
+  border-radius: 50%;
+}
+
+
+.priority-card-top {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+.priority-icon {
+  width: 37px;
+  height: 37px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    rgba(255,255,255,.12);
+
+  border:
+    1px solid
+    rgba(255,255,255,.17);
+
+  border-radius: 10px;
+}
+
+
+.priority-card-top > span {
+  color:
+    rgba(255,255,255,.65);
+
+  font-size: 7px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.09em;
+}
+
+
+.priority-date {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  align-items: flex-end;
+
+  gap: 7px;
+
+  margin-top: 21px;
+}
+
+
+.priority-date strong {
+  color: white;
+
+  font-size: 34px;
+
+  line-height: 0.9;
+
+  font-weight: 800;
+}
+
+
+.priority-date span {
+  padding-bottom: 3px;
+
+  color:
+    rgba(255,255,255,.68);
+
+  font-size: 10px;
+
+  font-weight: 750;
+
+  text-transform: uppercase;
+}
+
+
+.deadline-priority-card h3 {
+  position: relative;
+
+  z-index: 2;
+
+  margin:
+    15px 0 0;
+
+  color: white;
 
   font-size: 12px;
+
+  font-weight: 800;
+
+  line-height: 1.4;
+}
+
+
+.deadline-priority-card > p {
+  position: relative;
+
+  z-index: 2;
+
+  display: -webkit-box;
+
+  margin:
+    6px 0 14px;
+
+  overflow: hidden;
+
+  color:
+    rgba(255,255,255,.66);
+
+  font-size: 8px;
+
+  line-height: 1.5;
+
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+
+.priority-bottom {
+  position: absolute;
+
+  z-index: 2;
+
+  left: 22px;
+  right: 22px;
+  bottom: 20px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+
+.priority-bottom > span {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  color:
+    rgba(255,255,255,.78);
+
+  font-size: 7px;
+
   font-weight: 700;
+}
+
+
+.priority-bottom button {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  min-height: 31px;
+
+  padding: 0 10px;
+
+  color: #5e4dea;
+
+  background: white;
+
+  border: none;
+
+  border-radius: 8px;
+
+  font-family: inherit;
+
+  font-size: 7px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform .2s ease;
+}
+
+
+.priority-bottom button:hover {
+  transform:
+    translateX(2px);
+}
+
+
+/* ALL CLEAR */
+
+.priority-clear {
+  position: relative;
+
+  z-index: 2;
+
+  min-height: 190px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+
+.priority-clear > div {
+  width: 51px;
+  height: 51px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 11px;
+
+  background:
+    rgba(255,255,255,.12);
+
+  border-radius: 14px;
+}
+
+
+.priority-clear strong {
+  font-size: 14px;
+
+  font-weight: 800;
+}
+
+
+.priority-clear p {
+  max-width: 200px;
+
+  margin: 5px 0 0;
+
+  color:
+    rgba(255,255,255,.68);
+
+  font-size: 8px;
+
+  line-height: 1.5;
 }
 
 
@@ -70,109 +711,272 @@
 .deadlines-summary {
   display: grid;
 
-  grid-template-columns: repeat(4, 1fr);
-
-  gap: 17px;
-
-  margin-bottom: 28px;
-}
-
-.deadline-summary-card {
-  display: flex;
-  align-items: center;
+  grid-template-columns:
+    repeat(4, 1fr);
 
   gap: 14px;
 
-  padding: 18px;
-
-  background: white;
-
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-
-  box-shadow: var(--shadow-sm);
+  margin-bottom: 21px;
 }
 
+
+.deadline-summary-card {
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 106px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  padding: 17px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fcfcff
+    );
+
+  border:
+    1px solid #e9ecf4;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 9px 23px
+    rgba(35,43,90,.045);
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+
+.deadline-summary-card:hover {
+  transform:
+    translateY(-3px);
+
+  box-shadow:
+    0 14px 30px
+    rgba(35,43,90,.075);
+}
+
+
+.deadline-summary-line {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 4px;
+  height: 100%;
+}
+
+
+.deadline-summary-purple
+.deadline-summary-line {
+  background: #6657ed;
+}
+
+
+.deadline-summary-red
+.deadline-summary-line {
+  background: #ef5353;
+}
+
+
+.deadline-summary-orange
+.deadline-summary-line {
+  background: #e79a15;
+}
+
+
+.deadline-summary-green
+.deadline-summary-line {
+  background: #18a76b;
+}
+
+
 .deadline-summary-icon {
-  width: 46px;
-  height: 46px;
+  width: 43px;
+  height: 43px;
 
   flex-shrink: 0;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
-  border-radius: 13px;
+  border-radius: 12px;
 }
 
-.deadline-summary-purple .deadline-summary-icon {
-  color: var(--primary);
-  background: var(--primary-soft);
+
+.deadline-summary-purple
+.deadline-summary-icon {
+  color: #6757ed;
+
+  background: #efedff;
 }
 
-.deadline-summary-red .deadline-summary-icon {
+
+.deadline-summary-red
+.deadline-summary-icon {
   color: #ef4444;
-  background: #fef2f2;
+
+  background: #fff0f0;
 }
 
-.deadline-summary-orange .deadline-summary-icon {
-  color: #e58a00;
-  background: #fff7e6;
+
+.deadline-summary-orange
+.deadline-summary-icon {
+  color: #df8b00;
+
+  background: #fff6e4;
 }
 
-.deadline-summary-green .deadline-summary-icon {
-  color: #16a34a;
-  background: #ecfdf3;
+
+.deadline-summary-green
+.deadline-summary-icon {
+  color: #16a367;
+
+  background: #eafbf3;
 }
+
 
 .deadline-summary-card strong {
   display: block;
 
-  margin-bottom: 3px;
-
-  color: var(--text-primary);
+  color: #101828;
 
   font-size: 21px;
+
+  line-height: 1;
+
   font-weight: 800;
 }
 
-.deadline-summary-card span {
-  color: var(--text-secondary);
 
-  font-size: 11px;
-  font-weight: 600;
+.deadline-summary-card span {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #475467;
+
+  font-size: 9px;
+
+  font-weight: 750;
+}
+
+
+.deadline-summary-card small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #a0a8b5;
+
+  font-size: 7px;
 }
 
 
 /* =========================================
-   TOOLBAR
+   CONTROL BAR
 ========================================= */
 
-.deadlines-toolbar {
-  display: flex;
-  justify-content: space-between;
+.deadline-control-bar {
+  display: grid;
+
+  grid-template-columns:
+    205px
+    minmax(280px, 1fr)
+    185px;
+
   align-items: center;
 
-  gap: 15px;
+  gap: 14px;
 
-  padding: 15px;
+  margin-bottom: 27px;
 
-  margin-bottom: 22px;
+  padding: 13px;
 
   background: white;
 
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
+  border:
+    1px solid #e8ebf3;
 
-  box-shadow: var(--shadow-xs);
+  border-radius: 17px;
+
+  box-shadow:
+    0 11px 27px
+    rgba(35,43,90,.045);
 }
+
+
+.deadline-control-label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.deadline-control-label > div {
+  width: 37px;
+  height: 37px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #6557ed;
+
+  background: #f0efff;
+
+  border-radius: 10px;
+}
+
+
+.deadline-control-label > span {
+  display: flex;
+
+  flex-direction: column;
+
+  color: #9aa3b2;
+
+  font-size: 7px;
+}
+
+
+.deadline-control-label strong {
+  margin-bottom: 2px;
+
+  color: #182230;
+
+  font-size: 9px;
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
 
 .deadlines-search {
   position: relative;
 
-  width: min(430px, 100%);
+  width: 100%;
 }
+
 
 .deadlines-search svg {
   position: absolute;
@@ -180,53 +984,142 @@
   left: 14px;
   top: 50%;
 
-  transform: translateY(-50%);
+  transform:
+    translateY(-50%);
 
-  color: var(--text-muted);
+  color: #98a2b3;
 }
+
 
 .deadlines-search input {
   width: 100%;
   height: 43px;
 
-  padding: 0 14px 0 42px;
+  padding:
+    0 14px 0 42px;
 
-  color: var(--text-primary);
+  color: #182230;
+
   background: #f8f9fc;
 
-  border: 1px solid transparent;
-  border-radius: 11px;
+  border:
+    1px solid transparent;
+
+  border-radius: 10px;
 
   outline: none;
 
-  font-size: 12px;
+  font-family: inherit;
+
+  font-size: 9px;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
 }
+
 
 .deadlines-search input:focus {
   background: white;
 
-  border-color: #dcd7ff;
+  border-color: #d9d5ff;
 
   box-shadow:
-    0 0 0 4px rgba(108, 92, 231, 0.07);
+    0 0 0 4px
+    rgba(103,87,237,.07);
 }
 
+
+.deadlines-search input::placeholder {
+  color: #a5adbb;
+}
+
+
 .deadlines-filter {
-  min-width: 180px;
+  width: 100%;
   height: 43px;
 
-  padding: 0 13px;
+  padding: 0 11px;
 
-  color: var(--text-secondary);
+  color: #667085;
+
   background: #f8f9fc;
 
-  border: 1px solid var(--border-light);
-  border-radius: 11px;
+  border:
+    1px solid #e9ecf2;
+
+  border-radius: 10px;
 
   outline: none;
 
-  font-size: 12px;
-  font-weight: 600;
+  font-family: inherit;
+
+  font-size: 9px;
+
+  font-weight: 650;
+}
+
+
+/* =========================================
+   TIMELINE HEADING
+========================================= */
+
+.deadline-timeline-heading {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 14px;
+}
+
+
+.deadline-timeline-heading
+> div > span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 5px;
+
+  color: #6557ed;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: .09em;
+}
+
+
+.deadline-timeline-heading h2 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+
+.deadline-timeline-heading
+> strong {
+  padding: 6px 9px;
+
+  color: #758094;
+
+  background: #f4f5f8;
+
+  border-radius: 8px;
+
+  font-size: 8px;
 }
 
 
@@ -236,100 +1129,244 @@
 
 .deadline-list {
   display: flex;
+
   flex-direction: column;
 
-  gap: 15px;
+  gap: 0;
 }
 
+
+/* =========================================
+   DEADLINE TIMELINE CARD
+========================================= */
+
 .deadline-card {
+  position: relative;
+
   display: grid;
 
   grid-template-columns:
-    68px
+    25px
+    66px
     minmax(0, 1fr)
-    auto;
+    145px;
 
   align-items: center;
 
-  gap: 18px;
+  gap: 17px;
 
-  padding: 20px;
+  min-height: 125px;
+
+  padding:
+    16px 18px 16px 0;
 
   background: white;
 
-  border: 1px solid var(--border-light);
+  border:
+    1px solid #e9ecf4;
+
   border-radius: 17px;
 
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 9px 24px
+    rgba(35,43,90,.045);
+
+  margin-bottom: 15px;
 
   transition:
-    transform var(--transition-normal),
-    box-shadow var(--transition-normal);
+    transform .2s ease,
+    box-shadow .2s ease,
+    border-color .2s ease;
 }
+
 
 .deadline-card:hover {
-  transform: translateY(-2px);
+  transform:
+    translateX(3px);
 
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    0 14px 31px
+    rgba(35,43,90,.075);
 }
 
 
-/* DATE BOX */
+/* =========================================
+   TIMELINE NODE
+========================================= */
+
+.deadline-timeline-node {
+  position: relative;
+
+  align-self: stretch;
+
+  display: flex;
+
+  justify-content: center;
+}
+
+
+.timeline-dot {
+  position: relative;
+
+  z-index: 2;
+
+  width: 11px;
+  height: 11px;
+
+  margin-top: 48px;
+
+  border:
+    3px solid white;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 2px
+    #d9ddea;
+}
+
+
+.timeline-line {
+  position: absolute;
+
+  top: 59px;
+  bottom: -32px;
+
+  width: 2px;
+
+  background:
+    #e8eaf1;
+}
+
+
+.timeline-dot-urgent {
+  background: #ef5353;
+
+  box-shadow:
+    0 0 0 2px #ffdada;
+}
+
+
+.timeline-dot-soon {
+  background: #e69b17;
+
+  box-shadow:
+    0 0 0 2px #fce9bd;
+}
+
+
+.timeline-dot-upcoming {
+  background: #6657ed;
+
+  box-shadow:
+    0 0 0 2px #dedaff;
+}
+
+
+.timeline-dot-passed {
+  background: #98a2b3;
+
+  box-shadow:
+    0 0 0 2px #e3e6eb;
+}
+
+
+.timeline-dot-completed {
+  background: #18a76b;
+
+  box-shadow:
+    0 0 0 2px #cef1df;
+}
+
+
+/* =========================================
+   DATE BOX
+========================================= */
 
 .deadline-date-box {
   width: 62px;
-  height: 67px;
+  height: 69px;
 
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
 
   border-radius: 14px;
 }
 
+
 .deadline-date-box strong {
   font-size: 20px;
+
   font-weight: 800;
 
   line-height: 1;
 }
 
+
 .deadline-date-box span {
   margin-top: 5px;
 
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 8px;
+
+  font-weight: 800;
 
   text-transform: uppercase;
 
-  letter-spacing: 0.6px;
+  letter-spacing: .06em;
 }
+
 
 .deadline-date-urgent {
-  color: #dc2626;
-  background: #fef2f2;
+  color: #dc4343;
+
+  background: #fff0f0;
 }
+
 
 .deadline-date-soon {
-  color: #d97706;
-  background: #fff7e6;
-}
+  color: #d18100;
 
-.deadline-date-normal {
-  color: var(--primary);
-  background: var(--primary-soft);
+  background: #fff6e5;
 }
 
 
-/* DETAILS */
+.deadline-date-upcoming {
+  color: #6253e9;
+
+  background: #efedff;
+}
+
+
+.deadline-date-passed {
+  color: #7d8797;
+
+  background: #f2f3f6;
+}
+
+
+.deadline-date-completed {
+  color: #158254;
+
+  background: #eaf9f2;
+}
+
+
+/* =========================================
+   DETAILS
+========================================= */
 
 .deadline-details {
   min-width: 0;
 }
 
+
 .deadline-title-row {
   display: flex;
+
   align-items: center;
 
   gap: 9px;
@@ -337,143 +1374,210 @@
   margin-bottom: 7px;
 }
 
+
 .deadline-details h3 {
   margin: 0;
 
-  color: var(--text-primary);
+  color: #101828;
 
-  font-size: 15px;
-  font-weight: 750;
+  font-size: 14px;
+
+  font-weight: 800;
 
   line-height: 1.4;
 }
+
 
 .deadline-description {
   max-width: 700px;
 
   margin: 0 0 11px;
 
-  color: var(--text-secondary);
+  color: #7d8799;
 
-  font-size: 10px;
-  line-height: 1.7;
+  font-size: 9px;
+
+  line-height: 1.65;
 }
+
 
 .deadline-meta {
   display: flex;
+
   flex-wrap: wrap;
 
   gap: 7px;
 }
 
+
 .deadline-meta-item {
   display: inline-flex;
+
   align-items: center;
 
   gap: 5px;
 
   padding: 5px 8px;
 
-  color: var(--text-secondary);
-  background: #f7f8fb;
+  color: #707b8e;
+
+  background: #f6f7fa;
 
   border-radius: 7px;
 
-  font-size: 9px;
+  font-size: 8px;
+
   font-weight: 650;
 }
 
 
-/* STATUS */
+/* =========================================
+   STATUS
+========================================= */
 
 .deadline-status {
   display: inline-flex;
+
   align-items: center;
 
   gap: 5px;
 
-  padding: 6px 9px;
+  padding: 5px 8px;
 
-  border-radius: 8px;
+  border-radius: 999px;
 
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 7px;
+
+  font-weight: 800;
 
   white-space: nowrap;
 }
 
+
 .deadline-status-urgent {
-  color: #dc2626;
-  background: #fef2f2;
+  color: #d53f3f;
+
+  background: #fff0f0;
 }
+
 
 .deadline-status-soon {
-  color: #d97706;
-  background: #fff7e6;
+  color: #c87900;
+
+  background: #fff5df;
 }
+
 
 .deadline-status-upcoming {
-  color: var(--primary);
-  background: var(--primary-soft);
+  color: #5e50df;
+
+  background: #efedff;
 }
 
 
-/* ACTION */
+.deadline-status-passed {
+  color: #717b8b;
+
+  background: #f1f2f5;
+}
+
+
+.deadline-status-completed {
+  color: #158254;
+
+  background: #eaf9f2;
+}
+
+
+/* =========================================
+   ACTION
+========================================= */
 
 .deadline-action {
   display: flex;
+
   flex-direction: column;
+
   align-items: flex-end;
 
   gap: 9px;
 }
 
-.deadline-days-left {
-  color: var(--text-muted);
 
-  font-size: 10px;
-  font-weight: 650;
+.deadline-days-left {
+  color: #8993a4;
+
+  font-size: 8px;
+
+  font-weight: 700;
 }
 
+
+.deadline-days-urgent {
+  color: #d94848;
+}
+
+
+.deadline-days-soon {
+  color: #c77b00;
+}
+
+
+.deadline-days-completed {
+  color: #168258;
+}
+
+
 .deadline-open-button {
-  min-height: 37px;
+  min-height: 36px;
 
   display: inline-flex;
+
   align-items: center;
   justify-content: center;
 
-  gap: 7px;
+  gap: 6px;
 
-  padding: 0 13px;
+  padding: 0 12px;
 
   color: white;
 
   background:
     linear-gradient(
       135deg,
-      #6657e8,
-      #7969ec
+      #5e4bea,
+      #7568ee
     );
 
   border: none;
+
   border-radius: 9px;
 
-  font-size: 10px;
-  font-weight: 700;
+  font-family: inherit;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  cursor: pointer;
 
   box-shadow:
-    0 6px 15px rgba(108, 92, 231, 0.18);
+    0 6px 15px
+    rgba(94,75,234,.17);
 
   transition:
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+    transform .2s ease,
+    box-shadow .2s ease;
 }
 
+
 .deadline-open-button:hover {
-  transform: translateY(-1px);
+  transform:
+    translateX(2px);
 
   box-shadow:
-    0 9px 19px rgba(108, 92, 231, 0.24);
+    0 9px 19px
+    rgba(94,75,234,.23);
 }
 
 
@@ -482,46 +1586,102 @@
 ========================================= */
 
 .deadlines-empty {
-  padding: 70px 25px;
-
-  text-align: center;
-
-  background: white;
-
-  border: 1px dashed #d9dde7;
-  border-radius: 18px;
-}
-
-.deadlines-empty-icon {
-  width: 60px;
-  height: 60px;
+  min-height: 270px;
 
   display: flex;
+
+  flex-direction: column;
+
   align-items: center;
   justify-content: center;
 
-  margin: 0 auto 15px;
+  padding: 45px 25px;
 
-  color: var(--primary);
-  background: var(--primary-soft);
+  text-align: center;
 
-  border-radius: 17px;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fafaff
+    );
+
+  border:
+    1px dashed #d9dde7;
+
+  border-radius: 18px;
 }
+
+
+.deadlines-empty-icon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 14px;
+
+  color: #6657ed;
+
+  background: #efedff;
+
+  border-radius: 16px;
+}
+
 
 .deadlines-empty h3 {
-  margin: 0 0 7px;
+  margin: 0 0 6px;
 
-  color: var(--text-primary);
+  color: #182230;
 
-  font-size: 16px;
+  font-size: 14px;
+
+  font-weight: 800;
 }
 
+
 .deadlines-empty p {
+  max-width: 460px;
+
   margin: 0;
 
-  color: var(--text-muted);
+  color: #939dac;
 
-  font-size: 11px;
+  font-size: 9px;
+
+  line-height: 1.55;
+}
+
+
+.deadline-loader {
+  width: 33px;
+  height: 33px;
+
+  margin-bottom: 15px;
+
+  border:
+    3px solid #ececf4;
+
+  border-top-color: #6657ed;
+
+  border-radius: 50%;
+
+  animation:
+    deadlineLoading
+    .8s linear infinite;
+}
+
+
+@keyframes deadlineLoading {
+
+  to {
+    transform:
+      rotate(360deg);
+  }
+
 }
 
 
@@ -529,52 +1689,166 @@
    RESPONSIVE
 ========================================= */
 
-@media (max-width: 1100px) {
+@media (max-width: 1150px) {
+
+  .deadline-radar-header {
+    grid-template-columns:
+      minmax(0, 1fr)
+      280px;
+  }
+
 
   .deadlines-summary {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns:
+      repeat(2, 1fr);
   }
 
 }
 
 
-@media (max-width: 760px) {
+@media (max-width: 950px) {
+
+  .deadline-radar-header {
+    grid-template-columns: 1fr;
+  }
+
+
+  .deadline-priority-card {
+    min-height: 240px;
+  }
+
+
+  .deadline-control-bar {
+    grid-template-columns: 1fr;
+  }
+
+
+  .deadline-card {
+    grid-template-columns:
+      25px
+      66px
+      minmax(0, 1fr);
+  }
+
+
+  .deadline-action {
+    grid-column:
+      3 / -1;
+
+    align-items: flex-start;
+
+    flex-direction: row;
+
+    justify-content: space-between;
+  }
+
+}
+
+
+@media (max-width: 700px) {
 
   .deadlines-page {
-    padding: 24px 18px 40px;
+    padding:
+      24px 18px 40px;
   }
 
-  .deadlines-header {
-    align-items: flex-start;
+
+  .deadline-radar-main {
+    padding:
+      24px 21px;
+
+    border-radius: 20px;
+  }
+
+
+  .radar-heading {
     flex-direction: column;
   }
+
+
+  .radar-heading h1 {
+    font-size: 25px;
+  }
+
+
+  .deadline-week-strip {
+    grid-template-columns:
+      repeat(4, 1fr);
+  }
+
+
+  .week-day-card {
+    min-height: 62px;
+  }
+
 
   .deadlines-summary {
     grid-template-columns: 1fr;
   }
 
-  .deadlines-toolbar {
+
+  .deadline-card {
+    grid-template-columns:
+      22px
+      60px
+      1fr;
+
+    gap: 11px;
+
+    padding:
+      15px 14px 15px 0;
+  }
+
+
+  .deadline-date-box {
+    width: 56px;
+    height: 63px;
+  }
+
+
+  .deadline-action {
+    grid-column:
+      2 / -1;
+
     align-items: stretch;
+
     flex-direction: column;
   }
 
-  .deadlines-search,
-  .deadlines-filter {
-    width: 100%;
-  }
-
-  .deadline-card {
-    grid-template-columns: 55px 1fr;
-  }
-
-  .deadline-action {
-    grid-column: 1 / -1;
-
-    align-items: stretch;
-  }
 
   .deadline-open-button {
     width: 100%;
+  }
+
+
+  .deadline-timeline-heading {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .deadline-week-strip {
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
+
+
+  .deadline-title-row {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .radar-footer {
+    align-items: flex-start;
+
+    flex-direction: column;
   }
 
 }

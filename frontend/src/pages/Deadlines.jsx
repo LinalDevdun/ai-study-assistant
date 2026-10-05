@@ -1,5 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
 import axios from "axios";
 
 import {
@@ -12,21 +20,47 @@ import {
   GraduationCap,
   ArrowRight,
   Inbox,
+  Sparkles,
+  TimerReset,
+  CalendarRange,
+  CheckCircle2,
 } from "lucide-react";
 
 import "../styles/deadlines.css";
 
 
 function Deadlines() {
-  const navigate = useNavigate();
 
-  const [assignments, setAssignments] = useState([]);
+  const navigate =
+    useNavigate();
 
-  const [loading, setLoading] = useState(true);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  /* ========================================
+     STATE
+  ======================================== */
 
-  const [filter, setFilter] = useState("all");
+  const [
+    assignments,
+    setAssignments,
+  ] = useState([]);
+
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] = useState("");
+
+
+  const [
+    filter,
+    setFilter,
+  ] = useState("all");
 
 
   /* ========================================
@@ -35,54 +69,64 @@ function Deadlines() {
 
   useEffect(() => {
 
-    const fetchDeadlines = async () => {
+    const fetchDeadlines =
+      async () => {
 
-      try {
+        try {
 
-        const token =
-          localStorage.getItem("token");
-
-
-        if (!token) {
-          navigate("/login");
-          return;
-        }
+          const token =
+            localStorage.getItem(
+              "token"
+            );
 
 
-        const response =
-          await axios.get(
-            "http://localhost:5000/assignments",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/assignments",
+              {
+                headers: {
+
+                  Authorization:
+                    `Bearer ${token}`,
+
+                },
+              }
+            );
+
+
+          setAssignments(
+            Array.isArray(
+              response.data
+            )
+              ? response.data
+              : []
           );
 
 
-        setAssignments(
-          Array.isArray(response.data)
-            ? response.data
-            : []
-        );
+        } catch (error) {
+
+          console.error(
+            "Error fetching deadlines:",
+            error
+          );
 
 
-      } catch (error) {
+        } finally {
 
-        console.error(
-          "Error fetching deadlines:",
-          error
-        );
+          setLoading(false);
 
+        }
 
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
+      };
 
 
     fetchDeadlines();
@@ -94,28 +138,54 @@ function Deadlines() {
      DAYS LEFT
   ======================================== */
 
-  const getDaysLeft = (dueDate) => {
+  const getDaysLeft = (
+    dueDate
+  ) => {
 
-    if (!dueDate) return null;
+    if (!dueDate) {
+      return null;
+    }
 
 
-    const today = new Date();
+    const today =
+      new Date();
 
-    const due = new Date(dueDate);
+
+    const due =
+      new Date(
+        dueDate
+      );
 
 
-    today.setHours(0, 0, 0, 0);
+    today.setHours(
+      0,
+      0,
+      0,
+      0
+    );
 
-    due.setHours(0, 0, 0, 0);
+
+    due.setHours(
+      0,
+      0,
+      0,
+      0
+    );
 
 
     const difference =
-      due.getTime() - today.getTime();
+      due.getTime() -
+      today.getTime();
 
 
     return Math.ceil(
       difference /
-        (1000 * 60 * 60 * 24)
+      (
+        1000 *
+        60 *
+        60 *
+        24
+      )
     );
 
   };
@@ -130,19 +200,24 @@ function Deadlines() {
   ) => {
 
     const days =
-      getDaysLeft(dueDate);
+      getDaysLeft(
+        dueDate
+      );
 
 
-    if (days === null)
+    if (days === null) {
       return "upcoming";
+    }
 
 
-    if (days <= 2)
+    if (days <= 2) {
       return "urgent";
+    }
 
 
-    if (days <= 7)
+    if (days <= 7) {
       return "soon";
+    }
 
 
     return "upcoming";
@@ -151,7 +226,7 @@ function Deadlines() {
 
 
   /* ========================================
-     COUNTS
+     VALID DEADLINES
   ======================================== */
 
   const validDeadlines =
@@ -161,84 +236,97 @@ function Deadlines() {
     );
 
 
-const urgentCount =
-  validDeadlines.filter(
-    (assignment) => {
+  /* ========================================
+     COUNTS
+  ======================================== */
 
-      const completed =
-        assignment.is_submitted ||
-        assignment.is_graded;
+  const urgentCount =
+    validDeadlines.filter(
+      (assignment) => {
 
-      if (completed) {
-        return false;
-      }
+        const completed =
+          assignment.is_submitted ||
+          assignment.is_graded;
 
-      const days =
-        getDaysLeft(
-          assignment.due_date
+
+        if (completed) {
+          return false;
+        }
+
+
+        const days =
+          getDaysLeft(
+            assignment.due_date
+          );
+
+
+        return (
+          days !== null &&
+          days >= 0 &&
+          days <= 2
         );
 
-      return (
-        days !== null &&
-        days >= 0 &&
-        days <= 2
-      );
-
-    }
-  ).length;
-
-
-const thisWeekCount =
-  validDeadlines.filter(
-    (assignment) => {
-
-      const completed =
-        assignment.is_submitted ||
-        assignment.is_graded;
-
-      if (completed) {
-        return false;
       }
+    ).length;
 
-      const days =
-        getDaysLeft(
-          assignment.due_date
+
+  const thisWeekCount =
+    validDeadlines.filter(
+      (assignment) => {
+
+        const completed =
+          assignment.is_submitted ||
+          assignment.is_graded;
+
+
+        if (completed) {
+          return false;
+        }
+
+
+        const days =
+          getDaysLeft(
+            assignment.due_date
+          );
+
+
+        return (
+          days !== null &&
+          days >= 0 &&
+          days <= 7
         );
 
-      return (
-        days !== null &&
-        days >= 0 &&
-        days <= 7
-      );
-
-    }
-  ).length;
-
-
-const upcomingCount =
-  validDeadlines.filter(
-    (assignment) => {
-
-      const completed =
-        assignment.is_submitted ||
-        assignment.is_graded;
-
-      if (completed) {
-        return false;
       }
+    ).length;
 
-      const days =
-        getDaysLeft(
-          assignment.due_date
+
+  const upcomingCount =
+    validDeadlines.filter(
+      (assignment) => {
+
+        const completed =
+          assignment.is_submitted ||
+          assignment.is_graded;
+
+
+        if (completed) {
+          return false;
+        }
+
+
+        const days =
+          getDaysLeft(
+            assignment.due_date
+          );
+
+
+        return (
+          days !== null &&
+          days >= 0
         );
 
-      return (
-        days !== null &&
-        days >= 0
-      );
-
-    }
-  ).length;
+      }
+    ).length;
 
 
   const completedCount =
@@ -250,6 +338,54 @@ const upcomingCount =
 
 
   /* ========================================
+     NEXT DEADLINE
+  ======================================== */
+
+  const nextDeadline =
+    useMemo(() => {
+
+      const upcoming =
+        validDeadlines
+          .filter(
+            (assignment) => {
+
+              const completed =
+                assignment.is_submitted ||
+                assignment.is_graded;
+
+
+              const days =
+                getDaysLeft(
+                  assignment.due_date
+                );
+
+
+              return (
+                !completed &&
+                days !== null &&
+                days >= 0
+              );
+
+            }
+          )
+          .sort(
+            (a, b) =>
+              new Date(
+                a.due_date
+              ) -
+              new Date(
+                b.due_date
+              )
+          );
+
+
+      return upcoming[0] ||
+        null;
+
+    }, [assignments]);
+
+
+  /* ========================================
      SEARCH + FILTER
   ======================================== */
 
@@ -257,75 +393,95 @@ const upcomingCount =
     useMemo(() => {
 
       return validDeadlines
-        .filter((assignment) => {
+        .filter(
+          (assignment) => {
 
-          const search =
-            searchTerm.toLowerCase();
-
-
-          const matchesSearch =
-            assignment.title
-              ?.toLowerCase()
-              .includes(search) ||
-
-            assignment.description
-              ?.toLowerCase()
-              .includes(search) ||
-
-            assignment.degree
-              ?.toLowerCase()
-              .includes(search);
+            const search =
+              searchTerm
+                .toLowerCase();
 
 
-          const days =
-            getDaysLeft(
-              assignment.due_date
+            const matchesSearch =
+              assignment.title
+                ?.toLowerCase()
+                .includes(
+                  search
+                ) ||
+
+              assignment.description
+                ?.toLowerCase()
+                .includes(
+                  search
+                ) ||
+
+              assignment.degree
+                ?.toLowerCase()
+                .includes(
+                  search
+                );
+
+
+            const days =
+              getDaysLeft(
+                assignment.due_date
+              );
+
+
+            let matchesFilter =
+              true;
+
+
+            if (
+              filter === "urgent"
+            ) {
+
+              matchesFilter =
+                days !== null &&
+                days >= 0 &&
+                days <= 2;
+
+            }
+
+
+            if (
+              filter === "week"
+            ) {
+
+              matchesFilter =
+                days !== null &&
+                days >= 0 &&
+                days <= 7;
+
+            }
+
+
+            if (
+              filter === "future"
+            ) {
+
+              matchesFilter =
+                days !== null &&
+                days > 7;
+
+            }
+
+
+            return (
+              matchesSearch &&
+              matchesFilter
             );
 
-
-          let matchesFilter = true;
-
-
-          if (filter === "urgent") {
-
-            matchesFilter =
-              days !== null &&
-              days >= 0 &&
-              days <= 2;
-
           }
-
-
-          if (filter === "week") {
-
-            matchesFilter =
-              days !== null &&
-              days >= 0 &&
-              days <= 7;
-
-          }
-
-
-          if (filter === "future") {
-
-            matchesFilter =
-              days !== null &&
-              days > 7;
-
-          }
-
-
-          return (
-            matchesSearch &&
-            matchesFilter
-          );
-
-        })
+        )
 
         .sort(
           (a, b) =>
-            new Date(a.due_date) -
-            new Date(b.due_date)
+            new Date(
+              a.due_date
+            ) -
+            new Date(
+              b.due_date
+            )
         );
 
     }, [
@@ -339,8 +495,13 @@ const upcomingCount =
      DATE HELPERS
   ======================================== */
 
-  const getDay = (date) =>
-    new Date(date).toLocaleDateString(
+  const getDay = (
+    date
+  ) =>
+
+    new Date(
+      date
+    ).toLocaleDateString(
       "en-US",
       {
         day: "2-digit",
@@ -348,8 +509,13 @@ const upcomingCount =
     );
 
 
-  const getMonth = (date) =>
-    new Date(date).toLocaleDateString(
+  const getMonth = (
+    date
+  ) =>
+
+    new Date(
+      date
+    ).toLocaleDateString(
       "en-US",
       {
         month: "short",
@@ -357,8 +523,13 @@ const upcomingCount =
     );
 
 
-  const formatDate = (date) =>
-    new Date(date).toLocaleDateString(
+  const formatDate = (
+    date
+  ) =>
+
+    new Date(
+      date
+    ).toLocaleDateString(
       "en-US",
       {
         weekday: "short",
@@ -369,143 +540,530 @@ const upcomingCount =
     );
 
 
+  /* ========================================
+     WEEK STRIP
+  ======================================== */
+
+  const weekDays =
+    useMemo(() => {
+
+      const today =
+        new Date();
+
+
+      today.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+
+      return Array.from(
+        {
+          length: 7,
+        },
+        (_, index) => {
+
+          const date =
+            new Date(
+              today
+            );
+
+
+          date.setDate(
+            today.getDate() +
+            index
+          );
+
+
+          return date;
+
+        }
+      );
+
+    }, []);
+
+
+  /* ========================================
+     SAME DATE CHECK
+  ======================================== */
+
+  const isSameDay = (
+    first,
+    second
+  ) => {
+
+    return (
+      first.getFullYear() ===
+        second.getFullYear() &&
+
+      first.getMonth() ===
+        second.getMonth() &&
+
+      first.getDate() ===
+        second.getDate()
+    );
+
+  };
+
+
   return (
+
     <div className="deadlines-page">
 
-      {/* HEADER */}
-      <section className="deadlines-header">
 
-        <div>
+      {/* ====================================
+          DEADLINE RADAR HEADER
+      ==================================== */}
 
-          <h1>
-            Deadlines
-          </h1>
+      <section className="deadline-radar-header">
 
-          <p>
-            Stay ahead of your upcoming
-            coursework and submission dates.
-          </p>
+
+        {/* LEFT */}
+
+        <div className="deadline-radar-main">
+
+
+          <div className="radar-decoration radar-decoration-one" />
+
+          <div className="radar-decoration radar-decoration-two" />
+
+
+          <div className="radar-heading">
+
+
+            <div className="radar-heading-icon">
+
+              <CalendarRange
+                size={22}
+              />
+
+            </div>
+
+
+            <div>
+
+              <div className="radar-eyebrow">
+
+                <Sparkles
+                  size={12}
+                />
+
+                ACADEMIC TIMELINE
+
+              </div>
+
+
+              <h1>
+                Deadline Radar
+              </h1>
+
+
+              <p>
+
+                See what's coming up,
+                identify urgent coursework
+                and stay ahead of every
+                submission date.
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+          {/* WEEK STRIP */}
+
+          <div className="deadline-week-strip">
+
+            {weekDays.map(
+              (
+                date,
+                index
+              ) => {
+
+                const hasDeadline =
+                  validDeadlines.some(
+                    (assignment) =>
+                      isSameDay(
+                        new Date(
+                          assignment.due_date
+                        ),
+                        date
+                      )
+                  );
+
+
+                return (
+
+                  <div
+                    className={
+                      `week-day-card ${
+                        index === 0
+                          ? "today"
+                          : ""
+                      } ${
+                        hasDeadline
+                          ? "has-deadline"
+                          : ""
+                      }`
+                    }
+                    key={
+                      date.toISOString()
+                    }
+                  >
+
+                    <span>
+
+                      {date
+                        .toLocaleDateString(
+                          "en-US",
+                          {
+                            weekday:
+                              "short",
+                          }
+                        )
+                        .toUpperCase()}
+
+                    </span>
+
+
+                    <strong>
+
+                      {date.getDate()}
+
+                    </strong>
+
+
+                    {hasDeadline && (
+
+                      <div className="week-deadline-dot" />
+
+                    )}
+
+                  </div>
+
+                );
+
+              }
+            )}
+
+          </div>
+
+
+          {/* RADAR FOOTER */}
+
+          <div className="radar-footer">
+
+            <span>
+
+              <CalendarClock
+                size={12}
+              />
+
+              {upcomingCount} upcoming
+
+            </span>
+
+
+            <span>
+
+              <Clock3
+                size={12}
+              />
+
+              {thisWeekCount} this week
+
+            </span>
+
+
+            <span>
+
+              <AlertTriangle
+                size={12}
+              />
+
+              {urgentCount} urgent
+
+            </span>
+
+          </div>
 
         </div>
 
 
-        <div className="deadlines-header-badge">
+        {/* ==================================
+            NEXT PRIORITY
+        ================================== */}
 
-          <CalendarClock size={16} />
+        <aside className="deadline-priority-card">
 
-        {upcomingCount}
-        {" "}
-        Upcoming
 
-        </div>
+          <div className="priority-card-top">
+
+            <div className="priority-icon">
+
+              <TimerReset
+                size={19}
+              />
+
+            </div>
+
+
+            <span>
+              NEXT PRIORITY
+            </span>
+
+          </div>
+
+
+          {nextDeadline ? (
+
+            <>
+
+              <div className="priority-date">
+
+                <strong>
+
+                  {getDay(
+                    nextDeadline
+                      .due_date
+                  )}
+
+                </strong>
+
+
+                <span>
+
+                  {getMonth(
+                    nextDeadline
+                      .due_date
+                  )}
+
+                </span>
+
+              </div>
+
+
+              <h3>
+
+                {nextDeadline.title}
+
+              </h3>
+
+
+              <p>
+
+                {nextDeadline.description ||
+                  "Complete this coursework before the upcoming deadline."}
+
+              </p>
+
+
+              <div className="priority-bottom">
+
+                <span>
+
+                  <Clock3
+                    size={12}
+                  />
+
+                  {getDaysLeft(
+                    nextDeadline.due_date
+                  ) === 0
+
+                    ? "Due today"
+
+                    : getDaysLeft(
+                        nextDeadline
+                          .due_date
+                      ) === 1
+
+                      ? "1 day left"
+
+                      : `${getDaysLeft(
+                          nextDeadline
+                            .due_date
+                        )} days left`}
+
+                </span>
+
+
+                <button
+                  onClick={() =>
+                    navigate(
+                      "/assignments"
+                    )
+                  }
+                >
+
+                  Open
+
+                  <ArrowRight
+                    size={12}
+                  />
+
+                </button>
+
+              </div>
+
+            </>
+
+          ) : (
+
+            <div className="priority-clear">
+
+              <div>
+
+                <CheckCircle2
+                  size={27}
+                />
+
+              </div>
+
+
+              <strong>
+                All clear
+              </strong>
+
+
+              <p>
+
+                You currently have no
+                upcoming coursework
+                deadlines.
+
+              </p>
+
+            </div>
+
+          )}
+
+        </aside>
 
       </section>
 
 
-      {/* SUMMARY */}
+      {/* ====================================
+          SUMMARY
+      ==================================== */}
+
       <section className="deadlines-summary">
 
-        <div className="deadline-summary-card deadline-summary-purple">
 
-          <div className="deadline-summary-icon">
-            <CalendarDays size={21} />
-          </div>
-
-          <div>
-
-            <strong>
-              {validDeadlines.length}
-            </strong>
-
-            <span>
-              Total Deadlines
-            </span>
-
-          </div>
-
-        </div>
+        <DeadlineSummary
+          className="deadline-summary-purple"
+          icon={
+            <CalendarDays
+              size={20}
+            />
+          }
+          number={
+            validDeadlines.length
+          }
+          label="Total Deadlines"
+          detail="Coursework schedule"
+        />
 
 
-        <div className="deadline-summary-card deadline-summary-red">
-
-          <div className="deadline-summary-icon">
-            <AlertTriangle size={21} />
-          </div>
-
-          <div>
-
-            <strong>
-              {urgentCount}
-            </strong>
-
-            <span>
-              Urgent
-            </span>
-
-          </div>
-
-        </div>
+        <DeadlineSummary
+          className="deadline-summary-red"
+          icon={
+            <AlertTriangle
+              size={20}
+            />
+          }
+          number={
+            urgentCount
+          }
+          label="Urgent"
+          detail="Due within 2 days"
+        />
 
 
-        <div className="deadline-summary-card deadline-summary-orange">
-
-          <div className="deadline-summary-icon">
-            <Clock3 size={21} />
-          </div>
-
-          <div>
-
-            <strong>
-              {thisWeekCount}
-            </strong>
-
-            <span>
-              Due This Week
-            </span>
-
-          </div>
-
-        </div>
+        <DeadlineSummary
+          className="deadline-summary-orange"
+          icon={
+            <Clock3
+              size={20}
+            />
+          }
+          number={
+            thisWeekCount
+          }
+          label="This Week"
+          detail="Due within 7 days"
+        />
 
 
-        <div className="deadline-summary-card deadline-summary-green">
-
-          <div className="deadline-summary-icon">
-            <CircleCheckBig size={21} />
-          </div>
-
-          <div>
-
-            <strong>
-              {completedCount}
-            </strong>
-
-            <span>
-              Submitted
-            </span>
-
-          </div>
-
-        </div>
+        <DeadlineSummary
+          className="deadline-summary-green"
+          icon={
+            <CircleCheckBig
+              size={20}
+            />
+          }
+          number={
+            completedCount
+          }
+          label="Completed"
+          detail="Submitted coursework"
+        />
 
       </section>
 
 
-      {/* TOOLBAR */}
-      <section className="deadlines-toolbar">
+      {/* ====================================
+          FIND DEADLINE
+      ==================================== */}
+
+      <section className="deadline-control-bar">
+
+
+        <div className="deadline-control-label">
+
+          <div>
+
+            <CalendarClock
+              size={18}
+            />
+
+          </div>
+
+
+          <span>
+
+            <strong>
+              Find a deadline
+            </strong>
+
+            Search your schedule
+
+          </span>
+
+        </div>
+
 
         <div className="deadlines-search">
 
-          <Search size={17} />
+          <Search
+            size={17}
+          />
+
 
           <input
             type="text"
-            placeholder="Search deadlines..."
-            value={searchTerm}
-            onChange={(event) =>
-              setSearchTerm(
-                event.target.value
-              )
+            placeholder="Search deadline, assignment or degree..."
+            value={
+              searchTerm
+            }
+            onChange={
+              (event) =>
+                setSearchTerm(
+                  event.target.value
+                )
             }
           />
 
@@ -514,11 +1072,14 @@ const upcomingCount =
 
         <select
           className="deadlines-filter"
-          value={filter}
-          onChange={(event) =>
-            setFilter(
-              event.target.value
-            )
+          value={
+            filter
+          }
+          onChange={
+            (event) =>
+              setFilter(
+                event.target.value
+              )
           }
         >
 
@@ -543,42 +1104,100 @@ const upcomingCount =
       </section>
 
 
-      {/* LIST */}
+      {/* ====================================
+          TIMELINE HEADING
+      ==================================== */}
+
+      {!loading && (
+
+        <div className="deadline-timeline-heading">
+
+          <div>
+
+            <span>
+
+              <CalendarDays
+                size={13}
+              />
+
+              DEADLINE TIMELINE
+
+            </span>
+
+
+            <h2>
+              Coursework Schedule
+            </h2>
+
+          </div>
+
+
+          <strong>
+
+            {filteredDeadlines.length}{" "}
+
+            {filteredDeadlines.length === 1
+              ? "deadline"
+              : "deadlines"}
+
+          </strong>
+
+        </div>
+
+      )}
+
+
+      {/* ====================================
+          LIST
+      ==================================== */}
+
       <section className="deadline-list">
+
 
         {loading ? (
 
           <div className="deadlines-empty">
 
-            <div className="deadlines-empty-icon">
-              <CalendarDays size={26} />
-            </div>
+            <div className="deadline-loader" />
+
 
             <h3>
-              Loading deadlines...
+              Building your timeline...
             </h3>
 
+
             <p>
-              Please wait a moment.
+              Loading your coursework
+              deadlines.
             </p>
 
           </div>
 
-        ) : filteredDeadlines.length === 0 ? (
+        ) : filteredDeadlines.length ===
+          0 ? (
 
           <div className="deadlines-empty">
 
             <div className="deadlines-empty-icon">
-              <Inbox size={27} />
+
+              <Inbox
+                size={27}
+              />
+
             </div>
+
 
             <h3>
               No deadlines found
             </h3>
 
+
             <p>
-              There are currently no deadlines
-              matching your selected filter.
+
+              There are currently no
+              deadlines matching your
+              search or selected filter.
+
             </p>
 
           </div>
@@ -586,7 +1205,10 @@ const upcomingCount =
         ) : (
 
           filteredDeadlines.map(
-            (assignment) => {
+            (
+              assignment,
+              index
+            ) => {
 
               const days =
                 getDaysLeft(
@@ -599,41 +1221,100 @@ const upcomingCount =
                   assignment.due_date
                 );
 
+
               const completed =
                 assignment.is_submitted ||
                 assignment.is_graded;
 
 
+              let visualStatus =
+                status;
+
+
+              if (completed) {
+
+                visualStatus =
+                  "completed";
+
+              } else if (
+                days < 0
+              ) {
+
+                visualStatus =
+                  "passed";
+
+              }
+
+
               return (
+
                 <article
-                  className="deadline-card"
-                  key={assignment.id}
+                  className={
+                    `deadline-card deadline-card-${visualStatus}`
+                  }
+                  key={
+                    assignment.id
+                  }
                 >
 
+
+                  {/* TIMELINE */}
+
+                  <div className="deadline-timeline-node">
+
+                    <div
+                      className={
+                        `timeline-dot timeline-dot-${visualStatus}`
+                      }
+                    />
+
+
+                    {index <
+                      filteredDeadlines.length -
+                        1 && (
+
+                      <div className="timeline-line" />
+
+                    )}
+
+                  </div>
+
+
                   {/* DATE */}
+
                   <div
-                    className={`deadline-date-box deadline-date-${status}`}
+                    className={
+                      `deadline-date-box deadline-date-${visualStatus}`
+                    }
                   >
 
                     <strong>
+
                       {getDay(
                         assignment.due_date
                       )}
+
                     </strong>
 
+
                     <span>
+
                       {getMonth(
                         assignment.due_date
                       )}
+
                     </span>
 
                   </div>
 
 
                   {/* DETAILS */}
+
                   <div className="deadline-details">
 
+
                     <div className="deadline-title-row">
+
 
                       <h3>
                         {assignment.title}
@@ -641,20 +1322,34 @@ const upcomingCount =
 
 
                       <span
-                        className={`deadline-status deadline-status-${status}`}
+                        className={
+                          `deadline-status deadline-status-${visualStatus}`
+                        }
                       >
 
-                  {assignment.is_graded
-                    ? "Graded"
-                    : assignment.is_submitted
-                      ? "Submitted"
-                      : days < 0
-                        ? "Passed"
-                        : status === "urgent"
-                          ? "Urgent"
-                          : status === "soon"
-                            ? "Due Soon"
-                            : "Upcoming"}
+                        {assignment.is_graded
+
+                          ? "Graded"
+
+                          : assignment.is_submitted
+
+                            ? "Submitted"
+
+                            : days < 0
+
+                              ? "Passed"
+
+                              : status ===
+                                  "urgent"
+
+                                ? "Urgent"
+
+                                : status ===
+                                    "soon"
+
+                                  ? "Due Soon"
+
+                                  : "Upcoming"}
 
                       </span>
 
@@ -670,6 +1365,7 @@ const upcomingCount =
 
 
                     <div className="deadline-meta">
+
 
                       <span className="deadline-meta-item">
 
@@ -704,6 +1400,7 @@ const upcomingCount =
                         <span className="deadline-meta-item">
 
                           Batch{" "}
+
                           {assignment.batch}
 
                         </span>
@@ -716,18 +1413,32 @@ const upcomingCount =
 
 
                   {/* ACTION */}
+
                   <div className="deadline-action">
 
-                    <span className="deadline-days-left">
+
+                    <span
+                      className={
+                        `deadline-days-left deadline-days-${visualStatus}`
+                      }
+                    >
 
                       {completed
+
                         ? "Coursework completed"
+
                         : days < 0
+
                           ? "Deadline passed"
+
                           : days === 0
+
                             ? "Due today"
+
                             : days === 1
+
                               ? "1 day left"
+
                               : `${days} days left`}
 
                     </span>
@@ -753,6 +1464,7 @@ const upcomingCount =
                   </div>
 
                 </article>
+
               );
 
             }
@@ -763,7 +1475,63 @@ const upcomingCount =
       </section>
 
     </div>
+
   );
+
 }
+
+
+/* ========================================
+   SUMMARY COMPONENT
+======================================== */
+
+function DeadlineSummary({
+  className,
+  icon,
+  number,
+  label,
+  detail,
+}) {
+
+  return (
+
+    <div
+      className={
+        `deadline-summary-card ${className}`
+      }
+    >
+
+      <div className="deadline-summary-line" />
+
+
+      <div className="deadline-summary-icon">
+
+        {icon}
+
+      </div>
+
+
+      <div>
+
+        <strong>
+          {number}
+        </strong>
+
+        <span>
+          {label}
+        </span>
+
+        <small>
+          {detail}
+        </small>
+
+      </div>
+
+    </div>
+
+  );
+
+}
+
 
 export default Deadlines;
