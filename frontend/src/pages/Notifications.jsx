@@ -18,6 +18,10 @@ import {
   Clock3,
   CheckCheck,
   MailOpen,
+  Sparkles,
+  Activity,
+  Inbox,
+  Zap,
 } from "lucide-react";
 
 import "../styles/notifications.css";
@@ -155,6 +159,34 @@ function Notifications() {
 
 
   /* ========================================
+     TYPE LABEL
+  ======================================== */
+
+  const getTypeLabel = (type) => {
+
+    switch (type) {
+
+      case "assignment":
+        return "Assignment";
+
+      case "grade":
+        return "Grade";
+
+      case "course":
+        return "Course";
+
+      case "deadline":
+        return "Deadline";
+
+      default:
+        return "Update";
+
+    }
+
+  };
+
+
+  /* ========================================
      RELATIVE TIME
   ======================================== */
 
@@ -171,6 +203,7 @@ function Notifications() {
       new Date(
         createdAt
       );
+
 
     const now =
       new Date();
@@ -189,7 +222,9 @@ function Notifications() {
 
 
     if (minutes < 1) {
+
       return "Just now";
+
     }
 
 
@@ -228,7 +263,9 @@ function Notifications() {
 
 
     if (days === 1) {
+
       return "Yesterday";
+
     }
 
 
@@ -385,6 +422,18 @@ function Notifications() {
     unreadCount;
 
 
+  const readPercentage =
+    notifications.length > 0
+      ? Math.round(
+          (
+            readCount /
+            notifications.length
+          ) *
+          100
+        )
+      : 100;
+
+
   /* ========================================
      SEARCH + FILTER
   ======================================== */
@@ -415,6 +464,7 @@ function Notifications() {
 
 
           const matchesSearch =
+
             title
               .toLowerCase()
               .includes(search) ||
@@ -468,54 +518,209 @@ function Notifications() {
 
 
   return (
+
     <div className="notifications-page">
 
+
       {/* ====================================
-          HEADER
+          CAMPUS PULSE
       ==================================== */}
 
-      <section className="notifications-header">
+      <section className="notification-pulse">
 
-        <div>
 
-          <h1>
-            Notifications
-          </h1>
+        <div className="notification-pulse-main">
 
-          <p>
-            Stay updated with assignments,
-            grades, course materials and
-            important academic reminders.
+
+          <div className="pulse-brand-row">
+
+
+            <div className="pulse-brand-icon">
+
+              <Bell
+                size={24}
+              />
+
+            </div>
+
+
+            <div>
+
+              <div className="pulse-eyebrow">
+
+                <Sparkles
+                  size={12}
+                />
+
+                CAMPUS PULSE
+
+              </div>
+
+
+              <h1>
+                Your Academic Inbox
+              </h1>
+
+            </div>
+
+          </div>
+
+
+          <p className="pulse-description">
+
+            Keep track of assignments,
+            grades, course updates and
+            important reminders without
+            missing what matters.
+
           </p>
+
+
+          <div className="pulse-status-row">
+
+
+            <div className="pulse-status-item">
+
+              <Bell
+                size={14}
+              />
+
+              <strong>
+                {notifications.length}
+              </strong>
+
+              <span>
+                Total
+              </span>
+
+            </div>
+
+
+            <div className="pulse-status-item">
+
+              <MailOpen
+                size={14}
+              />
+
+              <strong>
+                {unreadCount}
+              </strong>
+
+              <span>
+                Unread
+              </span>
+
+            </div>
+
+
+            <div className="pulse-status-item">
+
+              <CircleCheck
+                size={14}
+              />
+
+              <strong>
+                {readCount}
+              </strong>
+
+              <span>
+                Read
+              </span>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        <div className="notifications-header-actions">
+        {/* INBOX HEALTH */}
 
-          <div className="notification-count-badge">
+        <div className="inbox-health-card">
 
-            <Bell size={16} />
 
-            {unreadCount} Unread
+          <div className="health-card-top">
+
+
+            <div>
+
+              <span>
+                INBOX STATUS
+              </span>
+
+              <h2>
+
+                {unreadCount === 0
+                  ? "You're all caught up"
+                  : `${unreadCount} ${
+                      unreadCount === 1
+                        ? "update"
+                        : "updates"
+                    } waiting`}
+
+              </h2>
+
+            </div>
+
+
+            <div className="health-bolt">
+
+              <Zap
+                size={17}
+              />
+
+            </div>
 
           </div>
+
+
+          <div
+            className="health-progress-ring"
+            style={{
+              "--health-progress":
+                `${readPercentage * 3.6}deg`,
+            }}
+          >
+
+            <div className="health-progress-inner">
+
+              <strong>
+                {readPercentage}%
+              </strong>
+
+              <span>
+                REVIEWED
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <p>
+
+            {unreadCount === 0
+              ? "Your academic activity inbox is clear."
+              : "Review your unread academic updates when you have a moment."}
+
+          </p>
 
 
           {unreadCount > 0 && (
 
             <button
-              className="mark-all-button"
+              type="button"
+              className="health-mark-all"
               onClick={
                 markAllAsRead
               }
             >
 
               <CheckCheck
-                size={15}
+                size={14}
               />
 
-              Mark all as read
+              Mark everything as read
 
             </button>
 
@@ -532,22 +737,7 @@ function Notifications() {
 
       {error && (
 
-        <div
-          style={{
-            marginBottom:
-              "18px",
-            padding:
-              "12px 16px",
-            borderRadius:
-              "12px",
-            background:
-              "#fff1f2",
-            color:
-              "#be123c",
-            fontSize:
-              "14px",
-          }}
-        >
+        <div className="notifications-error">
 
           {error}
 
@@ -557,108 +747,36 @@ function Notifications() {
 
 
       {/* ====================================
-          SUMMARY
+          ACTIVITY NAVIGATOR
       ==================================== */}
 
-      <section className="notifications-summary">
+      <section className="activity-navigator">
 
-        <div className="notification-summary-card notification-purple">
 
-          <div className="notification-summary-icon">
+        <div className="activity-navigator-label">
 
-            <Bell
-              size={21}
+
+          <div>
+
+            <Activity
+              size={18}
             />
 
           </div>
 
 
-          <div>
+          <span>
 
             <strong>
-
-              {loading
-                ? "..."
-                : notifications.length}
-
+              Activity Finder
             </strong>
 
-            <span>
-              All Notifications
-            </span>
+            Search your academic updates
 
-          </div>
+          </span>
 
         </div>
 
-
-        <div className="notification-summary-card notification-blue">
-
-          <div className="notification-summary-icon">
-
-            <MailOpen
-              size={21}
-            />
-
-          </div>
-
-
-          <div>
-
-            <strong>
-
-              {loading
-                ? "..."
-                : unreadCount}
-
-            </strong>
-
-            <span>
-              Unread
-            </span>
-
-          </div>
-
-        </div>
-
-
-        <div className="notification-summary-card notification-green">
-
-          <div className="notification-summary-icon">
-
-            <CircleCheck
-              size={21}
-            />
-
-          </div>
-
-
-          <div>
-
-            <strong>
-
-              {loading
-                ? "..."
-                : readCount}
-
-            </strong>
-
-            <span>
-              Read
-            </span>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-      {/* ====================================
-          TOOLBAR
-      ==================================== */}
-
-      <section className="notifications-toolbar">
 
         <div className="notification-search">
 
@@ -666,9 +784,10 @@ function Notifications() {
             size={17}
           />
 
+
           <input
             type="text"
-            placeholder="Search notifications..."
+            placeholder="Search notifications, grades or assignments..."
             value={searchTerm}
             onChange={(event) =>
               setSearchTerm(
@@ -691,7 +810,7 @@ function Notifications() {
         >
 
           <option value="all">
-            All Notifications
+            All Activity
           </option>
 
           <option value="unread">
@@ -708,32 +827,98 @@ function Notifications() {
 
 
       {/* ====================================
-          LIST
+          FEED HEADING
+      ==================================== */}
+
+      <section className="activity-feed-heading">
+
+
+        <div>
+
+          <span>
+
+            <Inbox
+              size={13}
+            />
+
+            ACTIVITY STREAM
+
+          </span>
+
+
+          <h2>
+            Latest Updates
+          </h2>
+
+
+          <p>
+
+            Your academic notifications
+            appear here as they happen.
+
+          </p>
+
+        </div>
+
+
+        <div className="activity-feed-count">
+
+          {filteredNotifications.length}{" "}
+
+          {filteredNotifications.length === 1
+            ? "update"
+            : "updates"}
+
+        </div>
+
+      </section>
+
+
+      {/* ====================================
+          NOTIFICATION FEED
       ==================================== */}
 
       <section className="notifications-list">
+
 
         {loading ? (
 
           <div className="notifications-empty">
 
-            <div className="notifications-empty-icon">
 
-              <Bell
-                size={27}
-              />
+            <div className="notification-radar">
+
+              <div className="radar-ring radar-ring-one" />
+
+              <div className="radar-ring radar-ring-two" />
+
+
+              <div className="notifications-empty-icon">
+
+                <Bell
+                  size={27}
+                />
+
+              </div>
 
             </div>
 
 
+            <span>
+              CAMPUS PULSE
+            </span>
+
+
             <h3>
-              Loading notifications...
+              Loading your updates...
             </h3>
 
 
             <p>
-              Please wait while your
-              notifications are loaded.
+
+              Checking your academic
+              activity feed.
+
             </p>
 
           </div>
@@ -742,25 +927,44 @@ function Notifications() {
 
           <div className="notifications-empty">
 
-            <div className="notifications-empty-icon">
 
-              <Bell
-                size={27}
-              />
+            <div className="notification-radar">
+
+              <div className="radar-ring radar-ring-one" />
+
+              <div className="radar-ring radar-ring-two" />
+
+
+              <div className="notifications-empty-icon">
+
+                <Bell
+                  size={27}
+                />
+
+              </div>
 
             </div>
 
 
+            <span>
+              INBOX CLEAR
+            </span>
+
+
             <h3>
-              No notifications found
+
+              {notifications.length === 0
+                ? "Nothing needs your attention"
+                : "No matching updates"}
+
             </h3>
 
 
             <p>
 
               {notifications.length === 0
-                ? "You don't have any notifications yet."
-                : "There are no notifications matching your current filter."}
+                ? "When lecturers post grades, assignments or academic updates, they will appear here."
+                : "Try another search term or change your activity filter."}
 
             </p>
 
@@ -771,9 +975,14 @@ function Notifications() {
           filteredNotifications.map(
             (notification) => {
 
+              const type =
+                notification.type ||
+                "system";
+
+
               const Icon =
                 getTypeIcon(
-                  notification.type
+                  type
                 );
 
 
@@ -787,22 +996,35 @@ function Notifications() {
                   key={
                     notification.id
                   }
-                  className={`notification-item ${
-                    unread
-                      ? "notification-item-unread"
-                      : ""
-                  }`}
+                  className={
+                    `notification-item ${
+                      unread
+                        ? "notification-item-unread"
+                        : ""
+                    }`
+                  }
                 >
 
-                  {/* ICON */}
 
-                  <div
-                    className={`notification-item-icon notification-type-${notification.type}`}
-                  >
+                  {/* TIMELINE */}
 
-                    <Icon
-                      size={20}
-                    />
+                  <div className="notification-timeline">
+
+
+                    <div
+                      className={
+                        `notification-item-icon notification-type-${type}`
+                      }
+                    >
+
+                      <Icon
+                        size={19}
+                      />
+
+                    </div>
+
+
+                    <div className="notification-line" />
 
                   </div>
 
@@ -810,6 +1032,54 @@ function Notifications() {
                   {/* CONTENT */}
 
                   <div className="notification-item-content">
+
+
+                    <div className="notification-card-top">
+
+
+                      <div className="notification-category-row">
+
+
+                        <span
+                          className={
+                            `notification-type-label notification-label-${type}`
+                          }
+                        >
+
+                          {getTypeLabel(
+                            type
+                          )}
+
+                        </span>
+
+
+                        {unread && (
+
+                          <span className="notification-new-label">
+
+                            NEW
+
+                          </span>
+
+                        )}
+
+                      </div>
+
+
+                      <span className="notification-time">
+
+                        <Clock3
+                          size={11}
+                        />
+
+                        {getRelativeTime(
+                          notification.created_at
+                        )}
+
+                      </span>
+
+                    </div>
+
 
                     <div className="notification-title-row">
 
@@ -838,22 +1108,29 @@ function Notifications() {
 
                     <div className="notification-meta">
 
+
+                      {notification.category && (
+
+                        <span>
+
+                          <Sparkles
+                            size={10}
+                          />
+
+                          {
+                            notification.category
+                          }
+
+                        </span>
+
+                      )}
+
+
                       <span>
 
-                        <Clock3
-                          size={11}
-                        />
-
-                        {getRelativeTime(
-                          notification.created_at
-                        )}
-
-                      </span>
-
-
-                      <span>
-
-                        {notification.category}
+                        {unread
+                          ? "Needs review"
+                          : "Reviewed"}
 
                       </span>
 
@@ -866,11 +1143,12 @@ function Notifications() {
 
                   <div className="notification-item-action">
 
-                    {unread && (
+
+                    {unread ? (
 
                       <button
+                        type="button"
                         className="notification-read-button"
-                        title="Mark as read"
                         onClick={() =>
                           markAsRead(
                             notification.id
@@ -879,10 +1157,24 @@ function Notifications() {
                       >
 
                         <CircleCheck
-                          size={17}
+                          size={15}
                         />
 
+                        Mark as read
+
                       </button>
+
+                    ) : (
+
+                      <div className="notification-read-state">
+
+                        <CheckCheck
+                          size={14}
+                        />
+
+                        Read
+
+                      </div>
 
                     )}
 
@@ -900,6 +1192,7 @@ function Notifications() {
       </section>
 
     </div>
+
   );
 
 }

@@ -24,6 +24,8 @@ import {
   BrainCircuit,
   RotateCcw,
   GraduationCap,
+  Target,
+  Zap,
 } from "lucide-react";
 
 import "../styles/tutor.css";
@@ -86,26 +88,35 @@ function Tutor() {
   ======================================== */
 
   const suggestions = [
+
     {
       icon: Lightbulb,
+      label: "Explain",
       text:
         "Explain this concept in very simple words.",
     },
+
     {
       icon: FileText,
+      label: "Summarize",
       text:
         "Summarize the important points for my exam.",
     },
+
     {
       icon: BrainCircuit,
+      label: "Example",
       text:
         "Give me a simple example to understand this topic.",
     },
+
     {
       icon: BookOpen,
+      label: "Practice",
       text:
         "Create 5 practice questions for me.",
     },
+
   ];
 
 
@@ -124,17 +135,23 @@ function Tutor() {
         !trimmedQuestion ||
         loading
       ) {
+
         return;
+
       }
 
 
       const userMessage = {
+
         id:
           `${Date.now()}-user`,
+
         role:
           "user",
+
         content:
           trimmedQuestion,
+
       };
 
 
@@ -161,26 +178,35 @@ function Tutor() {
 
         const response =
           await axios.post(
+
             "http://localhost:5000/tutor",
 
             {
+
               question:
                 trimmedQuestion,
 
               context:
                 lessonContext,
+
             },
 
             {
+
               headers: {
+
                 Authorization:
                   `Bearer ${token}`,
+
               },
+
             }
+
           );
 
 
         const aiMessage = {
+
           id:
             `${Date.now()}-assistant`,
 
@@ -190,6 +216,7 @@ function Tutor() {
           content:
             response.data.answer ||
             "I couldn't generate an answer.",
+
         };
 
 
@@ -212,6 +239,7 @@ function Tutor() {
 
 
         const errorMessage = {
+
           id:
             `${Date.now()}-error`,
 
@@ -221,6 +249,7 @@ function Tutor() {
           content:
             error.response?.data?.error ||
             "The AI tutor couldn't respond right now. Please try again.",
+
         };
 
 
@@ -295,35 +324,125 @@ function Tutor() {
 
 
       {/* ====================================
-          PAGE HEADER
+          AI STUDIO HEADER
       ==================================== */}
 
-      <section className="tutor-page-header">
+      <section className="ai-studio-header">
 
-        <div>
 
-          <h1>
-            AI Study Tutor
-          </h1>
+        <div className="ai-studio-main">
 
-          <p>
-            Ask questions, understand difficult
-            concepts and get support while you
-            study.
-          </p>
+
+          <div className="ai-studio-icon">
+
+            <BrainCircuit
+              size={25}
+            />
+
+          </div>
+
+
+          <div>
+
+
+            <div className="ai-studio-eyebrow">
+
+              <Sparkles
+                size={12}
+              />
+
+              CAMPUSLEARN INTELLIGENCE
+
+            </div>
+
+
+            <h1>
+              AI Learning Studio
+            </h1>
+
+
+            <p>
+
+              Learn through conversation.
+              Ask questions, simplify difficult
+              topics, revise smarter and turn
+              confusing concepts into something
+              you understand.
+
+            </p>
+
+          </div>
 
         </div>
 
 
-        <div className="tutor-status">
+        <div className="ai-studio-status">
 
-          <span className="tutor-status-dot" />
 
-          AI Assistant
+          <div className="studio-pulse">
+
+            <span />
+
+          </div>
+
+
+          <div>
+
+            <small>
+              AI STATUS
+            </small>
+
+            <strong>
+              Ready to learn
+            </strong>
+
+          </div>
 
         </div>
 
       </section>
+
+
+      {/* ====================================
+          LESSON CONTEXT
+      ==================================== */}
+
+      {lessonTitle && (
+
+        <section className="tutor-learning-context">
+
+
+          <div className="learning-context-icon">
+
+            <GraduationCap
+              size={19}
+            />
+
+          </div>
+
+
+          <div>
+
+            <span>
+              CURRENT LEARNING CONTEXT
+            </span>
+
+            <strong>
+              {lessonTitle}
+            </strong>
+
+          </div>
+
+
+          <div className="learning-context-badge">
+
+            Context connected
+
+          </div>
+
+        </section>
+
+      )}
 
 
       {/* ====================================
@@ -334,38 +453,44 @@ function Tutor() {
 
 
         {/* ==================================
-            LEFT PANEL
+            PROMPT LAB
         ================================== */}
 
         <aside className="tutor-side-panel">
 
-          <div className="tutor-ai-brand">
 
-            <div className="tutor-ai-icon">
+          <div className="prompt-lab-heading">
+
+
+            <div className="prompt-lab-icon">
 
               <Sparkles
-                size={23}
+                size={19}
               />
 
             </div>
 
 
-            <h3>
-              CampusLearn AI
-            </h3>
+            <div>
 
+              <span>
+                PROMPT LAB
+              </span>
 
-            <p>
-              Your personal study assistant
-              for explanations, revision and
-              practice.
-            </p>
+              <h2>
+                Study shortcuts
+              </h2>
+
+            </div>
 
           </div>
 
 
-          <p className="tutor-suggestion-title">
-            Try asking
+          <p className="prompt-lab-copy">
+
+            Start with one of these learning
+            prompts or write your own question.
+
           </p>
 
 
@@ -394,13 +519,33 @@ function Tutor() {
                     }
                   >
 
-                    <Icon
-                      size={15}
-                    />
 
-                    <span>
-                      {suggestion.text}
-                    </span>
+                    <div className="suggestion-icon">
+
+                      <Icon
+                        size={17}
+                      />
+
+                    </div>
+
+
+                    <div>
+
+                      <span className="suggestion-label">
+
+                        {suggestion.label}
+
+                      </span>
+
+
+                      <strong>
+
+                        {suggestion.text}
+
+                      </strong>
+
+                    </div>
+
 
                   </button>
 
@@ -412,17 +557,64 @@ function Tutor() {
           </div>
 
 
-          <div className="tutor-side-note">
+          {/* STUDY METHOD */}
 
-            <strong>
-              Study tip:
-            </strong>
+          <div className="study-method-card">
 
-            <br />
 
-            Ask one clear question at a
-            time and request examples when
-            a topic feels difficult.
+            <div className="study-method-icon">
+
+              <Target
+                size={18}
+              />
+
+            </div>
+
+
+            <div>
+
+              <span>
+                BETTER PROMPTS
+              </span>
+
+              <h3>
+                Ask with context
+              </h3>
+
+
+              <p>
+
+                Mention the topic, what you
+                already understand and exactly
+                where you feel confused.
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="ai-responsibility-note">
+
+            <div>
+
+              <Zap
+                size={14}
+              />
+
+            </div>
+
+
+            <p>
+
+              AI can help you understand and
+              practice, but important academic
+              information should still be
+              checked against your course
+              materials.
+
+            </p>
 
           </div>
 
@@ -430,7 +622,7 @@ function Tutor() {
 
 
         {/* ==================================
-            CHAT
+            CHAT STUDIO
         ================================== */}
 
         <div className="tutor-chat">
@@ -440,7 +632,9 @@ function Tutor() {
 
           <div className="tutor-chat-header">
 
+
             <div className="tutor-chat-profile">
+
 
               <div className="tutor-chat-avatar">
 
@@ -453,13 +647,27 @@ function Tutor() {
 
               <div>
 
-                <h3>
-                  Study Assistant
-                </h3>
+                <div className="chat-profile-title">
 
-                <span>
-                  Ready to help you learn
-                </span>
+                  <h3>
+                    CampusLearn AI
+                  </h3>
+
+
+                  <div className="chat-online">
+
+                    <span />
+
+                    Online
+
+                  </div>
+
+                </div>
+
+
+                <p>
+                  Personal academic learning assistant
+                </p>
 
               </div>
 
@@ -476,8 +684,12 @@ function Tutor() {
               >
 
                 <RotateCcw
-                  size={16}
+                  size={15}
                 />
+
+                <span>
+                  New chat
+                </span>
 
               </button>
 
@@ -486,63 +698,61 @@ function Tutor() {
           </div>
 
 
-          {/* LESSON CONTEXT */}
-
-          {lessonTitle && (
-
-            <div className="tutor-context">
-
-              <GraduationCap
-                size={15}
-              />
-
-              <span>
-                Studying:{" "}
-                <strong>
-                  {lessonTitle}
-                </strong>
-              </span>
-
-            </div>
-
-          )}
-
-
           {/* =================================
               MESSAGES
           ================================= */}
 
           <div className="tutor-messages">
 
+
             {messages.length === 0 ? (
 
               <div className="tutor-empty">
 
-                <div className="tutor-empty-icon">
 
-                  <Sparkles
-                    size={31}
-                  />
+                <div className="tutor-empty-visual">
+
+
+                  <div className="empty-orbit orbit-one" />
+
+                  <div className="empty-orbit orbit-two" />
+
+
+                  <div className="tutor-empty-icon">
+
+                    <Sparkles
+                      size={31}
+                    />
+
+                  </div>
 
                 </div>
 
 
+                <span className="empty-eyebrow">
+
+                  YOUR AI STUDY PARTNER
+
+                </span>
+
+
                 <h2>
-                  What can I help you learn?
+                  What are we learning today?
                 </h2>
 
 
                 <p>
-                  Ask me to explain a difficult
-                  concept, summarize a lesson,
+
+                  Ask me to break down a difficult
+                  concept, summarize a topic,
                   create revision questions or
                   help you prepare for an exam.
 
                   {lessonTitle && (
                     <>
                       {" "}
-                      I already have context
-                      from your lesson{" "}
+                      I already have context from
+                      your lesson{" "}
                       <strong>
                         {lessonTitle}
                       </strong>.
@@ -550,6 +760,55 @@ function Tutor() {
                   )}
 
                 </p>
+
+
+                <div className="empty-capabilities">
+
+
+                  <div>
+
+                    <Lightbulb
+                      size={14}
+                    />
+
+                    Explain
+
+                  </div>
+
+
+                  <div>
+
+                    <FileText
+                      size={14}
+                    />
+
+                    Summarize
+
+                  </div>
+
+
+                  <div>
+
+                    <BrainCircuit
+                      size={14}
+                    />
+
+                    Understand
+
+                  </div>
+
+
+                  <div>
+
+                    <BookOpen
+                      size={14}
+                    />
+
+                    Practice
+
+                  </div>
+
+                </div>
 
               </div>
 
@@ -586,6 +845,7 @@ function Tutor() {
                       }
                     >
 
+
                       <div className="tutor-message-avatar">
 
                         {isUser ? (
@@ -607,35 +867,46 @@ function Tutor() {
 
                       <div className="tutor-message-content">
 
+
                         {!isUser &&
                           !isError && (
 
                           <div className="tutor-message-label">
+
+                            <span />
+
                             CampusLearn AI
+
                           </div>
 
                         )}
 
 
-                      {isUser ? (
+                        {isUser ? (
 
-                        <div className="tutor-message-body">
-                          {message.content}
-                        </div>
+                          <div className="tutor-message-body">
 
-                      ) : (
-
-                        <div className="tutor-message-body tutor-markdown">
-
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                          >
                             {message.content}
-                          </ReactMarkdown>
 
-                        </div>
+                          </div>
 
-                      )}
+                        ) : (
+
+                          <div className="tutor-message-body tutor-markdown">
+
+                            <ReactMarkdown
+                              remarkPlugins={[
+                                remarkGfm,
+                              ]}
+                            >
+
+                              {message.content}
+
+                            </ReactMarkdown>
+
+                          </div>
+
+                        )}
 
                       </div>
 
@@ -655,6 +926,7 @@ function Tutor() {
 
               <div className="tutor-message tutor-message-ai">
 
+
                 <div className="tutor-message-avatar">
 
                   <Bot
@@ -666,12 +938,18 @@ function Tutor() {
 
                 <div className="tutor-message-content">
 
+
                   <div className="tutor-message-label">
+
+                    <span />
+
                     CampusLearn AI
+
                   </div>
 
 
                   <div className="tutor-message-body tutor-thinking-body">
+
 
                     <div className="tutor-thinking">
 
@@ -705,7 +983,7 @@ function Tutor() {
 
 
           {/* =================================
-              INPUT
+              COMPOSER
           ================================= */}
 
           <form
@@ -713,7 +991,31 @@ function Tutor() {
             onSubmit={handleAskAI}
           >
 
+
+            <div className="composer-heading">
+
+              <div>
+
+                <span>
+                  ASK CAMPUSLEARN AI
+                </span>
+
+                <strong>
+                  Type your study question
+                </strong>
+
+              </div>
+
+
+              <small>
+                Enter ↵
+              </small>
+
+            </div>
+
+
             <div className="tutor-input-wrapper">
+
 
               <textarea
                 rows="1"
@@ -730,7 +1032,7 @@ function Tutor() {
                 placeholder={
                   lessonTitle
                     ? `Ask something about ${lessonTitle}...`
-                    : "Ask your study question..."
+                    : "Ask anything about your studies..."
                 }
               />
 
@@ -746,7 +1048,7 @@ function Tutor() {
               >
 
                 <Send
-                  size={17}
+                  size={18}
                 />
 
               </button>
@@ -754,27 +1056,24 @@ function Tutor() {
             </div>
 
 
-            <div className="tutor-input-help">
+            <div className="tutor-composer-footer">
+
 
               <span>
-                Enter to send
-              </span>
 
-              <span>
                 Shift + Enter for new line
+
               </span>
+
+
+              <p>
+
+                AI answers may contain mistakes.
+                Verify important academic details.
+
+              </p>
 
             </div>
-
-
-            <p className="tutor-composer-note">
-
-              AI-generated answers can make
-              mistakes. Check important academic
-              information with your course
-              materials.
-
-            </p>
 
           </form>
 
