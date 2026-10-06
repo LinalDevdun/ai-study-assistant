@@ -1,0 +1,1956 @@
+/* =========================================
+   CAMPUSLEARN
+   LECTURER AI TEACHING STUDIO
+========================================= */
+
+.lecturer-tutor-page {
+  width: 100%;
+  max-width: 1440px;
+
+  margin: 0 auto;
+
+  padding: 32px 36px 52px;
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.lecturer-ai-hero {
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 220px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 35px;
+
+  padding: 34px 38px;
+
+  margin-bottom: 18px;
+
+  color: white;
+
+  background:
+    radial-gradient(
+      circle at 86% 20%,
+      rgba(123, 160, 255, 0.38),
+      transparent 28%
+    ),
+    linear-gradient(
+      125deg,
+      #2949ca 0%,
+      #425fe3 48%,
+      #6958e9 100%
+    );
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 18px 45px
+    rgba(54, 72, 186, 0.19);
+}
+
+
+/* GRID EFFECT */
+
+.lecturer-ai-hero::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  opacity: 0.16;
+
+  background-image:
+    linear-gradient(
+      rgba(255,255,255,0.18) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.18) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    50px 50px;
+}
+
+
+/* CIRCLE */
+
+.lecturer-ai-hero::after {
+  content: "";
+
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  top: -160px;
+  right: 90px;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.16);
+
+  border-radius: 50%;
+}
+
+
+/* =========================================
+   HERO CONTENT
+========================================= */
+
+.lecturer-ai-hero-content {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 20px;
+}
+
+
+.lecturer-ai-hero-icon {
+  width: 58px;
+  height: 58px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    rgba(255,255,255,0.14);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.22);
+
+  border-radius: 17px;
+
+  backdrop-filter:
+    blur(10px);
+
+  box-shadow:
+    0 10px 25px
+    rgba(17, 34, 115, 0.14);
+}
+
+
+.lecturer-ai-eyebrow {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 8px;
+
+  color:
+    rgba(255,255,255,0.78);
+
+  font-size: 7px;
+  font-weight: 850;
+
+  letter-spacing: 0.11em;
+}
+
+
+.lecturer-ai-hero h1 {
+  margin: 0;
+
+  color: white;
+
+  font-size: 35px;
+  line-height: 1.08;
+
+  font-weight: 900;
+
+  letter-spacing: -1.1px;
+}
+
+
+.lecturer-ai-hero h1 span {
+  color: #b9d4ff;
+}
+
+
+.lecturer-ai-hero-text > p {
+  max-width: 640px;
+
+  margin: 12px 0 0;
+
+  color:
+    rgba(255,255,255,0.76);
+
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+
+/* =========================================
+   HERO CAPABILITIES
+========================================= */
+
+.lecturer-ai-capabilities {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 18px;
+}
+
+
+.lecturer-ai-capabilities span {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 7px 10px;
+
+  color:
+    rgba(255,255,255,0.88);
+
+  background:
+    rgba(255,255,255,0.1);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.14);
+
+  border-radius: 9px;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  backdrop-filter:
+    blur(7px);
+}
+
+
+/* =========================================
+   HERO STATUS
+========================================= */
+
+.lecturer-ai-hero-status {
+  position: relative;
+  z-index: 2;
+
+  width: 235px;
+
+  flex-shrink: 0;
+
+  padding: 18px;
+
+  background:
+    rgba(255,255,255,0.12);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.18);
+
+  border-radius: 17px;
+
+  backdrop-filter:
+    blur(14px);
+}
+
+
+.lecturer-ai-status-top {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+
+.lecturer-ai-live-dot {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    rgba(255,255,255,0.12);
+
+  border-radius: 11px;
+}
+
+
+.lecturer-ai-live-dot span {
+  width: 9px;
+  height: 9px;
+
+  background: #5df0ad;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 6px
+    rgba(93,240,173,0.12);
+
+  animation:
+    lecturerAiPulse
+    1.8s ease-in-out infinite;
+}
+
+
+@keyframes lecturerAiPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.18);
+  }
+
+}
+
+
+.lecturer-ai-status-top small {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color:
+    rgba(255,255,255,0.55);
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.1em;
+}
+
+
+.lecturer-ai-status-top strong {
+  display: block;
+
+  color: white;
+
+  font-size: 9px;
+}
+
+
+.lecturer-ai-status-line {
+  height: 1px;
+
+  margin: 15px 0;
+
+  background:
+    rgba(255,255,255,0.12);
+}
+
+
+.lecturer-ai-status-bottom {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 15px;
+}
+
+
+.lecturer-ai-status-bottom span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color:
+    rgba(255,255,255,0.52);
+
+  font-size: 5px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+}
+
+
+.lecturer-ai-status-bottom strong {
+  color:
+    rgba(255,255,255,0.91);
+
+  font-size: 8px;
+}
+
+
+/* =========================================
+   COURSE CONTEXT
+========================================= */
+
+.lecturer-ai-context {
+  display: grid;
+
+  grid-template-columns:
+    42px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px 14px;
+
+  margin-bottom: 18px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #eef3ff,
+      #f8f7ff
+    );
+
+  border:
+    1px solid #dce3fb;
+
+  border-radius: 14px;
+}
+
+
+.lecturer-ai-context-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4260df;
+
+  background: white;
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 5px 14px
+    rgba(52, 72, 174, 0.06);
+}
+
+
+.lecturer-ai-context-content span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #8391b9;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+.lecturer-ai-context-content strong {
+  color: #304194;
+
+  font-size: 9px;
+}
+
+
+.lecturer-ai-context-badge {
+  padding: 7px 10px;
+
+  color: #4659bc;
+
+  background: white;
+
+  border:
+    1px solid #d9e0f8;
+
+  border-radius: 8px;
+
+  font-size: 7px;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   WORKSPACE
+========================================= */
+
+.lecturer-ai-workspace {
+  display: grid;
+
+  grid-template-columns:
+    290px
+    minmax(0, 1fr);
+
+  gap: 18px;
+
+  min-height: 680px;
+}
+
+
+/* =========================================
+   PROMPT TOOLKIT
+========================================= */
+
+.lecturer-prompt-panel {
+  display: flex;
+  flex-direction: column;
+
+  padding: 19px;
+
+  background: white;
+
+  border:
+    1px solid #e3e7f0;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 12px 32px
+    rgba(35, 44, 89, 0.055);
+}
+
+
+.lecturer-prompt-heading {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+
+.lecturer-prompt-heading-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3d5bde,
+      #6659eb
+    );
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 7px 17px
+    rgba(61, 91, 222, 0.17);
+}
+
+
+.lecturer-prompt-heading span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #7789be;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.lecturer-prompt-heading h2 {
+  margin: 0;
+
+  color: #162033;
+
+  font-size: 14px;
+  font-weight: 850;
+}
+
+
+.lecturer-prompt-description {
+  margin: 14px 0 16px;
+
+  color: #8b95a8;
+
+  font-size: 8px;
+  line-height: 1.55;
+}
+
+
+/* =========================================
+   PROMPT CARDS
+========================================= */
+
+.lecturer-prompt-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 9px;
+}
+
+
+.lecturer-prompt-card {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    38px
+    minmax(0,1fr)
+    18px;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px;
+
+  color: inherit;
+
+  background: #f8f9fd;
+
+  border:
+    1px solid #eceef5;
+
+  border-radius: 12px;
+
+  text-align: left;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.lecturer-prompt-card:hover {
+  transform:
+    translateX(3px);
+
+  background: white;
+
+  border-color: #d5dcfa;
+
+  box-shadow:
+    0 7px 18px
+    rgba(53, 68, 150, 0.07);
+}
+
+
+.lecturer-prompt-card-icon {
+  width: 37px;
+  height: 37px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4761df;
+
+  background: #eaf0ff;
+
+  border-radius: 10px;
+}
+
+
+.lecturer-prompt-card-content {
+  min-width: 0;
+}
+
+
+.lecturer-prompt-card-content span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #7184c2;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.07em;
+}
+
+
+.lecturer-prompt-card-content strong {
+  display: block;
+
+  color: #465167;
+
+  font-size: 8px;
+  font-weight: 720;
+}
+
+
+.lecturer-prompt-arrow {
+  color: #9aa4b6;
+
+  font-size: 16px;
+  font-weight: 300;
+}
+
+
+/* =========================================
+   TEACHING TIP
+========================================= */
+
+.lecturer-teaching-tip {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin-top: 18px;
+
+  padding: 13px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #eef3ff,
+      #f8f7ff
+    );
+
+  border:
+    1px solid #dde4fb;
+
+  border-radius: 13px;
+}
+
+
+.lecturer-teaching-tip > div:first-child {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4963df;
+
+  background: white;
+
+  border-radius: 9px;
+}
+
+
+.lecturer-teaching-tip span {
+  display: block;
+
+  color: #7588c6;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+.lecturer-teaching-tip strong {
+  display: block;
+
+  margin: 3px 0 4px;
+
+  color: #3f4f91;
+
+  font-size: 8px;
+}
+
+
+.lecturer-teaching-tip p {
+  margin: 0;
+
+  color: #78849f;
+
+  font-size: 7px;
+  line-height: 1.55;
+}
+
+
+/* =========================================
+   CHAT SHELL
+========================================= */
+
+.lecturer-ai-chat {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: white;
+
+  border:
+    1px solid #e3e7f0;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 13px 34px
+    rgba(35, 44, 89, 0.06);
+}
+
+
+/* =========================================
+   CHAT HEADER
+========================================= */
+
+.lecturer-ai-chat-header {
+  min-height: 73px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 14px 18px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ffffff,
+      #f8faff
+    );
+
+  border-bottom:
+    1px solid #eceff5;
+}
+
+
+.lecturer-ai-chat-profile {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+
+.lecturer-ai-chat-avatar {
+  width: 43px;
+  height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3e5ddd,
+      #675ae9
+    );
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 7px 17px
+    rgba(62, 93, 221, 0.17);
+}
+
+
+.lecturer-ai-chat-title {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+.lecturer-ai-chat-title h3 {
+  margin: 0;
+
+  color: #182230;
+
+  font-size: 12px;
+  font-weight: 850;
+}
+
+
+.lecturer-ai-online {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 4px;
+
+  color: #17945d;
+
+  font-size: 6px;
+  font-weight: 750;
+}
+
+
+.lecturer-ai-online i {
+  width: 6px;
+  height: 6px;
+
+  background: #24b76e;
+
+  border-radius: 50%;
+}
+
+
+.lecturer-ai-chat-profile p {
+  margin: 4px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 7px;
+}
+
+
+.lecturer-ai-clear {
+  min-height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 0 10px;
+
+  color: #697586;
+
+  background: #f6f7fa;
+
+  border:
+    1px solid #e5e8ee;
+
+  border-radius: 9px;
+
+  font-family: inherit;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.lecturer-ai-clear:hover {
+  color: #d83b4c;
+
+  background: #fff1f2;
+}
+
+
+/* =========================================
+   MESSAGES AREA
+========================================= */
+
+.lecturer-ai-messages {
+  flex: 1;
+
+  min-height: 455px;
+  max-height: 680px;
+
+  overflow-y: auto;
+
+  padding: 26px 23px;
+
+  scroll-behavior: smooth;
+
+  background:
+    radial-gradient(
+      circle at 94% 5%,
+      rgba(80, 103, 231, 0.05),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 3% 93%,
+      rgba(102, 88, 233, 0.03),
+      transparent 24%
+    ),
+    #ffffff;
+}
+
+
+.lecturer-ai-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+
+.lecturer-ai-messages::-webkit-scrollbar-thumb {
+  background: #d7dce8;
+
+  border-radius: 99px;
+}
+
+
+/* =========================================
+   EMPTY STATE
+========================================= */
+
+.lecturer-ai-empty {
+  min-height: 410px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px;
+
+  text-align: center;
+}
+
+
+.lecturer-ai-empty-visual {
+  position: relative;
+
+  width: 120px;
+  height: 120px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 12px;
+}
+
+
+.lecturer-ai-orbit {
+  position: absolute;
+
+  border-radius: 50%;
+}
+
+
+.lecturer-ai-orbit-one {
+  width: 112px;
+  height: 112px;
+
+  border:
+    1px solid
+    rgba(70, 94, 222, 0.12);
+}
+
+
+.lecturer-ai-orbit-two {
+  width: 88px;
+  height: 88px;
+
+  border:
+    1px dashed
+    rgba(102, 88, 233, 0.2);
+
+  animation:
+    lecturerOrbit
+    18s linear infinite;
+}
+
+
+@keyframes lecturerOrbit {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+.lecturer-ai-empty-icon {
+  position: relative;
+  z-index: 2;
+
+  width: 65px;
+  height: 65px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #395bdc,
+      #6659e9
+    );
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 13px 30px
+    rgba(59, 84, 213, 0.22);
+}
+
+
+.lecturer-ai-empty-eyebrow {
+  margin-bottom: 6px;
+
+  color: #5870d9;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.1em;
+}
+
+
+.lecturer-ai-empty h2 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 22px;
+  font-weight: 900;
+
+  letter-spacing: -0.5px;
+}
+
+
+.lecturer-ai-empty h2 span {
+  color: #4c64df;
+}
+
+
+.lecturer-ai-empty > p {
+  max-width: 540px;
+
+  margin: 9px 0 0;
+
+  color: #7e899b;
+
+  font-size: 9px;
+  line-height: 1.7;
+}
+
+
+.lecturer-ai-empty > p strong {
+  color: #4b61dc;
+}
+
+
+/* CAPABILITY CHIPS */
+
+.lecturer-ai-empty-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  gap: 7px;
+
+  margin-top: 20px;
+}
+
+
+.lecturer-ai-empty-tools div {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 7px 10px;
+
+  color: #4961d7;
+
+  background: #eef2ff;
+
+  border:
+    1px solid #dfe5fb;
+
+  border-radius: 9px;
+
+  font-size: 7px;
+  font-weight: 750;
+}
+
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+.lecturer-ai-message {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 10px;
+
+  margin-bottom: 22px;
+}
+
+
+.lecturer-ai-message-user {
+  flex-direction: row-reverse;
+}
+
+
+.lecturer-ai-message-avatar {
+  width: 34px;
+  height: 34px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+}
+
+
+.lecturer-ai-message-bot
+.lecturer-ai-message-avatar {
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3e5ddd,
+      #675ae9
+    );
+
+  box-shadow:
+    0 5px 13px
+    rgba(62, 93, 221, 0.15);
+}
+
+
+.lecturer-ai-message-user
+.lecturer-ai-message-avatar {
+  color: #4961dc;
+
+  background: #edf1ff;
+}
+
+
+.lecturer-ai-message-content {
+  max-width:
+    min(
+      830px,
+      82%
+    );
+}
+
+
+.lecturer-ai-message-user
+.lecturer-ai-message-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+
+.lecturer-ai-message-label {
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  margin: 0 0 6px 3px;
+
+  color: #858fa1;
+
+  font-size: 7px;
+  font-weight: 750;
+}
+
+
+.lecturer-ai-message-label span {
+  width: 5px;
+  height: 5px;
+
+  background: #22b66d;
+
+  border-radius: 50%;
+}
+
+
+/* =========================================
+   MESSAGE BUBBLE
+========================================= */
+
+.lecturer-ai-message-body {
+  padding: 13px 15px;
+
+  border-radius: 14px;
+
+  font-size: 11px;
+  line-height: 1.72;
+}
+
+
+.lecturer-ai-message-bot
+.lecturer-ai-message-body {
+  color: #363b4e;
+
+  background:
+    linear-gradient(
+      145deg,
+      #f8f9fc,
+      #fbfcff
+    );
+
+  border:
+    1px solid #e7eaf2;
+
+  border-top-left-radius: 4px;
+}
+
+
+.lecturer-ai-message-user
+.lecturer-ai-message-body {
+  max-width: 620px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3e5ddd,
+      #6659e9
+    );
+
+  border-top-right-radius: 4px;
+
+  box-shadow:
+    0 6px 18px
+    rgba(62, 93, 221, 0.14);
+
+  white-space: pre-wrap;
+}
+
+
+.lecturer-ai-message-error
+.lecturer-ai-message-body {
+  color: #b42318;
+
+  background: #fef3f2;
+
+  border:
+    1px solid #fee4e2;
+}
+
+
+/* =========================================
+   THINKING
+========================================= */
+
+.lecturer-ai-thinking-body {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.lecturer-ai-thinking-body small {
+  color: #8993a5;
+
+  font-size: 8px;
+}
+
+
+.lecturer-ai-thinking {
+  display: flex;
+
+  gap: 4px;
+}
+
+
+.lecturer-ai-thinking span {
+  width: 6px;
+  height: 6px;
+
+  background: #6577dd;
+
+  border-radius: 50%;
+
+  animation:
+    lecturerThinking
+    1s infinite ease-in-out;
+}
+
+
+.lecturer-ai-thinking
+span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+
+.lecturer-ai-thinking
+span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+
+@keyframes lecturerThinking {
+
+  0%,
+  100% {
+    opacity: 0.35;
+
+    transform:
+      translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      translateY(-3px);
+  }
+
+}
+
+
+/* =========================================
+   MARKDOWN
+========================================= */
+
+.lecturer-ai-markdown {
+  width: 100%;
+
+  color: #34384d;
+
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+
+.lecturer-ai-markdown > *:first-child {
+  margin-top: 0;
+}
+
+
+.lecturer-ai-markdown > *:last-child {
+  margin-bottom: 0;
+}
+
+
+.lecturer-ai-markdown p {
+  margin: 0 0 12px;
+}
+
+
+.lecturer-ai-markdown h1,
+.lecturer-ai-markdown h2,
+.lecturer-ai-markdown h3,
+.lecturer-ai-markdown h4 {
+  color: #171a2c;
+
+  font-weight: 850;
+
+  line-height: 1.35;
+}
+
+
+.lecturer-ai-markdown h1 {
+  margin: 21px 0 10px;
+
+  font-size: 19px;
+}
+
+
+.lecturer-ai-markdown h2 {
+  margin: 19px 0 9px;
+
+  font-size: 16px;
+}
+
+
+.lecturer-ai-markdown h3 {
+  margin: 17px 0 8px;
+
+  font-size: 14px;
+}
+
+
+.lecturer-ai-markdown h4 {
+  margin: 15px 0 7px;
+
+  font-size: 13px;
+}
+
+
+.lecturer-ai-markdown strong {
+  color: #202338;
+
+  font-weight: 850;
+}
+
+
+.lecturer-ai-markdown ul,
+.lecturer-ai-markdown ol {
+  margin: 10px 0 15px;
+
+  padding-left: 24px;
+}
+
+
+.lecturer-ai-markdown li {
+  margin-bottom: 7px;
+}
+
+
+.lecturer-ai-markdown li::marker {
+  color: #4961dc;
+
+  font-weight: 800;
+}
+
+
+.lecturer-ai-markdown blockquote {
+  margin: 15px 0;
+
+  padding: 11px 14px;
+
+  color: #556078;
+
+  background: #eef2ff;
+
+  border-left:
+    4px solid #4961dc;
+
+  border-radius:
+    0 10px 10px 0;
+}
+
+
+.lecturer-ai-markdown code {
+  padding: 2px 6px;
+
+  color: #3c55c8;
+
+  background: #edf1ff;
+
+  border-radius: 5px;
+
+  font-family:
+    Consolas,
+    "Courier New",
+    monospace;
+
+  font-size: 0.92em;
+}
+
+
+.lecturer-ai-markdown pre {
+  overflow-x: auto;
+
+  margin: 14px 0 18px;
+
+  padding: 16px;
+
+  color: #f3f5fb;
+
+  background: #1d2336;
+
+  border-radius: 12px;
+
+  line-height: 1.65;
+}
+
+
+.lecturer-ai-markdown pre code {
+  padding: 0;
+
+  color: inherit;
+
+  background: transparent;
+}
+
+
+.lecturer-ai-markdown table {
+  width: 100%;
+
+  margin: 15px 0;
+
+  border-collapse: collapse;
+
+  font-size: 10px;
+}
+
+
+.lecturer-ai-markdown th,
+.lecturer-ai-markdown td {
+  padding: 9px 11px;
+
+  border:
+    1px solid #e3e6ef;
+
+  text-align: left;
+}
+
+
+.lecturer-ai-markdown th {
+  color: #292d40;
+
+  background: #f3f5f9;
+
+  font-weight: 800;
+}
+
+
+/* =========================================
+   COMPOSER
+========================================= */
+
+.lecturer-ai-composer {
+  padding: 13px 18px 14px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #fafbfe
+    );
+
+  border-top:
+    1px solid #eceff5;
+}
+
+
+.lecturer-ai-composer-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 8px;
+}
+
+
+.lecturer-ai-composer-heading span {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: #7789bd;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.lecturer-ai-composer-heading strong {
+  color: #445064;
+
+  font-size: 8px;
+}
+
+
+.lecturer-ai-composer-heading small {
+  color: #9ba4b3;
+
+  font-size: 7px;
+}
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+.lecturer-ai-input-wrapper {
+  display: flex;
+  align-items: flex-end;
+
+  gap: 10px;
+
+  padding:
+    8px
+    8px
+    8px
+    14px;
+
+  background: #f7f8fb;
+
+  border:
+    1px solid #dfe3ec;
+
+  border-radius: 14px;
+
+  transition:
+    background 0.18s ease,
+    border 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.lecturer-ai-input-wrapper:focus-within {
+  background: white;
+
+  border-color: #cbd5ff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(63, 89, 220, 0.07);
+}
+
+
+.lecturer-ai-input-wrapper textarea {
+  flex: 1;
+
+  min-height: 43px;
+  max-height: 135px;
+
+  padding: 11px 0;
+
+  resize: none;
+
+  color: #30384a;
+
+  background: transparent;
+
+  border: none;
+  outline: none;
+
+  font-family: inherit;
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+
+.lecturer-ai-input-wrapper
+textarea::placeholder {
+  color: #a4acba;
+}
+
+
+/* =========================================
+   SEND
+========================================= */
+
+.lecturer-ai-send {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3d5ddd,
+      #675ae9
+    );
+
+  border: none;
+
+  border-radius: 11px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 17px
+    rgba(61, 93, 221, 0.2);
+
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+
+.lecturer-ai-send:not(:disabled):hover {
+  transform:
+    translateY(-2px);
+}
+
+
+.lecturer-ai-send:disabled {
+  opacity: 0.42;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   COMPOSER FOOTER
+========================================= */
+
+.lecturer-ai-composer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin:
+    6px 4px 0;
+}
+
+
+.lecturer-ai-composer-footer span,
+.lecturer-ai-composer-footer p {
+  color: #a1a8b5;
+
+  font-size: 7px;
+}
+
+
+.lecturer-ai-composer-footer p {
+  margin: 0;
+
+  text-align: right;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1100px) {
+
+  .lecturer-ai-workspace {
+    grid-template-columns: 1fr;
+  }
+
+
+  .lecturer-prompt-panel {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 850px) {
+
+  .lecturer-ai-hero {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .lecturer-ai-hero-status {
+    width: 100%;
+
+    box-sizing: border-box;
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .lecturer-tutor-page {
+    padding:
+      24px 18px 40px;
+  }
+
+
+  .lecturer-ai-hero {
+    padding:
+      25px 21px;
+
+    border-radius: 20px;
+  }
+
+
+  .lecturer-ai-hero-content {
+    flex-direction: column;
+  }
+
+
+  .lecturer-ai-hero h1 {
+    font-size: 29px;
+  }
+
+
+  .lecturer-ai-context {
+    grid-template-columns:
+      40px 1fr;
+  }
+
+
+  .lecturer-ai-context-badge {
+    grid-column:
+      2 / -1;
+
+    width: fit-content;
+  }
+
+
+  .lecturer-ai-messages {
+    padding:
+      21px 14px;
+  }
+
+
+  .lecturer-ai-message-content {
+    max-width: 88%;
+  }
+
+
+  .lecturer-ai-composer-footer {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .lecturer-ai-composer-footer p {
+    text-align: left;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .lecturer-ai-capabilities {
+    display: grid;
+
+    grid-template-columns: 1fr;
+
+    width: 100%;
+  }
+
+
+  .lecturer-ai-empty-tools {
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, 1fr);
+
+    width: 100%;
+  }
+
+
+  .lecturer-ai-empty-tools div {
+    justify-content: center;
+  }
+
+
+  .lecturer-ai-clear span {
+    display: none;
+  }
+
+}

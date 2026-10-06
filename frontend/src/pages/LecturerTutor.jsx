@@ -27,7 +27,7 @@ import {
   ClipboardList,
 } from "lucide-react";
 
-import "../styles/tutor.css";
+import "../styles/lecturerTutor.css";
 
 
 function LecturerTutor() {
@@ -59,10 +59,8 @@ function LecturerTutor() {
   const [question, setQuestion] =
     useState("");
 
-
   const [loading, setLoading] =
     useState(false);
-
 
   const [messages, setMessages] =
     useState([]);
@@ -90,37 +88,47 @@ function LecturerTutor() {
 
 
   /* ========================================
-     LECTURER SUGGESTIONS
+     TEACHING PROMPTS
   ======================================== */
 
   const suggestions = [
 
     {
       icon: Lightbulb,
+      category: "LESSON DESIGN",
+      title: "Lesson Plan",
       text:
         "Create a lesson plan for a university lecture.",
     },
 
     {
       icon: ClipboardList,
+      category: "ASSESSMENT",
+      title: "Assignment Builder",
       text:
         "Create an assignment with clear instructions and marking criteria.",
     },
 
     {
       icon: BrainCircuit,
+      category: "KNOWLEDGE CHECK",
+      title: "Quiz Generator",
       text:
         "Generate 10 quiz questions for my students.",
     },
 
     {
       icon: FileText,
+      category: "GRADING",
+      title: "Rubric Creator",
       text:
         "Create a marking rubric for an academic assignment.",
     },
 
     {
       icon: BookOpen,
+      category: "TEACHING SUPPORT",
+      title: "Explain a Topic",
       text:
         "Explain a difficult topic in a way I can teach to students.",
     },
@@ -329,87 +337,242 @@ function LecturerTutor() {
 
   return (
 
-    <div className="tutor-page">
+    <div className="lecturer-tutor-page">
 
 
       {/* ====================================
-          PAGE HEADER
+          AI HERO
       ==================================== */}
 
-      <section className="tutor-page-header">
+      <section className="lecturer-ai-hero">
 
-        <div>
 
-          <h1>
-            AI Teaching Assistant
-          </h1>
+        <div className="lecturer-ai-hero-content">
 
-          <p>
-            Create teaching materials,
-            assignments, quizzes, rubrics
-            and academic content with AI.
-          </p>
+
+          <div className="lecturer-ai-hero-icon">
+
+            <Sparkles size={25} />
+
+          </div>
+
+
+          <div className="lecturer-ai-hero-text">
+
+
+            <div className="lecturer-ai-eyebrow">
+
+              <Sparkles size={12} />
+
+              CAMPUSLEARN AI · TEACHING STUDIO
+
+            </div>
+
+
+            <h1>
+
+              Create smarter.
+              <br />
+
+              <span>
+                Teach better.
+              </span>
+
+            </h1>
+
+
+            <p>
+
+              Your intelligent workspace for
+              building lessons, assessments,
+              quizzes, rubrics and clear academic
+              explanations.
+
+            </p>
+
+
+            <div className="lecturer-ai-capabilities">
+
+              <span>
+                <Lightbulb size={12} />
+                Lesson Planning
+              </span>
+
+              <span>
+                <ClipboardList size={12} />
+                Assessment Design
+              </span>
+
+              <span>
+                <BrainCircuit size={12} />
+                Quiz Generation
+              </span>
+
+            </div>
+
+
+          </div>
 
         </div>
 
 
-        <div className="tutor-status">
+        {/* HERO STATUS */}
 
-          <span className="tutor-status-dot" />
+        <div className="lecturer-ai-hero-status">
 
-          AI Assistant
+
+          <div className="lecturer-ai-status-top">
+
+            <div className="lecturer-ai-live-dot">
+
+              <span />
+
+            </div>
+
+
+            <div>
+
+              <small>
+                AI STATUS
+              </small>
+
+              <strong>
+                Ready to create
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div className="lecturer-ai-status-line" />
+
+
+          <div className="lecturer-ai-status-bottom">
+
+            <div>
+
+              <span>
+                WORKSPACE
+              </span>
+
+              <strong>
+                Teaching
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span>
+                MODE
+              </span>
+
+              <strong>
+                Academic
+              </strong>
+
+            </div>
+
+          </div>
+
 
         </div>
+
 
       </section>
 
 
       {/* ====================================
-          WORKSPACE
+          COURSE CONTEXT
       ==================================== */}
 
-      <section className="tutor-workspace">
+      {courseTitle && (
+
+        <section className="lecturer-ai-context">
 
 
-        {/* ==================================
-            LEFT PANEL
-        ================================== */}
+          <div className="lecturer-ai-context-icon">
 
-        <aside className="tutor-side-panel">
-
-          <div className="tutor-ai-brand">
-
-            <div className="tutor-ai-icon">
-
-              <Sparkles
-                size={23}
-              />
-
-            </div>
-
-
-            <h3>
-              CampusLearn AI
-            </h3>
-
-
-            <p>
-              Your AI teaching assistant
-              for lesson planning, assessment
-              creation and academic support.
-            </p>
+            <GraduationCap size={18} />
 
           </div>
 
 
-          <p className="tutor-suggestion-title">
+          <div className="lecturer-ai-context-content">
 
-            Try asking
+            <span>
+              ACTIVE COURSE CONTEXT
+            </span>
+
+            <strong>
+              {courseTitle}
+            </strong>
+
+          </div>
+
+
+          <div className="lecturer-ai-context-badge">
+
+            AI will use this course context
+
+          </div>
+
+        </section>
+
+      )}
+
+
+      {/* ====================================
+          AI WORKSPACE
+      ==================================== */}
+
+      <section className="lecturer-ai-workspace">
+
+
+        {/* ==================================
+            PROMPT TOOLKIT
+        ================================== */}
+
+        <aside className="lecturer-prompt-panel">
+
+
+          <div className="lecturer-prompt-heading">
+
+
+            <div className="lecturer-prompt-heading-icon">
+
+              <Sparkles size={19} />
+
+            </div>
+
+
+            <div>
+
+              <span>
+                PROMPT TOOLKIT
+              </span>
+
+              <h2>
+                Start creating
+              </h2>
+
+            </div>
+
+          </div>
+
+
+          <p className="lecturer-prompt-description">
+
+            Choose a teaching task below or
+            write your own instruction.
 
           </p>
 
 
-          <div className="tutor-suggestions">
+          <div className="lecturer-prompt-list">
+
 
             {suggestions.map(
               (
@@ -424,9 +587,9 @@ function LecturerTutor() {
                 return (
 
                   <button
-                    type="button"
-                    className="tutor-suggestion"
                     key={index}
+                    type="button"
+                    className="lecturer-prompt-card"
                     onClick={() =>
                       setQuestion(
                         suggestion.text
@@ -434,13 +597,31 @@ function LecturerTutor() {
                     }
                   >
 
-                    <Icon
-                      size={15}
-                    />
 
-                    <span>
-                      {suggestion.text}
+                    <div className="lecturer-prompt-card-icon">
+
+                      <Icon size={17} />
+
+                    </div>
+
+
+                    <div className="lecturer-prompt-card-content">
+
+                      <span>
+                        {suggestion.category}
+                      </span>
+
+                      <strong>
+                        {suggestion.title}
+                      </strong>
+
+                    </div>
+
+
+                    <span className="lecturer-prompt-arrow">
+                      +
                     </span>
+
 
                   </button>
 
@@ -449,57 +630,97 @@ function LecturerTutor() {
               }
             )}
 
-          </div>
-
-
-          <div className="tutor-side-note">
-
-            <strong>
-              Teaching tip:
-            </strong>
-
-            <br />
-
-            Give the AI details such as
-            subject, student level, duration
-            and marks for more useful results.
 
           </div>
+
+
+          {/* TIP */}
+
+          <div className="lecturer-teaching-tip">
+
+
+            <div>
+
+              <Lightbulb size={17} />
+
+            </div>
+
+
+            <div>
+
+              <span>
+                BETTER PROMPTS
+              </span>
+
+              <strong>
+                Add teaching context
+              </strong>
+
+              <p>
+
+                Include the subject, student
+                level, duration, learning
+                outcomes and marks for more
+                useful results.
+
+              </p>
+
+            </div>
+
+          </div>
+
 
         </aside>
 
 
         {/* ==================================
-            CHAT
+            CHAT STUDIO
         ================================== */}
 
-        <div className="tutor-chat">
+        <div className="lecturer-ai-chat">
 
 
           {/* CHAT HEADER */}
 
-          <div className="tutor-chat-header">
+          <div className="lecturer-ai-chat-header">
 
-            <div className="tutor-chat-profile">
 
-              <div className="tutor-chat-avatar">
+            <div className="lecturer-ai-chat-profile">
 
-                <Bot
-                  size={21}
-                />
+
+              <div className="lecturer-ai-chat-avatar">
+
+                <Bot size={21} />
 
               </div>
 
 
               <div>
 
-                <h3>
-                  Teaching Assistant
-                </h3>
+                <div className="lecturer-ai-chat-title">
 
-                <span>
-                  Ready to help with your teaching
-                </span>
+                  <h3>
+                    Teaching Assistant
+                  </h3>
+
+
+                  <span className="lecturer-ai-online">
+
+                    <i />
+
+                    Online
+
+                  </span>
+
+                </div>
+
+
+                <p>
+
+                  AI support for your
+                  teaching workflow
+
+                </p>
 
               </div>
 
@@ -510,82 +731,83 @@ function LecturerTutor() {
 
               <button
                 type="button"
-                className="tutor-clear-button"
-                title="Clear conversation"
+                className="lecturer-ai-clear"
                 onClick={clearChat}
+                title="Clear conversation"
               >
 
-                <RotateCcw
-                  size={16}
-                />
+                <RotateCcw size={15} />
+
+                <span>
+                  Clear chat
+                </span>
 
               </button>
 
             )}
 
+
           </div>
-
-
-          {/* COURSE CONTEXT */}
-
-          {courseTitle && (
-
-            <div className="tutor-context">
-
-              <GraduationCap
-                size={15}
-              />
-
-              <span>
-
-                Teaching:{" "}
-
-                <strong>
-                  {courseTitle}
-                </strong>
-
-              </span>
-
-            </div>
-
-          )}
 
 
           {/* =================================
               MESSAGES
           ================================= */}
 
-          <div className="tutor-messages">
+          <div className="lecturer-ai-messages">
+
 
             {messages.length === 0 ? (
 
-              <div className="tutor-empty">
+              <div className="lecturer-ai-empty">
 
-                <div className="tutor-empty-icon">
 
-                  <Sparkles
-                    size={31}
-                  />
+                <div className="lecturer-ai-empty-visual">
+
+
+                  <div className="lecturer-ai-orbit lecturer-ai-orbit-one" />
+
+                  <div className="lecturer-ai-orbit lecturer-ai-orbit-two" />
+
+
+                  <div className="lecturer-ai-empty-icon">
+
+                    <Sparkles size={30} />
+
+                  </div>
+
 
                 </div>
 
 
+                <span className="lecturer-ai-empty-eyebrow">
+
+                  YOUR AI TEACHING PARTNER
+
+                </span>
+
+
                 <h2>
-                  What can I help you create?
+
+                  What will we
+                  <span> create today?</span>
+
                 </h2>
 
 
                 <p>
 
-                  Ask me to create lesson plans,
-                  assignments, quiz questions,
-                  marking rubrics or teaching
-                  explanations.
+                  Turn an idea into structured
+                  teaching material. Ask for a
+                  lesson plan, assessment,
+                  marking rubric, quiz or
+                  explanation.
 
                   {courseTitle && (
                     <>
                       {" "}
-                      I already have context from{" "}
+                      I already have context
+                      from{" "}
                       <strong>
                         {courseTitle}
                       </strong>.
@@ -593,6 +815,37 @@ function LecturerTutor() {
                   )}
 
                 </p>
+
+
+                <div className="lecturer-ai-empty-tools">
+
+
+                  <div>
+                    <BookOpen size={14} />
+                    Lessons
+                  </div>
+
+
+                  <div>
+                    <ClipboardList size={14} />
+                    Assessments
+                  </div>
+
+
+                  <div>
+                    <BrainCircuit size={14} />
+                    Quizzes
+                  </div>
+
+
+                  <div>
+                    <FileText size={14} />
+                    Rubrics
+                  </div>
+
+
+                </div>
+
 
               </div>
 
@@ -614,47 +867,45 @@ function LecturerTutor() {
                   return (
 
                     <div
-                      key={
-                        message.id
-                      }
+                      key={message.id}
                       className={
-                        `tutor-message ${
+                        `lecturer-ai-message ${
                           isUser
-                            ? "tutor-message-user"
-                            : "tutor-message-ai"
+                            ? "lecturer-ai-message-user"
+                            : "lecturer-ai-message-bot"
                         } ${
                           isError
-                            ? "tutor-message-error"
+                            ? "lecturer-ai-message-error"
                             : ""
                         }`
                       }
                     >
 
-                      <div className="tutor-message-avatar">
+
+                      <div className="lecturer-ai-message-avatar">
 
                         {isUser ? (
 
-                          <User
-                            size={16}
-                          />
+                          <User size={16} />
 
                         ) : (
 
-                          <Bot
-                            size={16}
-                          />
+                          <Bot size={16} />
 
                         )}
 
                       </div>
 
 
-                      <div className="tutor-message-content">
+                      <div className="lecturer-ai-message-content">
+
 
                         {!isUser &&
                           !isError && (
 
-                          <div className="tutor-message-label">
+                          <div className="lecturer-ai-message-label">
+
+                            <span />
 
                             CampusLearn AI
 
@@ -665,7 +916,7 @@ function LecturerTutor() {
 
                         {isUser ? (
 
-                          <div className="tutor-message-body">
+                          <div className="lecturer-ai-message-body">
 
                             {message.content}
 
@@ -673,7 +924,7 @@ function LecturerTutor() {
 
                         ) : (
 
-                          <div className="tutor-message-body tutor-markdown">
+                          <div className="lecturer-ai-message-body lecturer-ai-markdown">
 
                             <ReactMarkdown
                               remarkPlugins={[
@@ -689,7 +940,9 @@ function LecturerTutor() {
 
                         )}
 
+
                       </div>
+
 
                     </div>
 
@@ -705,29 +958,32 @@ function LecturerTutor() {
 
             {loading && (
 
-              <div className="tutor-message tutor-message-ai">
+              <div className="lecturer-ai-message lecturer-ai-message-bot">
 
-                <div className="tutor-message-avatar">
 
-                  <Bot
-                    size={16}
-                  />
+                <div className="lecturer-ai-message-avatar">
+
+                  <Bot size={16} />
 
                 </div>
 
 
-                <div className="tutor-message-content">
+                <div className="lecturer-ai-message-content">
 
-                  <div className="tutor-message-label">
+
+                  <div className="lecturer-ai-message-label">
+
+                    <span />
 
                     CampusLearn AI
 
                   </div>
 
 
-                  <div className="tutor-message-body tutor-thinking-body">
+                  <div className="lecturer-ai-message-body lecturer-ai-thinking-body">
 
-                    <div className="tutor-thinking">
+
+                    <div className="lecturer-ai-thinking">
 
                       <span />
                       <span />
@@ -737,12 +993,18 @@ function LecturerTutor() {
 
 
                     <small>
-                      Preparing your teaching content...
+
+                      Building your teaching
+                      content...
+
                     </small>
+
 
                   </div>
 
+
                 </div>
+
 
               </div>
 
@@ -750,24 +1012,52 @@ function LecturerTutor() {
 
 
             <div
-              ref={
-                messagesEndRef
-              }
+              ref={messagesEndRef}
             />
+
 
           </div>
 
 
           {/* =================================
-              INPUT
+              COMPOSER
           ================================= */}
 
           <form
-            className="tutor-composer"
+            className="lecturer-ai-composer"
             onSubmit={handleAskAI}
           >
 
-            <div className="tutor-input-wrapper">
+
+            <div className="lecturer-ai-composer-heading">
+
+
+              <div>
+
+                <span>
+                  TEACHING PROMPT
+                </span>
+
+                <strong>
+
+                  Tell CampusLearn AI
+                  what you want to build
+
+                </strong>
+
+              </div>
+
+
+              <small>
+                Enter ↵ to send
+              </small>
+
+
+            </div>
+
+
+            <div className="lecturer-ai-input-wrapper">
+
 
               <textarea
                 rows="1"
@@ -784,13 +1074,13 @@ function LecturerTutor() {
                 placeholder={
                   courseTitle
                     ? `Ask something about teaching ${courseTitle}...`
-                    : "Ask your teaching question..."
+                    : "Describe the teaching material you want to create..."
                 }
               />
 
 
               <button
-                className="tutor-send-button"
+                className="lecturer-ai-send"
                 type="submit"
                 disabled={
                   loading ||
@@ -799,42 +1089,44 @@ function LecturerTutor() {
                 title="Send question"
               >
 
-                <Send
-                  size={17}
-                />
+                <Send size={18} />
 
               </button>
 
-            </div>
-
-
-            <div className="tutor-input-help">
-
-              <span>
-                Enter to send
-              </span>
-
-              <span>
-                Shift + Enter for new line
-              </span>
 
             </div>
 
 
-            <p className="tutor-composer-note">
+            <div className="lecturer-ai-composer-footer">
 
-              AI-generated teaching content
-              can contain mistakes. Review
-              important academic material
-              before sharing it with students.
 
-            </p>
+              <span>
+
+                Shift + Enter for a new line
+
+              </span>
+
+
+              <p>
+
+                AI-generated academic content
+                should be reviewed before
+                sharing with students.
+
+              </p>
+
+
+            </div>
+
 
           </form>
 
+
         </div>
 
+
       </section>
+
 
     </div>
 
