@@ -22,6 +22,13 @@ import {
   CalendarDays,
   ArrowRight,
   Clock3,
+  Sparkles,
+  Activity,
+  TrendingUp,
+  BarChart3,
+  Target,
+  Zap,
+  ChevronRight,
 } from "lucide-react";
 
 import "../styles/lecturerDashboard.css";
@@ -29,7 +36,8 @@ import "../styles/lecturerDashboard.css";
 
 function LecturerDashboard() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
 
   /* ========================================
@@ -50,6 +58,7 @@ function LecturerDashboard() {
 
   const [dashboard, setDashboard] =
     useState({
+
       stats: {
         active_courses: 0,
         total_students: 0,
@@ -65,6 +74,7 @@ function LecturerDashboard() {
       recent_submissions: [],
       activity: [],
       reminders: [],
+
     });
 
 
@@ -81,132 +91,139 @@ function LecturerDashboard() {
 
   useEffect(() => {
 
-    const fetchDashboard = async () => {
+    const fetchDashboard =
+      async () => {
 
-      try {
+        try {
 
-        setLoading(true);
-        setErrorMessage("");
+          setLoading(true);
+          setErrorMessage("");
 
 
-        const token =
-          localStorage.getItem(
-            "token"
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const config = {
+
+            headers: {
+
+              Authorization:
+                `Bearer ${token}`,
+
+            },
+
+          };
+
+
+          const [
+            lecturerResponse,
+            dashboardResponse,
+          ] =
+            await Promise.all([
+
+              axios.get(
+                "http://localhost:5000/me",
+                config
+              ),
+
+              axios.get(
+                "http://localhost:5000/lecturer/dashboard",
+                config
+              ),
+
+            ]);
+
+
+          setLecturer(
+            lecturerResponse.data
           );
 
 
-        if (!token) {
+          setDashboard({
 
-          navigate("/login");
+            stats:
+              dashboardResponse.data
+                ?.stats || {},
 
-          return;
+            courses:
+              dashboardResponse.data
+                ?.courses || [],
 
-        }
+            students:
+              dashboardResponse.data
+                ?.students || [],
 
+            recent_submissions:
+              dashboardResponse.data
+                ?.recent_submissions || [],
 
-        const config = {
-          headers: {
-            Authorization:
-              `Bearer ${token}`,
-          },
-        };
+            activity:
+              dashboardResponse.data
+                ?.activity || [],
 
+            reminders:
+              dashboardResponse.data
+                ?.reminders || [],
 
-        const [
-          lecturerResponse,
-          dashboardResponse,
-        ] =
-          await Promise.all([
-
-            axios.get(
-              "http://localhost:5000/me",
-              config
-            ),
-
-            axios.get(
-              "http://localhost:5000/lecturer/dashboard",
-              config
-            ),
-
-          ]);
+          });
 
 
-        setLecturer(
-          lecturerResponse.data
-        );
+        } catch (error) {
 
-
-        setDashboard({
-          stats:
-            dashboardResponse.data
-              ?.stats || {},
-
-          courses:
-            dashboardResponse.data
-              ?.courses || [],
-
-          students:
-            dashboardResponse.data
-              ?.students || [],
-
-          recent_submissions:
-            dashboardResponse.data
-              ?.recent_submissions || [],
-
-          activity:
-            dashboardResponse.data
-              ?.activity || [],
-
-          reminders:
-            dashboardResponse.data
-              ?.reminders || [],
-        });
-
-
-      } catch (error) {
-
-        console.error(
-          "Lecturer Dashboard Error:",
-          error
-        );
-
-
-        if (
-          error.response?.status ===
-            401 ||
-          error.response?.status ===
-            403
-        ) {
-
-          localStorage.removeItem(
-            "token"
+          console.error(
+            "Lecturer Dashboard Error:",
+            error
           );
 
-          localStorage.removeItem(
-            "role"
-          );
 
-          navigate("/login");
+          if (
+            error.response?.status ===
+              401 ||
+            error.response?.status ===
+              403
+          ) {
 
-          return;
+            localStorage.removeItem(
+              "token"
+            );
 
-        }
+            localStorage.removeItem(
+              "role"
+            );
+
+            navigate("/login");
+
+            return;
+
+          }
 
 
-        setErrorMessage(
-          error.response?.data
-            ?.error ||
+          setErrorMessage(
+            error.response?.data
+              ?.error ||
             "Failed to load lecturer dashboard."
-        );
+          );
 
 
-      } finally {
+        } finally {
 
-        setLoading(false);
+          setLoading(false);
 
-      }
+        }
 
-    };
+      };
 
 
     fetchDashboard();
@@ -246,6 +263,12 @@ function LecturerDashboard() {
     );
 
 
+  const totalAssignments =
+    Number(
+      statsData.total_assignments || 0
+    );
+
+
   const gradedSubmissions =
     Number(
       statsData.graded_submissions || 0
@@ -253,6 +276,7 @@ function LecturerDashboard() {
 
 
   const averageScore =
+
     statsData.average_score === null ||
     statsData.average_score ===
       undefined
@@ -264,6 +288,21 @@ function LecturerDashboard() {
         );
 
 
+  const gradingRate =
+
+    totalSubmissions > 0
+
+      ? Math.round(
+          (
+            gradedSubmissions /
+            totalSubmissions
+          ) *
+          100
+        )
+
+      : 0;
+
+
   /* ========================================
      SUMMARY CARDS
   ======================================== */
@@ -272,6 +311,8 @@ function LecturerDashboard() {
 
     {
       label: "Active Courses",
+      helper:
+        "Modules currently being taught",
       value: activeCourses,
       icon: BookOpen,
       className:
@@ -280,6 +321,8 @@ function LecturerDashboard() {
 
     {
       label: "Total Students",
+      helper:
+        "Students across your courses",
       value: totalStudents,
       icon: Users,
       className:
@@ -288,6 +331,8 @@ function LecturerDashboard() {
 
     {
       label: "Submissions",
+      helper:
+        "Student work received",
       value: totalSubmissions,
       icon: FileCheck2,
       className:
@@ -296,6 +341,10 @@ function LecturerDashboard() {
 
     {
       label: "To Grade",
+      helper:
+        waitingToGrade === 0
+          ? "You're all caught up"
+          : "Reviews still waiting",
       value: waitingToGrade,
       icon: ClipboardList,
       className:
@@ -313,34 +362,42 @@ function LecturerDashboard() {
     useMemo(() => {
 
       const days = [
+
         {
           day: "Mon",
           dayNumber: 1,
         },
+
         {
           day: "Tue",
           dayNumber: 2,
         },
+
         {
           day: "Wed",
           dayNumber: 3,
         },
+
         {
           day: "Thu",
           dayNumber: 4,
         },
+
         {
           day: "Fri",
           dayNumber: 5,
         },
+
         {
           day: "Sat",
           dayNumber: 6,
         },
+
         {
           day: "Sun",
           dayNumber: 7,
         },
+
       ];
 
 
@@ -358,13 +415,15 @@ function LecturerDashboard() {
 
 
           return {
+
             ...day,
 
             value:
               Number(
                 found?.submission_count ||
-                  0
+                0
               ),
+
           };
 
         });
@@ -372,11 +431,14 @@ function LecturerDashboard() {
 
       const maximum =
         Math.max(
+
           ...values.map(
             (item) =>
               item.value
           ),
+
           0
+
         );
 
 
@@ -386,6 +448,7 @@ function LecturerDashboard() {
           ...item,
 
           height:
+
             item.value === 0 ||
             maximum === 0
 
@@ -399,7 +462,7 @@ function LecturerDashboard() {
                       item.value /
                       maximum
                     ) *
-                      86
+                    86
                   )
                 ),
 
@@ -422,10 +485,13 @@ function LecturerDashboard() {
           (submission) => {
 
             const hasGrade =
+
               submission.grade !==
                 null &&
+
               submission.grade !==
                 undefined &&
+
               String(
                 submission.grade
               ).trim() !== "";
@@ -461,6 +527,7 @@ function LecturerDashboard() {
         (student) => {
 
           const initials =
+
             student.name
 
               ? student.name
@@ -490,12 +557,16 @@ function LecturerDashboard() {
 
             course:
               `${
+
                 student.degree ||
                 "Program not assigned"
+
               }${
+
                 student.batch
                   ? ` • Batch ${student.batch}`
                   : ""
+
               }`,
 
           };
@@ -506,91 +577,98 @@ function LecturerDashboard() {
     }, [dashboard.students]);
 
 
-    /* ========================================
-   ACADEMIC REMINDERS
-======================================== */
+  /* ========================================
+     ACADEMIC REMINDERS
+  ======================================== */
 
-const reminders =
-  useMemo(() => {
+  const reminders =
+    useMemo(() => {
 
-    return (
-      dashboard.reminders || []
-    ).map((reminder) => {
+      return (
+        dashboard.reminders || []
+      ).map((reminder) => {
 
-      const days =
-        Number(
-          reminder.days_until_due
-        );
-
-
-      let message =
-        "Academic task requires attention";
+        const days =
+          Number(
+            reminder.days_until_due
+          );
 
 
-      if (
-        reminder.reminder_type ===
-        "overdue"
-      ) {
-
-        message =
-          `Overdue by ${Math.abs(days)} day${
-            Math.abs(days) === 1
-              ? ""
-              : "s"
-          }`;
-
-      } else if (
-        reminder.reminder_type ===
-        "due_today"
-      ) {
-
-        message =
-          "Due today";
-
-      } else if (
-        reminder.reminder_type ===
-        "due_soon"
-      ) {
-
-        message =
-          `Due in ${days} day${
-            days === 1
-              ? ""
-              : "s"
-          }`;
-
-      } else if (
-        Number(
-          reminder.waiting_to_grade
-        ) > 0
-      ) {
-
-        message =
-          `${reminder.waiting_to_grade} submission${
-            Number(
-              reminder.waiting_to_grade
-            ) === 1
-              ? ""
-              : "s"
-          } waiting to grade`;
-
-      }
+        let message =
+          "Academic task requires attention";
 
 
-      return {
+        if (
+          reminder.reminder_type ===
+          "overdue"
+        ) {
 
-        ...reminder,
+          message =
+            `Overdue by ${Math.abs(days)} day${
 
-        message,
+              Math.abs(days) === 1
+                ? ""
+                : "s"
 
-      };
+            }`;
 
-    });
+        } else if (
+          reminder.reminder_type ===
+          "due_today"
+        ) {
 
-  }, [dashboard.reminders]);
+          message =
+            "Due today";
+
+        } else if (
+          reminder.reminder_type ===
+          "due_soon"
+        ) {
+
+          message =
+            `Due in ${days} day${
+
+              days === 1
+                ? ""
+                : "s"
+
+            }`;
+
+        } else if (
+          Number(
+            reminder.waiting_to_grade
+          ) > 0
+        ) {
+
+          message =
+            `${reminder.waiting_to_grade} submission${
+
+              Number(
+                reminder.waiting_to_grade
+              ) === 1
+                ? ""
+                : "s"
+
+            } waiting to grade`;
+
+        }
+
+
+        return {
+
+          ...reminder,
+
+          message,
+
+        };
+
+      });
+
+    }, [dashboard.reminders]);
+
 
   /* ========================================
-     DATE
+     DATE + GREETING
   ======================================== */
 
   const currentDate =
@@ -604,6 +682,23 @@ const reminders =
     );
 
 
+  const currentHour =
+    new Date().getHours();
+
+
+  const greeting =
+
+    currentHour < 12
+
+      ? "Good Morning"
+
+      : currentHour < 18
+
+      ? "Good Afternoon"
+
+      : "Good Evening";
+
+
   /* ========================================
      UI
   ======================================== */
@@ -613,60 +708,236 @@ const reminders =
     <div className="lecturer-dashboard-page">
 
 
-      {/* HEADER */}
+      {/* ====================================
+          HERO / TEACHING COMMAND CENTER
+      ==================================== */}
 
-      <section className="lecturer-dashboard-header">
+      <section className="lecturer-command-center">
 
-        <div>
+
+        <div className="lecturer-command-main">
+
+
+          <div className="lecturer-command-badge">
+
+            <Sparkles size={13} />
+
+            TEACHING COMMAND CENTER
+
+          </div>
+
 
           <h1>
-            Welcome back,{" "}
-            {lecturer.name} 👋
+
+            {greeting},{" "}
+
+            <span>
+              {lecturer.name}
+            </span>{" "}
+
+            👋
+
           </h1>
 
+
           <p>
-            Here's an overview of your
-            teaching activity and student
-            submissions.
+
+            Manage your courses, student
+            activity, submissions and grading
+            workload from one focused workspace.
+
           </p>
+
+
+          <div className="lecturer-command-chips">
+
+
+            <div>
+
+              <BookOpen size={14} />
+
+              <strong>
+                {activeCourses}
+              </strong>
+
+              Active courses
+
+            </div>
+
+
+            <div>
+
+              <Users size={14} />
+
+              <strong>
+                {totalStudents}
+              </strong>
+
+              Students
+
+            </div>
+
+
+            <div>
+
+              <ClipboardList size={14} />
+
+              <strong>
+                {totalAssignments}
+              </strong>
+
+              Assignments
+
+            </div>
+
+          </div>
+
+
+          <div className="lecturer-command-date">
+
+            <CalendarDays size={14} />
+
+            {currentDate}
+
+          </div>
 
         </div>
 
 
-        <div className="lecturer-dashboard-date">
+        {/* TEACHING SNAPSHOT */}
 
-          <CalendarDays
-            size={15}
-          />
+        <div className="lecturer-command-snapshot">
 
-          {currentDate}
+
+          <div className="snapshot-top">
+
+            <div>
+
+              <span>
+                GRADING WORKLOAD
+              </span>
+
+              <h2>
+
+                {waitingToGrade === 0
+                  ? "You're all caught up"
+                  : `${waitingToGrade} waiting to grade`}
+
+              </h2>
+
+            </div>
+
+
+            <div className="snapshot-zap">
+
+              <Zap size={18} />
+
+            </div>
+
+          </div>
+
+
+          <div className="snapshot-middle">
+
+
+            <div
+              className="lecturer-grading-ring"
+              style={{
+                "--grading-progress":
+                  `${gradingRate * 3.6}deg`,
+              }}
+            >
+
+              <div className="lecturer-grading-ring-inner">
+
+                <strong>
+                  {gradingRate}%
+                </strong>
+
+                <span>
+                  REVIEWED
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div className="snapshot-details">
+
+              <div>
+
+                <span>
+                  Graded
+                </span>
+
+                <strong>
+                  {gradedSubmissions}
+                </strong>
+
+              </div>
+
+
+              <div>
+
+                <span>
+                  Average Score
+                </span>
+
+                <strong>
+
+                  {averageScore !== null
+                    ? `${averageScore}%`
+                    : "—"}
+
+                </strong>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            className="snapshot-action"
+            onClick={() =>
+              navigate(
+                "/lecturer/grading"
+              )
+            }
+          >
+
+            Open Grading
+
+            <ArrowRight size={14} />
+
+          </button>
 
         </div>
 
       </section>
 
 
-      {/* ERROR */}
+      {/* ====================================
+          ERROR
+      ==================================== */}
 
       {errorMessage && (
 
-        <div
-          style={{
-            marginBottom: "20px",
-            padding: "14px 18px",
-            borderRadius: "12px",
-            background: "#fff1f2",
-            color: "#dc2626",
-            fontSize: "14px",
-          }}
-        >
+        <div className="lecturer-dashboard-error">
+
           {errorMessage}
+
         </div>
 
       )}
 
 
-      {/* STATS */}
+      {/* ====================================
+          STATS
+      ==================================== */}
 
       <section className="lecturer-stats">
 
@@ -678,19 +949,31 @@ const reminders =
 
           return (
 
-            <div
-              className={`lecturer-stat-card ${stat.className}`}
+            <article
+              className={
+                `lecturer-stat-card ${stat.className}`
+              }
               key={stat.label}
             >
 
+              <div className="lecturer-stat-accent" />
+
+
               <div className="lecturer-stat-icon">
 
-                <Icon size={22} />
+                <Icon size={21} />
 
               </div>
 
 
-              <div>
+              <div className="lecturer-stat-content">
+
+                <span className="lecturer-stat-eyebrow">
+
+                  {stat.label}
+
+                </span>
+
 
                 <strong>
 
@@ -700,13 +983,14 @@ const reminders =
 
                 </strong>
 
-                <span>
-                  {stat.label}
-                </span>
+
+                <p>
+                  {stat.helper}
+                </p>
 
               </div>
 
-            </div>
+            </article>
 
           );
 
@@ -714,109 +998,161 @@ const reminders =
 
       </section>
 
+
       {/* ====================================
-    ACADEMIC REMINDERS
-==================================== */}
+          ACADEMIC REMINDERS
+      ==================================== */}
 
-{!loading &&
-  reminders.length > 0 && (
+      {!loading &&
+        reminders.length > 0 && (
 
-  <section className="lecturer-dashboard-section">
-
-    <div className="lecturer-section-heading">
-
-      <div>
-
-        <h2>
-          Academic Reminders
-        </h2>
-
-        <p>
-          Upcoming deadlines and academic
-          tasks that need your attention.
-        </p>
-
-      </div>
-
-    </div>
+        <section className="lecturer-attention-section">
 
 
-    <div className="lecturer-panel">
+          <div className="lecturer-section-heading">
 
-      <div className="lecturer-course-list">
+            <div>
 
-        {reminders.map(
-          (reminder) => (
+              <span className="lecturer-section-kicker">
 
-            <div
-              className="lecturer-course-item"
-              key={reminder.id}
-            >
+                <Target size={13} />
 
-              <div className="lecturer-course-icon">
+                ATTENTION QUEUE
 
-                <Clock3 size={19} />
-
-              </div>
-
-
-              <div className="lecturer-course-info">
-
-                <h3>
-                  {reminder.title}
-                </h3>
-
-                <p>
-                  {reminder.course_title}
-                </p>
-
-              </div>
-
-
-              <span
-                className="lecturer-status-badge lecturer-status-pending"
-              >
-                {reminder.message}
               </span>
+
+
+              <h2>
+                Academic Reminders
+              </h2>
+
+
+              <p>
+
+                Deadlines and teaching tasks
+                that need your attention.
+
+              </p>
 
             </div>
 
-          )
-        )}
+          </div>
 
-      </div>
 
-    </div>
+          <div className="lecturer-reminder-grid">
 
-  </section>
+            {reminders
+              .slice(0, 4)
+              .map(
+                (reminder) => (
 
-)}
+                  <article
+                    className="lecturer-reminder-card"
+                    key={reminder.id}
+                  >
+
+                    <div className="lecturer-reminder-icon">
+
+                      <Clock3 size={18} />
+
+                    </div>
+
+
+                    <div className="lecturer-reminder-content">
+
+                      <span>
+                        ACADEMIC ALERT
+                      </span>
+
+
+                      <h3>
+                        {reminder.title}
+                      </h3>
+
+
+                      <p>
+                        {reminder.course_title}
+                      </p>
+
+                    </div>
+
+
+                    <div className="lecturer-reminder-status">
+
+                      {reminder.message}
+
+                    </div>
+
+                  </article>
+
+                )
+              )}
+
+          </div>
+
+        </section>
+
+      )}
 
 
       {/* ====================================
-          COURSES + ACTIVITY
+          COURSE PORTFOLIO + ACTIVITY
       ==================================== */}
 
       <section className="lecturer-overview-grid">
 
 
-        {/* COURSES */}
+        {/* COURSE PORTFOLIO */}
 
         <div
-          className="lecturer-panel"
+          className="lecturer-panel lecturer-course-portfolio"
           id="lecturer-courses"
         >
 
-          <div className="lecturer-panel-title">
+          <div className="lecturer-panel-header-row">
 
-            <h2>
-              My Courses
-            </h2>
 
-            <p>
-              Courses you're currently
-              teaching.
-            </p>
+            <div>
+
+              <span className="lecturer-section-kicker">
+
+                <BookOpen size={13} />
+
+                COURSE PORTFOLIO
+
+              </span>
+
+
+              <h2>
+                Your Teaching Space
+              </h2>
+
+
+              <p>
+
+                Courses currently assigned
+                to your lecturer account.
+
+              </p>
+
+            </div>
+
+
+            <button
+              type="button"
+              className="lecturer-text-button"
+              onClick={() =>
+                navigate(
+                  "/lecturer/courses"
+                )
+              }
+            >
+
+              View courses
+
+              <ChevronRight size={14} />
+
+            </button>
 
           </div>
 
@@ -827,87 +1163,136 @@ const reminders =
               dashboard.courses.length ===
                 0 && (
 
-                <p>
+                <div className="lecturer-empty-note">
+
                   No courses are currently
                   assigned to you.
-                </p>
+
+                </div>
 
               )}
 
 
-            {dashboard.courses.map(
-              (course) => (
+            {dashboard.courses
+              .slice(0, 5)
+              .map(
+                (course, index) => (
 
-                <div
-                  className="lecturer-course-item"
-                  key={course.id}
-                >
+                  <article
+                    className="lecturer-course-item"
+                    key={course.id}
+                  >
 
-                  <div className="lecturer-course-icon">
+                    <div className="lecturer-course-number">
 
-                    <BookOpen
-                      size={19}
-                    />
+                      {String(
+                        index + 1
+                      ).padStart(
+                        2,
+                        "0"
+                      )}
 
-                  </div>
-
-
-                  <div className="lecturer-course-info">
-
-                    <h3>
-                      {course.title}
-                    </h3>
-
-                    <p>
-
-                      {course.degree}
-
-                      {course.batch &&
-                        ` • Batch ${course.batch}`}
-
-                    </p>
-
-                  </div>
+                    </div>
 
 
-                  <div className="lecturer-course-students">
+                    <div className="lecturer-course-icon">
 
-                    <Users
-                      size={13}
-                    />
+                      <BookOpen
+                        size={18}
+                      />
 
-                    {Number(
-                      course.student_count ||
-                        0
-                    )}{" "}
-                    students
+                    </div>
 
-                  </div>
 
-                </div>
+                    <div className="lecturer-course-info">
 
-              )
-            )}
+                      <h3>
+                        {course.title}
+                      </h3>
+
+
+                      <p>
+
+                        {course.degree}
+
+                        {course.batch &&
+                          ` • Batch ${course.batch}`}
+
+                      </p>
+
+                    </div>
+
+
+                    <div className="lecturer-course-students">
+
+                      <Users size={13} />
+
+                      <strong>
+
+                        {Number(
+                          course.student_count ||
+                          0
+                        )}
+
+                      </strong>
+
+                      students
+
+                    </div>
+
+                  </article>
+
+                )
+              )}
 
           </div>
 
         </div>
 
 
-        {/* SUBMISSION ACTIVITY */}
+        {/* SUBMISSION PULSE */}
 
-        <div className="lecturer-panel">
+        <div className="lecturer-panel lecturer-activity-panel">
 
-          <div className="lecturer-panel-title">
 
-            <h2>
-              Submission Activity
-            </h2>
+          <div className="lecturer-panel-header-row">
 
-            <p>
-              Student submissions this
-              week.
-            </p>
+
+            <div>
+
+              <span className="lecturer-section-kicker">
+
+                <Activity size={13} />
+
+                WEEKLY PULSE
+
+              </span>
+
+
+              <h2>
+                Submission Activity
+              </h2>
+
+
+              <p>
+
+                Student submissions received
+                during this week.
+
+              </p>
+
+            </div>
+
+
+            <div className="activity-total-pill">
+
+              {totalSubmissions}
+
+              <span>
+                total
+              </span>
+
+            </div>
 
           </div>
 
@@ -933,7 +1318,9 @@ const reminders =
                       className="lecturer-chart-bar"
                       style={{
                         height:
-                          `${item.height}%`,
+                          item.value === 0
+                            ? "5px"
+                            : `${item.height}%`,
                       }}
                     />
 
@@ -948,6 +1335,19 @@ const reminders =
 
               )
             )}
+
+          </div>
+
+
+          <div className="lecturer-activity-footer">
+
+            <BarChart3 size={14} />
+
+            <span>
+
+              Weekly submission distribution
+
+            </span>
 
           </div>
 
@@ -967,14 +1367,28 @@ const reminders =
 
         <div className="lecturer-section-heading">
 
+
           <div>
+
+            <span className="lecturer-section-kicker">
+
+              <Zap size={13} />
+
+              TEACHING SHORTCUTS
+
+            </span>
+
 
             <h2>
               Quick Actions
             </h2>
 
+
             <p>
-              Common teaching tasks.
+
+              Jump directly into your most
+              common teaching tasks.
+
             </p>
 
           </div>
@@ -986,6 +1400,7 @@ const reminders =
 
 
           <button
+            type="button"
             className="lecturer-action-card action-blue"
             onClick={() =>
               navigate(
@@ -994,22 +1409,34 @@ const reminders =
             }
           >
 
-            <div className="lecturer-action-icon">
+            <div className="lecturer-action-top">
 
-              <Plus size={20} />
+              <div className="lecturer-action-icon">
+
+                <Plus size={20} />
+
+              </div>
+
+              <ArrowRight size={15} />
 
             </div>
 
 
             <div>
 
+              <span>
+                COURSE BUILDER
+              </span>
+
               <h3>
                 Create Course
               </h3>
 
               <p>
-                Add a new module for your
-                students.
+
+                Build and manage a module
+                for your students.
+
               </p>
 
             </div>
@@ -1018,6 +1445,7 @@ const reminders =
 
 
           <button
+            type="button"
             className="lecturer-action-card action-purple"
             onClick={() =>
               navigate(
@@ -1026,24 +1454,36 @@ const reminders =
             }
           >
 
-            <div className="lecturer-action-icon">
+            <div className="lecturer-action-top">
 
-              <ClipboardList
-                size={20}
-              />
+              <div className="lecturer-action-icon">
+
+                <ClipboardList
+                  size={20}
+                />
+
+              </div>
+
+              <ArrowRight size={15} />
 
             </div>
 
 
             <div>
 
+              <span>
+                COURSEWORK
+              </span>
+
               <h3>
                 Create Assignment
               </h3>
 
               <p>
-                Publish new coursework and
-                deadlines.
+
+                Publish coursework and
+                configure deadlines.
+
               </p>
 
             </div>
@@ -1052,6 +1492,7 @@ const reminders =
 
 
           <button
+            type="button"
             className="lecturer-action-card action-green"
             onClick={() =>
               navigate(
@@ -1060,24 +1501,36 @@ const reminders =
             }
           >
 
-            <div className="lecturer-action-icon">
+            <div className="lecturer-action-top">
 
-              <UploadCloud
-                size={20}
-              />
+              <div className="lecturer-action-icon">
+
+                <UploadCloud
+                  size={20}
+                />
+
+              </div>
+
+              <ArrowRight size={15} />
 
             </div>
 
 
             <div>
 
+              <span>
+                RESOURCES
+              </span>
+
               <h3>
                 Upload Material
               </h3>
 
               <p>
+
                 Share PDFs and learning
-                resources.
+                resources with students.
+
               </p>
 
             </div>
@@ -1086,6 +1539,7 @@ const reminders =
 
 
           <button
+            type="button"
             className="lecturer-action-card action-orange"
             onClick={() =>
               navigate(
@@ -1094,24 +1548,36 @@ const reminders =
             }
           >
 
-            <div className="lecturer-action-icon">
+            <div className="lecturer-action-top">
 
-              <GraduationCap
-                size={20}
-              />
+              <div className="lecturer-action-icon">
+
+                <GraduationCap
+                  size={20}
+                />
+
+              </div>
+
+              <ArrowRight size={15} />
 
             </div>
 
 
             <div>
 
+              <span>
+                ASSESSMENT
+              </span>
+
               <h3>
                 Grade Submissions
               </h3>
 
               <p>
-                Review student work and add
-                feedback.
+
+                Review student work,
+                scores and feedback.
+
               </p>
 
             </div>
@@ -1134,21 +1600,35 @@ const reminders =
 
         <div className="lecturer-section-heading">
 
+
           <div>
+
+            <span className="lecturer-section-kicker">
+
+              <FileCheck2 size={13} />
+
+              SUBMISSION STREAM
+
+            </span>
+
 
             <h2>
               Recent Submissions
             </h2>
 
+
             <p>
-              Latest coursework submitted
-              by your students.
+
+              Latest coursework received
+              from your students.
+
             </p>
 
           </div>
 
 
           <button
+            type="button"
             className="lecturer-section-button"
             onClick={() =>
               navigate(
@@ -1207,122 +1687,127 @@ const reminders =
                 0 &&
                 !loading && (
 
-                  <tr>
+                <tr>
 
-                    <td
-                      colSpan="5"
-                      style={{
-                        textAlign:
-                          "center",
-                        padding:
-                          "30px",
-                      }}
-                    >
-                      No student submissions
-                      yet.
-                    </td>
-
-                  </tr>
-
-                )}
-
-
-              {submissions.map(
-                (submission) => (
-
-                  <tr
-                    key={
-                      submission.submission_id
-                    }
+                  <td
+                    colSpan="5"
+                    className="lecturer-table-empty"
                   >
 
-                    <td className="lecturer-table-primary">
+                    No student submissions yet.
 
-                      {
-                        submission.student_name
-                      }
+                  </td>
 
-                    </td>
+                </tr>
 
-
-                    <td>
-
-                      {
-                        submission.assignment_title
-                      }
-
-                    </td>
-
-
-                    <td>
-
-                      {
-                        submission.degree
-                      }
-
-                      {submission.batch &&
-                        ` • ${submission.batch}`}
-
-                    </td>
-
-
-                    <td>
-
-                      <span
-                        className={`lecturer-status-badge lecturer-status-${submission.status}`}
-                      >
-
-                        {submission.status ===
-                          "pending" && (
-
-                          <Clock3
-                            size={11}
-                          />
-
-                        )}
-
-
-                        {submission.status ===
-                          "graded" && (
-
-                          <UserCheck
-                            size={11}
-                          />
-
-                        )}
-
-
-                        {submission.status ===
-                        "pending"
-                          ? "To Grade"
-                          : "Graded"}
-
-                      </span>
-
-                    </td>
-
-
-                    <td>
-
-                      <button
-                        className="lecturer-table-action"
-                        onClick={() =>
-                          navigate(
-                            "/lecturer/grading"
-                          )
-                        }
-                      >
-
-                        Review
-
-                      </button>
-
-                    </td>
-
-                  </tr>
-
-                )
               )}
+
+
+              {submissions
+                .slice(0, 6)
+                .map(
+                  (submission) => (
+
+                    <tr
+                      key={
+                        submission.submission_id
+                      }
+                    >
+
+                      <td className="lecturer-table-primary">
+
+                        {
+                          submission.student_name
+                        }
+
+                      </td>
+
+
+                      <td>
+
+                        {
+                          submission.assignment_title
+                        }
+
+                      </td>
+
+
+                      <td>
+
+                        {
+                          submission.degree
+                        }
+
+                        {submission.batch &&
+                          ` • ${submission.batch}`}
+
+                      </td>
+
+
+                      <td>
+
+                        <span
+                          className={
+                            `lecturer-status-badge lecturer-status-${submission.status}`
+                          }
+                        >
+
+                          {submission.status ===
+                            "pending" && (
+
+                            <Clock3
+                              size={11}
+                            />
+
+                          )}
+
+
+                          {submission.status ===
+                            "graded" && (
+
+                            <UserCheck
+                              size={11}
+                            />
+
+                          )}
+
+
+                          {submission.status ===
+                          "pending"
+                            ? "To Grade"
+                            : "Graded"}
+
+                        </span>
+
+                      </td>
+
+
+                      <td>
+
+                        <button
+                          type="button"
+                          className="lecturer-table-action"
+                          onClick={() =>
+                            navigate(
+                              "/lecturer/grading"
+                            )
+                          }
+                        >
+
+                          Review
+
+                          <ChevronRight
+                            size={12}
+                          />
+
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  )
+                )}
 
             </tbody>
 
@@ -1344,16 +1829,28 @@ const reminders =
 
         <div className="lecturer-section-heading">
 
+
           <div>
+
+            <span className="lecturer-section-kicker">
+
+              <TrendingUp size={13} />
+
+              ASSESSMENT HEALTH
+
+            </span>
+
 
             <h2>
               Grading Overview
             </h2>
 
+
             <p>
-              Monitor your real grading
-              workload and completed
-              reviews.
+
+              Monitor grading workload,
+              completion and performance.
+
             </p>
 
           </div>
@@ -1361,93 +1858,89 @@ const reminders =
         </div>
 
 
-        <div className="lecturer-stats">
+        <div className="lecturer-grading-grid">
 
 
-          <div className="lecturer-stat-card lecturer-stat-orange">
+          <article className="grading-overview-card grading-orange">
 
-            <div className="lecturer-stat-icon">
-
-              <ClipboardList
-                size={21}
-              />
-
-            </div>
+            <ClipboardList size={20} />
 
             <div>
+
+              <span>
+                WAITING
+              </span>
 
               <strong>
                 {waitingToGrade}
               </strong>
 
-              <span>
-                Waiting to Grade
-              </span>
+              <p>
+                Submissions to grade
+              </p>
 
             </div>
 
-          </div>
+          </article>
 
 
-          <div className="lecturer-stat-card lecturer-stat-green">
+          <article className="grading-overview-card grading-green">
 
-            <div className="lecturer-stat-icon">
-
-              <FileCheck2
-                size={21}
-              />
-
-            </div>
+            <FileCheck2 size={20} />
 
             <div>
+
+              <span>
+                COMPLETED
+              </span>
 
               <strong>
                 {gradedSubmissions}
               </strong>
 
-              <span>
-                Graded Submissions
-              </span>
+              <p>
+                Graded submissions
+              </p>
 
             </div>
 
-          </div>
+          </article>
 
 
-          <div className="lecturer-stat-card lecturer-stat-blue">
+          <article className="grading-overview-card grading-blue">
 
-            <div className="lecturer-stat-icon">
-
-              <Users size={21} />
-
-            </div>
+            <Users size={20} />
 
             <div>
+
+              <span>
+                STUDENTS
+              </span>
 
               <strong>
                 {totalStudents}
               </strong>
 
-              <span>
-                Student Records
-              </span>
+              <p>
+                Student records
+              </p>
 
             </div>
 
-          </div>
+          </article>
 
 
-          <div className="lecturer-stat-card lecturer-stat-purple">
+          <article className="grading-overview-card grading-purple">
 
-            <div className="lecturer-stat-icon">
-
-              <GraduationCap
-                size={21}
-              />
-
-            </div>
+            <GraduationCap
+              size={20}
+            />
 
             <div>
+
+              <span>
+                AVERAGE
+              </span>
 
               <strong>
 
@@ -1457,13 +1950,13 @@ const reminders =
 
               </strong>
 
-              <span>
-                Average Numeric Score
-              </span>
+              <p>
+                Numeric score
+              </p>
 
             </div>
 
-          </div>
+          </article>
 
         </div>
 
@@ -1481,18 +1974,50 @@ const reminders =
 
         <div className="lecturer-section-heading">
 
+
           <div>
+
+            <span className="lecturer-section-kicker">
+
+              <Users size={13} />
+
+              STUDENT SNAPSHOT
+
+            </span>
+
 
             <h2>
               Student Progress
             </h2>
 
+
             <p>
-              Real assignment completion
-              progress for your students.
+
+              Assignment completion progress
+              across your students.
+
             </p>
 
           </div>
+
+
+          <button
+            type="button"
+            className="lecturer-text-button"
+            onClick={() =>
+              navigate(
+                "/lecturer/students"
+              )
+            }
+          >
+
+            View students
+
+            <ChevronRight
+              size={14}
+            />
+
+          </button>
 
         </div>
 
@@ -1500,13 +2025,15 @@ const reminders =
         {!loading &&
           students.length === 0 && (
 
-            <p>
-              No students are currently
-              assigned to the programs and
-              batches you teach.
-            </p>
+          <div className="lecturer-empty-note">
 
-          )}
+            No students are currently
+            assigned to the programs and
+            batches you teach.
+
+          </div>
+
+        )}
 
 
         <div className="lecturer-student-grid">
@@ -1521,11 +2048,20 @@ const reminders =
                   key={student.id}
                 >
 
-                  <div className="lecturer-student-avatar">
+                  <div className="lecturer-student-card-top">
 
-                    {
-                      student.initials
-                    }
+                    <div className="lecturer-student-avatar">
+
+                      {student.initials}
+
+                    </div>
+
+
+                    <span className="lecturer-student-active">
+
+                      Active
+
+                    </span>
 
                   </div>
 
@@ -1545,13 +2081,15 @@ const reminders =
                     <div className="lecturer-student-progress-info">
 
                       <span>
-                        Progress
+                        Coursework Progress
                       </span>
 
                       <strong>
+
                         {
                           student.progress
                         }%
+
                       </strong>
 
                     </div>
