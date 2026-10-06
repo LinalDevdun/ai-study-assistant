@@ -3,7 +3,10 @@ import {
   useState,
 } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+} from "react-router-dom";
+
 import axios from "axios";
 
 import {
@@ -11,6 +14,7 @@ import {
   Mail,
   ShieldCheck,
   GraduationCap,
+  Sparkles,
 } from "lucide-react";
 
 import "../styles/lecturerProfile.css";
@@ -18,7 +22,9 @@ import "../styles/lecturerProfile.css";
 
 function LecturerProfile() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
+
 
   const [lecturer, setLecturer] =
     useState({
@@ -27,90 +33,108 @@ function LecturerProfile() {
       role: "LECTURER",
     });
 
+
   const [loading, setLoading] =
     useState(true);
+
 
   const [error, setError] =
     useState("");
 
 
+  /* ========================================
+     LOAD PROFILE
+  ======================================== */
+
   useEffect(() => {
 
-    const loadProfile = async () => {
+    const loadProfile =
+      async () => {
 
-      try {
+        try {
 
-        const token =
-          localStorage.getItem("token");
-
-
-        if (!token) {
-
-          navigate("/login");
-
-          return;
-
-        }
+          const token =
+            localStorage.getItem(
+              "token"
+            );
 
 
-        const response =
-          await axios.get(
-            "http://localhost:5000/me",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/me",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          setLecturer(
+            response.data
           );
 
 
-        setLecturer(
-          response.data
-        );
+        } catch (loadError) {
+
+          console.error(
+            "Failed to load lecturer profile:",
+            loadError
+          );
 
 
-      } catch (loadError) {
+          if (
+            loadError.response?.status === 401 ||
+            loadError.response?.status === 403
+          ) {
 
-        console.error(
-          "Failed to load lecturer profile:",
-          loadError
-        );
+            localStorage.removeItem(
+              "token"
+            );
+
+            localStorage.removeItem(
+              "role"
+            );
+
+            navigate("/login");
+
+            return;
+
+          }
 
 
-        if (
-          loadError.response?.status === 401 ||
-          loadError.response?.status === 403
-        ) {
+          setError(
+            "Failed to load lecturer profile."
+          );
 
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
 
-          navigate("/login");
+        } finally {
 
-          return;
+          setLoading(false);
 
         }
 
-
-        setError(
-          "Failed to load lecturer profile."
-        );
-
-
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
+      };
 
 
     loadProfile();
 
   }, [navigate]);
 
+
+  /* ========================================
+     INITIALS
+  ======================================== */
 
   const getInitials = (name) => {
 
@@ -133,31 +157,51 @@ function LecturerProfile() {
   };
 
 
+  /* ========================================
+     LOADING
+  ======================================== */
+
   if (loading) {
 
     return (
+
       <div className="lecturer-profile-page">
 
         <div className="lp-loading">
-          Loading profile...
+
+          <div className="lp-loading-spinner" />
+
+          <span>
+            Loading your profile...
+          </span>
+
         </div>
 
       </div>
+
     );
 
   }
 
 
+  /* ========================================
+     ERROR
+  ======================================== */
+
   if (error) {
 
     return (
+
       <div className="lecturer-profile-page">
 
-        <div className="lp-loading">
+        <div className="lp-loading lp-error">
+
           {error}
+
         </div>
 
       </div>
+
     );
 
   }
@@ -168,120 +212,121 @@ function LecturerProfile() {
     <div className="lecturer-profile-page">
 
 
+      {/* ====================================
+          PAGE INTRO
+      ==================================== */}
+
       <section className="lp-page-header">
 
+
         <div>
+
+          <div className="lp-eyebrow">
+
+            <Sparkles size={13} />
+
+            FACULTY PROFILE
+
+          </div>
+
 
           <h1>
             My Profile
           </h1>
 
+
           <p>
-            View your lecturer account
-            information.
+            Your CampusLearn lecturer identity
+            and account information.
           </p>
 
         </div>
 
+
+        <div className="lp-header-badge">
+
+          <ShieldCheck size={17} />
+
+          Lecturer Account
+
+        </div>
+
+
       </section>
 
 
-      <section className="lp-profile-card">
+      {/* ====================================
+          PROFILE WORKSPACE
+      ==================================== */}
+
+      <section className="lp-profile-shell">
 
 
-        <div className="lp-profile-banner">
+        {/* ==================================
+            LEFT IDENTITY PANEL
+        ================================== */}
+
+        <aside className="lp-identity-panel">
 
 
-          <div className="lp-avatar">
+          <div className="lp-identity-decoration lp-decoration-one" />
 
-            {getInitials(
-              lecturer.name
-            )}
-
-          </div>
+          <div className="lp-identity-decoration lp-decoration-two" />
 
 
-          <div>
+          <div className="lp-identity-top">
+
+
+            <div className="lp-identity-label">
+
+              <GraduationCap size={15} />
+
+              CAMPUSLEARN FACULTY
+
+            </div>
+
+
+            <div className="lp-avatar">
+
+              {getInitials(
+                lecturer.name
+              )}
+
+            </div>
+
 
             <h2>
-              {lecturer.name}
+
+              {lecturer.name ||
+                "Lecturer"}
+
             </h2>
+
 
             <p>
               Lecturer
             </p>
 
-          </div>
 
-        </div>
+            <div className="lp-role-chip">
 
+              <ShieldCheck size={13} />
 
-        <div className="lp-details">
-
-
-          <div className="lp-detail-card">
-
-            <div className="lp-detail-icon">
-
-              <User size={20} />
+              Academic Staff
 
             </div>
+
+
+          </div>
+
+
+          <div className="lp-identity-bottom">
 
 
             <div>
 
               <span>
-                Full Name
-              </span>
-
-              <strong>
-                {lecturer.name}
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          <div className="lp-detail-card">
-
-            <div className="lp-detail-icon">
-
-              <Mail size={20} />
-
-            </div>
-
-
-            <div>
-
-              <span>
-                Email Address
-              </span>
-
-              <strong>
-                {lecturer.email}
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          <div className="lp-detail-card">
-
-            <div className="lp-detail-icon">
-
-              <ShieldCheck
-                size={20}
-              />
-
-            </div>
-
-
-            <div>
-
-              <span>
-                Account Role
+                PORTAL
               </span>
 
               <strong>
@@ -290,37 +335,206 @@ function LecturerProfile() {
 
             </div>
 
+
+            <div className="lp-identity-divider" />
+
+
+            <div>
+
+              <span>
+                ACCESS
+              </span>
+
+              <strong>
+                Teaching Workspace
+              </strong>
+
+            </div>
+
+
           </div>
 
 
-          <div className="lp-detail-card">
+        </aside>
 
-            <div className="lp-detail-icon">
 
-              <GraduationCap
-                size={20}
-              />
+        {/* ==================================
+            ACCOUNT DETAILS
+        ================================== */}
+
+        <div className="lp-information-panel">
+
+
+          <div className="lp-information-header">
+
+
+            <div>
+
+              <span>
+                ACCOUNT OVERVIEW
+              </span>
+
+              <h3>
+                Lecturer Information
+              </h3>
+
+              <p>
+                Your account details used
+                across the CampusLearn
+                Lecturer Portal.
+              </p>
+
+            </div>
+
+
+            <div className="lp-information-icon">
+
+              <User size={20} />
+
+            </div>
+
+
+          </div>
+
+
+          <div className="lp-details">
+
+
+            <ProfileDetail
+              icon={
+                <User size={19} />
+              }
+              label="Full Name"
+              value={
+                lecturer.name || "—"
+              }
+              className="lp-detail-blue"
+            />
+
+
+            <ProfileDetail
+              icon={
+                <Mail size={19} />
+              }
+              label="Email Address"
+              value={
+                lecturer.email || "—"
+              }
+              className="lp-detail-purple"
+            />
+
+
+            <ProfileDetail
+              icon={
+                <ShieldCheck
+                  size={19}
+                />
+              }
+              label="Account Role"
+              value="Lecturer"
+              className="lp-detail-green"
+            />
+
+
+            <ProfileDetail
+              icon={
+                <GraduationCap
+                  size={19}
+                />
+              }
+              label="Workspace"
+              value="Lecturer Portal"
+              className="lp-detail-orange"
+            />
+
+
+          </div>
+
+
+          {/* ==================================
+              FOOTER NOTE
+          ================================== */}
+
+          <div className="lp-profile-note">
+
+
+            <div className="lp-profile-note-icon">
+
+              <ShieldCheck size={17} />
 
             </div>
 
 
             <div>
 
-              <span>
-                Portal
-              </span>
-
               <strong>
-                Lecturer Portal
+                Account information
               </strong>
+
+              <p>
+                Your profile information is
+                connected to your CampusLearn
+                lecturer account.
+              </p>
 
             </div>
 
+
           </div>
+
 
         </div>
 
+
       </section>
+
+
+    </div>
+
+  );
+
+}
+
+
+/* ========================================
+   DETAIL ITEM
+======================================== */
+
+function ProfileDetail({
+  icon,
+  label,
+  value,
+  className,
+}) {
+
+  return (
+
+    <div
+      className={
+        `lp-detail-card ${className}`
+      }
+    >
+
+
+      <div className="lp-detail-icon">
+
+        {icon}
+
+      </div>
+
+
+      <div className="lp-detail-content">
+
+        <span>
+          {label}
+        </span>
+
+        <strong>
+          {value}
+        </strong>
+
+      </div>
+
 
     </div>
 

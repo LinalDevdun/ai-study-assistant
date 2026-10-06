@@ -10,11 +10,14 @@ import {
 import axios from "axios";
 
 import {
-  Settings,
+  Settings2,
   Mail,
   BellRing,
   CalendarClock,
   Save,
+  Sparkles,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 
 import "../styles/lecturerSettings.css";
@@ -22,7 +25,8 @@ import "../styles/lecturerSettings.css";
 
 function LecturerSettings() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
 
   const [settings, setSettings] =
@@ -46,12 +50,141 @@ function LecturerSettings() {
 
   useEffect(() => {
 
-    const loadSettings = async () => {
+    const loadSettings =
+      async () => {
+
+        try {
+
+          const token =
+            localStorage.getItem(
+              "token"
+            );
+
+
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/user/settings",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          setSettings({
+
+            email_notifications:
+              response.data
+                ?.email_notifications ??
+              true,
+
+            submission_alerts:
+              response.data
+                ?.submission_alerts ??
+              true,
+
+            academic_reminders:
+              response.data
+                ?.academic_reminders ??
+              true,
+
+          });
+
+
+        } catch (error) {
+
+          console.error(
+            "Failed to load settings:",
+            error
+          );
+
+
+          if (
+            error.response?.status === 401 ||
+            error.response?.status === 403
+          ) {
+
+            localStorage.removeItem(
+              "token"
+            );
+
+            localStorage.removeItem(
+              "role"
+            );
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          alert(
+            error.response?.data?.error ||
+            "Failed to load settings."
+          );
+
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      };
+
+
+    loadSettings();
+
+  }, [navigate]);
+
+
+  /* ========================================
+     TOGGLE SETTING
+  ======================================== */
+
+  const toggleSetting =
+    (settingName) => {
+
+      setSettings(
+        (previous) => ({
+          ...previous,
+
+          [settingName]:
+            !previous[settingName],
+        })
+      );
+
+    };
+
+
+  /* ========================================
+     SAVE SETTINGS
+  ======================================== */
+
+  const saveSettings =
+    async () => {
 
       try {
 
+        setSaving(true);
+
+
         const token =
-          localStorage.getItem("token");
+          localStorage.getItem(
+            "token"
+          );
 
 
         if (!token) {
@@ -64,8 +197,11 @@ function LecturerSettings() {
 
 
         const response =
-          await axios.get(
+          await axios.put(
             "http://localhost:5000/user/settings",
+
+            settings,
+
             {
               headers: {
                 Authorization:
@@ -75,25 +211,16 @@ function LecturerSettings() {
           );
 
 
-        setSettings({
-          email_notifications:
-            response.data
-              ?.email_notifications ?? true,
-
-          submission_alerts:
-            response.data
-              ?.submission_alerts ?? true,
-
-          academic_reminders:
-            response.data
-              ?.academic_reminders ?? true,
-        });
+        alert(
+          response.data?.message ||
+          "Settings saved successfully!"
+        );
 
 
       } catch (error) {
 
         console.error(
-          "Failed to load settings:",
+          "Failed to save settings:",
           error
         );
 
@@ -103,8 +230,13 @@ function LecturerSettings() {
           error.response?.status === 403
         ) {
 
-          localStorage.removeItem("token");
-          localStorage.removeItem("role");
+          localStorage.removeItem(
+            "token"
+          );
+
+          localStorage.removeItem(
+            "role"
+          );
 
           navigate("/login");
 
@@ -115,125 +247,27 @@ function LecturerSettings() {
 
         alert(
           error.response?.data?.error ||
-          "Failed to load settings."
+          "Failed to save settings."
         );
 
 
       } finally {
 
-        setLoading(false);
+        setSaving(false);
 
       }
 
     };
 
 
-    loadSettings();
-
-  }, [navigate]);
-
-
   /* ========================================
-     TOGGLE
+     ENABLED COUNT
   ======================================== */
 
-  const toggleSetting = (
-    settingName
-  ) => {
-
-    setSettings(
-      (previous) => ({
-        ...previous,
-
-        [settingName]:
-          !previous[settingName],
-      })
-    );
-
-  };
-
-
-  /* ========================================
-     SAVE
-  ======================================== */
-
-  const saveSettings = async () => {
-
-    try {
-
-      setSaving(true);
-
-
-      const token =
-        localStorage.getItem("token");
-
-
-      if (!token) {
-
-        navigate("/login");
-
-        return;
-
-      }
-
-
-      const response =
-        await axios.put(
-          "http://localhost:5000/user/settings",
-
-          settings,
-
-          {
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
-
-
-      alert(
-        response.data?.message ||
-        "Settings saved successfully!"
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "Failed to save settings:",
-        error
-      );
-
-
-      if (
-        error.response?.status === 401 ||
-        error.response?.status === 403
-      ) {
-
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-
-        navigate("/login");
-
-        return;
-
-      }
-
-
-      alert(
-        error.response?.data?.error ||
-        "Failed to save settings."
-      );
-
-
-    } finally {
-
-      setSaving(false);
-
-    }
-
-  };
+  const enabledCount =
+    Object.values(
+      settings
+    ).filter(Boolean).length;
 
 
   return (
@@ -241,257 +275,443 @@ function LecturerSettings() {
     <div className="lecturer-settings-page">
 
 
-      {/* HEADER */}
+      {/* ====================================
+          HERO
+      ==================================== */}
 
-      <section className="lset-header">
-
-        <h1>
-          Settings
-        </h1>
-
-        <p>
-          Manage your lecturer account
-          preferences and notifications.
-        </p>
-
-      </section>
+      <section className="lset-hero">
 
 
-
-      {/* CARD */}
-
-      <section className="lset-card">
+        <div className="lset-hero-content">
 
 
-        <div className="lset-card-heading">
+          <div className="lset-hero-icon">
 
-          <div className="lset-heading-icon">
-
-            <Settings size={24} />
+            <Settings2 size={24} />
 
           </div>
 
 
           <div>
 
-            <h2>
-              Notification Preferences
-            </h2>
+            <div className="lset-eyebrow">
+
+              <Sparkles size={12} />
+
+              LECTURER PREFERENCES
+
+            </div>
+
+
+            <h1>
+              Settings
+            </h1>
+
 
             <p>
-              Choose which academic updates
-              you would like to receive.
+              Control how CampusLearn keeps
+              you informed about teaching,
+              submissions and academic tasks.
             </p>
 
           </div>
 
+
         </div>
 
 
+        {/* STATUS CARD */}
+
+        <div className="lset-status-card">
+
+
+          <div className="lset-status-top">
+
+            <div className="lset-status-icon">
+
+              <ShieldCheck size={19} />
+
+            </div>
+
+
+            <div>
+
+              <span>
+                NOTIFICATION STATUS
+              </span>
+
+              <strong>
+                Preferences Active
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div className="lset-status-count">
+
+            <strong>
+              {enabledCount}
+            </strong>
+
+            <span>
+              / 3 enabled
+            </span>
+
+          </div>
+
+
+          <div className="lset-status-track">
+
+            <div
+              className="lset-status-fill"
+              style={{
+                width:
+                  `${(enabledCount / 3) * 100}%`,
+              }}
+            />
+
+          </div>
+
+
+        </div>
+
+
+      </section>
+
+
+      {/* ====================================
+          SETTINGS WORKSPACE
+      ==================================== */}
+
+      <section className="lset-workspace">
+
+
+        {/* WORKSPACE HEADER */}
+
+        <div className="lset-workspace-header">
+
+
+          <div>
+
+
+            <span>
+              COMMUNICATION CENTER
+            </span>
+
+
+            <h2>
+              Notification Preferences
+            </h2>
+
+
+            <p>
+              Choose which updates you want
+              CampusLearn to send you.
+            </p>
+
+
+          </div>
+
+
+          <div className="lset-live-badge">
+
+            <CheckCircle2 size={15} />
+
+            Saved to your account
+
+          </div>
+
+
+        </div>
+
+
+        {/* ==================================
+            CONTENT
+        ================================== */}
 
         {loading ? (
 
           <div className="lset-loading">
 
-            Loading settings...
+
+            <div className="lset-spinner" />
+
+
+            <span>
+              Loading your preferences...
+            </span>
+
 
           </div>
 
         ) : (
 
-          <div className="lset-options">
+          <div className="lset-preference-grid">
 
 
             {/* EMAIL */}
 
-            <div className="lset-option">
-
-              <div className="lset-option-left">
-
-                <div className="lset-option-icon">
-
-                  <Mail size={20} />
-
-                </div>
-
-
-                <div>
-
-                  <strong>
-                    Email Notifications
-                  </strong>
-
-                  <span>
-                    Receive important
-                    CampusLearn updates by email.
-                  </span>
-
-                </div>
-
-              </div>
+            <PreferenceCard
+              icon={
+                <Mail size={21} />
+              }
+              category="ACCOUNT"
+              title="Email Notifications"
+              description="Receive important CampusLearn account and teaching updates by email."
+              enabled={
+                settings.email_notifications
+              }
+              onToggle={() =>
+                toggleSetting(
+                  "email_notifications"
+                )
+              }
+              className="lset-email-card"
+            />
 
 
-              <button
-                type="button"
-                className={
-                  settings.email_notifications
-                    ? "lset-toggle lset-toggle-active"
-                    : "lset-toggle"
-                }
-                onClick={() =>
-                  toggleSetting(
-                    "email_notifications"
-                  )
-                }
-                aria-label="Toggle email notifications"
-              >
+            {/* SUBMISSIONS */}
 
-                <span />
-
-              </button>
-
-            </div>
-
+            <PreferenceCard
+              icon={
+                <BellRing size={21} />
+              }
+              category="COURSEWORK"
+              title="Submission Alerts"
+              description="Get notified when students submit coursework for your modules."
+              enabled={
+                settings.submission_alerts
+              }
+              onToggle={() =>
+                toggleSetting(
+                  "submission_alerts"
+                )
+              }
+              className="lset-submission-card"
+            />
 
 
-            {/* SUBMISSION ALERTS */}
+            {/* REMINDERS */}
 
-            <div className="lset-option">
+            <PreferenceCard
+              icon={
+                <CalendarClock
+                  size={21}
+                />
+              }
+              category="ACADEMIC"
+              title="Academic Reminders"
+              description="Receive reminders about grading, deadlines and important academic tasks."
+              enabled={
+                settings.academic_reminders
+              }
+              onToggle={() =>
+                toggleSetting(
+                  "academic_reminders"
+                )
+              }
+              className="lset-reminder-card"
+            />
 
-              <div className="lset-option-left">
-
-                <div className="lset-option-icon">
-
-                  <BellRing size={20} />
-
-                </div>
-
-
-                <div>
-
-                  <strong>
-                    Submission Alerts
-                  </strong>
-
-                  <span>
-                    Receive alerts when
-                    students submit coursework.
-                  </span>
-
-                </div>
-
-              </div>
-
-
-              <button
-                type="button"
-                className={
-                  settings.submission_alerts
-                    ? "lset-toggle lset-toggle-active"
-                    : "lset-toggle"
-                }
-                onClick={() =>
-                  toggleSetting(
-                    "submission_alerts"
-                  )
-                }
-                aria-label="Toggle submission alerts"
-              >
-
-                <span />
-
-              </button>
-
-            </div>
-
-
-
-            {/* ACADEMIC REMINDERS */}
-
-            <div className="lset-option">
-
-              <div className="lset-option-left">
-
-                <div className="lset-option-icon">
-
-                  <CalendarClock
-                    size={20}
-                  />
-
-                </div>
-
-
-                <div>
-
-                  <strong>
-                    Academic Reminders
-                  </strong>
-
-                  <span>
-                    Receive reminders about
-                    grading and academic tasks.
-                  </span>
-
-                </div>
-
-              </div>
-
-
-              <button
-                type="button"
-                className={
-                  settings.academic_reminders
-                    ? "lset-toggle lset-toggle-active"
-                    : "lset-toggle"
-                }
-                onClick={() =>
-                  toggleSetting(
-                    "academic_reminders"
-                  )
-                }
-                aria-label="Toggle academic reminders"
-              >
-
-                <span />
-
-              </button>
-
-            </div>
 
           </div>
 
         )}
 
 
-
-        {/* SAVE */}
+        {/* ==================================
+            SAVE AREA
+        ================================== */}
 
         {!loading && (
 
-          <div className="lset-actions">
+          <div className="lset-save-area">
+
+
+            <div className="lset-save-info">
+
+
+              <div className="lset-save-info-icon">
+
+                <ShieldCheck
+                  size={17}
+                />
+
+              </div>
+
+
+              <div>
+
+                <strong>
+                  Your preferences
+                </strong>
+
+                <span>
+                  Changes will apply to your
+                  Lecturer Portal account.
+                </span>
+
+              </div>
+
+
+            </div>
+
 
             <button
               type="button"
               className="lset-save"
-              onClick={saveSettings}
+              onClick={
+                saveSettings
+              }
               disabled={saving}
             >
 
               <Save size={17} />
 
+
               {saving
                 ? "Saving..."
-                : "Save Settings"}
+                : "Save Changes"}
 
             </button>
+
 
           </div>
 
         )}
 
+
       </section>
 
+
     </div>
+
+  );
+
+}
+
+
+/* ========================================
+   PREFERENCE CARD
+======================================== */
+
+function PreferenceCard({
+  icon,
+  category,
+  title,
+  description,
+  enabled,
+  onToggle,
+  className,
+}) {
+
+  return (
+
+    <article
+      className={
+        `lset-preference-card ${className} ${
+          enabled
+            ? "lset-preference-enabled"
+            : ""
+        }`
+      }
+    >
+
+
+      {/* TOP */}
+
+      <div className="lset-preference-top">
+
+
+        <div className="lset-preference-icon">
+
+          {icon}
+
+        </div>
+
+
+        <div
+          className={
+            enabled
+              ? "lset-state-badge lset-state-on"
+              : "lset-state-badge"
+          }
+        >
+
+          <span />
+
+          {enabled
+            ? "Enabled"
+            : "Disabled"}
+
+        </div>
+
+
+      </div>
+
+
+      {/* TEXT */}
+
+      <div className="lset-preference-content">
+
+
+        <span className="lset-preference-category">
+
+          {category}
+
+        </span>
+
+
+        <h3>
+          {title}
+        </h3>
+
+
+        <p>
+          {description}
+        </p>
+
+
+      </div>
+
+
+      {/* FOOTER */}
+
+      <div className="lset-preference-footer">
+
+
+        <span>
+          {enabled
+            ? "Notifications are on"
+            : "Notifications are off"}
+        </span>
+
+
+        <button
+          type="button"
+          className={
+            enabled
+              ? "lset-toggle lset-toggle-active"
+              : "lset-toggle"
+          }
+          onClick={onToggle}
+          aria-pressed={enabled}
+          aria-label={
+            `Toggle ${title}`
+          }
+        >
+
+          <span />
+
+        </button>
+
+
+      </div>
+
+
+    </article>
 
   );
 

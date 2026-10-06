@@ -1,134 +1,515 @@
+/* =========================================
+   CAMPUSLEARN
+   LECTURER PROFILE
+========================================= */
+
 .lecturer-profile-page {
-  padding: 42px;
+  width: 100%;
+  max-width: 1440px;
+
+  margin: 0 auto;
+
+  padding: 36px 42px 52px;
 }
 
 
-/* HEADER */
+/* =========================================
+   PAGE HEADER
+========================================= */
 
 .lp-page-header {
-  margin-bottom: 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  margin-bottom: 25px;
 }
+
+
+.lp-eyebrow {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 7px;
+
+  color: #5368df;
+
+  font-size: 7px;
+  font-weight: 850;
+
+  letter-spacing: 0.11em;
+}
+
 
 .lp-page-header h1 {
   margin: 0;
 
-  color: var(--text-primary);
+  color: #101828;
 
-  font-size: 30px;
-  font-weight: 800;
+  font-size: 31px;
+  line-height: 1.15;
 
-  letter-spacing: -0.8px;
+  font-weight: 850;
+
+  letter-spacing: -0.9px;
 }
+
 
 .lp-page-header p {
-  margin-top: 7px;
+  margin: 8px 0 0;
 
-  color: var(--text-secondary);
+  color: #778195;
 
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
 
-/* PROFILE CARD */
+/* HEADER BADGE */
 
-.lp-profile-card {
-  max-width: 900px;
+.lp-header-badge {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 10px 14px;
+
+  color: #3556cc;
+
+  background: #edf2ff;
+
+  border: 1px solid #dbe3ff;
+
+  border-radius: 11px;
+
+  font-size: 9px;
+  font-weight: 750;
+}
+
+
+/* =========================================
+   MAIN PROFILE SHELL
+========================================= */
+
+.lp-profile-shell {
+  max-width: 1120px;
+
+  display: grid;
+
+  grid-template-columns:
+    335px
+    minmax(0, 1fr);
 
   overflow: hidden;
 
   background: white;
 
   border:
-    1px solid
-    var(--border-light);
+    1px solid #e4e7ef;
 
-  border-radius: 20px;
+  border-radius: 24px;
 
   box-shadow:
-    0 10px 35px
-    rgba(15, 23, 42, 0.05);
+    0 16px 42px
+    rgba(31, 42, 89, 0.07);
 }
 
 
-/* BANNER */
+/* =========================================
+   IDENTITY PANEL
+========================================= */
 
-.lp-profile-banner {
+.lp-identity-panel {
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 520px;
+
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
 
-  gap: 18px;
-
-  padding: 34px;
+  padding: 30px;
 
   color: white;
 
   background:
+    radial-gradient(
+      circle at 15% 10%,
+      rgba(138, 162, 255, 0.32),
+      transparent 28%
+    ),
     linear-gradient(
-      135deg,
-      #4f46e5,
-      #667eea
+      155deg,
+      #2849c9 0%,
+      #3f5ee2 48%,
+      #6457e8 100%
     );
 }
 
 
+/* SUBTLE GRID */
+
+.lp-identity-panel::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  opacity: 0.13;
+
+  background-image:
+    linear-gradient(
+      rgba(255,255,255,0.16) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.16) 1px,
+      transparent 1px
+    );
+
+  background-size:
+    48px 48px;
+}
+
+
+/* DECORATIONS */
+
+.lp-identity-decoration {
+  position: absolute;
+
+  border:
+    1px solid
+    rgba(255,255,255,0.13);
+
+  border-radius: 50%;
+}
+
+
+.lp-decoration-one {
+  width: 210px;
+  height: 210px;
+
+  top: -115px;
+  right: -70px;
+}
+
+
+.lp-decoration-two {
+  width: 150px;
+  height: 150px;
+
+  bottom: -90px;
+  left: -55px;
+}
+
+
+/* =========================================
+   IDENTITY TOP
+========================================= */
+
+.lp-identity-top {
+  position: relative;
+  z-index: 2;
+}
+
+
+.lp-identity-label {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 35px;
+
+  color:
+    rgba(255,255,255,0.72);
+
+  font-size: 7px;
+  font-weight: 850;
+
+  letter-spacing: 0.1em;
+}
+
+
+/* AVATAR */
+
 .lp-avatar {
-  width: 72px;
-  height: 72px;
+  width: 90px;
+  height: 90px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  flex-shrink: 0;
+  margin-bottom: 20px;
+
+  color: white;
 
   background:
-    rgba(255, 255, 255, 0.18);
+    rgba(255,255,255,0.14);
 
   border:
     1px solid
-    rgba(255, 255, 255, 0.25);
+    rgba(255,255,255,0.25);
 
-  border-radius: 18px;
+  border-radius: 24px;
 
-  font-size: 20px;
-  font-weight: 800;
+  backdrop-filter:
+    blur(12px);
+
+  box-shadow:
+    0 15px 30px
+    rgba(27, 39, 119, 0.17);
+
+  font-size: 27px;
+  font-weight: 850;
 }
 
 
-.lp-profile-banner h2 {
+.lp-identity-panel h2 {
   margin: 0;
 
+  color: white;
+
   font-size: 25px;
-  font-weight: 800;
+  line-height: 1.25;
+
+  font-weight: 850;
+
+  letter-spacing: -0.5px;
 }
 
 
-.lp-profile-banner p {
-  margin: 5px 0 0;
+.lp-identity-panel
+.lp-identity-top > p {
+  margin: 6px 0 0;
 
   color:
-    rgba(255, 255, 255, 0.82);
+    rgba(255,255,255,0.7);
 
-  font-size: 13px;
+  font-size: 10px;
 }
 
 
-/* DETAILS */
+/* ROLE CHIP */
+
+.lp-role-chip {
+  width: fit-content;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 6px;
+
+  margin-top: 17px;
+
+  padding: 7px 10px;
+
+  color:
+    rgba(255,255,255,0.9);
+
+  background:
+    rgba(255,255,255,0.11);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.16);
+
+  border-radius: 9px;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  backdrop-filter:
+    blur(8px);
+}
+
+
+/* =========================================
+   IDENTITY BOTTOM
+========================================= */
+
+.lp-identity-bottom {
+  position: relative;
+  z-index: 2;
+
+  display: grid;
+
+  grid-template-columns:
+    auto 1px 1fr;
+
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 15px;
+
+  background:
+    rgba(255,255,255,0.09);
+
+  border:
+    1px solid
+    rgba(255,255,255,0.13);
+
+  border-radius: 13px;
+
+  backdrop-filter:
+    blur(10px);
+}
+
+
+.lp-identity-bottom span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color:
+    rgba(255,255,255,0.48);
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.lp-identity-bottom strong {
+  color:
+    rgba(255,255,255,0.91);
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+
+.lp-identity-divider {
+  width: 1px;
+  height: 30px;
+
+  background:
+    rgba(255,255,255,0.15);
+}
+
+
+/* =========================================
+   INFORMATION PANEL
+========================================= */
+
+.lp-information-panel {
+  min-width: 0;
+
+  padding: 31px;
+}
+
+
+/* =========================================
+   INFORMATION HEADER
+========================================= */
+
+.lp-information-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 20px;
+
+  padding-bottom: 22px;
+
+  margin-bottom: 22px;
+
+  border-bottom:
+    1px solid #eceff4;
+}
+
+
+.lp-information-header span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #8794bd;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.1em;
+}
+
+
+.lp-information-header h3 {
+  margin: 0;
+
+  color: #172033;
+
+  font-size: 19px;
+  font-weight: 850;
+
+  letter-spacing: -0.3px;
+}
+
+
+.lp-information-header p {
+  max-width: 480px;
+
+  margin: 6px 0 0;
+
+  color: #8a94a6;
+
+  font-size: 8px;
+  line-height: 1.65;
+}
+
+
+.lp-information-icon {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4961df;
+
+  background: #edf1ff;
+
+  border-radius: 12px;
+}
+
+
+/* =========================================
+   DETAIL GRID
+========================================= */
 
 .lp-details {
   display: grid;
 
   grid-template-columns:
-    repeat(2, 1fr);
+    repeat(2, minmax(0, 1fr));
 
-  gap: 16px;
-
-  padding: 28px;
+  gap: 14px;
 }
 
 
+/* =========================================
+   DETAIL CARD
+========================================= */
+
 .lp-detail-card {
-  min-height: 92px;
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 105px;
 
   display: flex;
   align-items: center;
@@ -137,76 +518,332 @@
 
   padding: 18px;
 
-  background: #fafbff;
+  background: #fafbfe;
 
   border:
-    1px solid
-    var(--border-light);
+    1px solid #eceef4;
 
-  border-radius: 14px;
+  border-radius: 15px;
+
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 
+.lp-detail-card:hover {
+  transform:
+    translateY(-2px);
+
+  background: white;
+
+  box-shadow:
+    0 9px 22px
+    rgba(31, 42, 89, 0.055);
+}
+
+
+/* SMALL ACCENT */
+
+.lp-detail-card::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+
+  width: 3px;
+
+  border-radius:
+    0 5px 5px 0;
+}
+
+
+/* =========================================
+   CARD ICON
+========================================= */
+
 .lp-detail-icon {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  flex-shrink: 0;
-
-  color: #4f63e7;
-
-  background: #eef2ff;
-
-  border-radius: 11px;
+  border-radius: 12px;
 }
 
 
-.lp-detail-card span {
+.lp-detail-content {
+  min-width: 0;
+}
+
+
+.lp-detail-content span {
   display: block;
 
   margin-bottom: 5px;
 
-  color: var(--text-muted);
+  color: #98a2b3;
+
+  font-size: 7px;
+  font-weight: 650;
+}
+
+
+.lp-detail-content strong {
+  display: block;
+
+  overflow-wrap: anywhere;
+
+  color: #172033;
+
+  font-size: 11px;
+  line-height: 1.45;
+
+  font-weight: 780;
+}
+
+
+/* =========================================
+   DETAIL COLORS
+========================================= */
+
+.lp-detail-blue::before {
+  background: #4d67e8;
+}
+
+.lp-detail-blue
+.lp-detail-icon {
+  color: #4460e2;
+
+  background: #edf1ff;
+}
+
+
+.lp-detail-purple::before {
+  background: #8563e9;
+}
+
+.lp-detail-purple
+.lp-detail-icon {
+  color: #7c58df;
+
+  background: #f3efff;
+}
+
+
+.lp-detail-green::before {
+  background: #20b474;
+}
+
+.lp-detail-green
+.lp-detail-icon {
+  color: #1da66c;
+
+  background: #eafaf2;
+}
+
+
+.lp-detail-orange::before {
+  background: #efa323;
+}
+
+.lp-detail-orange
+.lp-detail-icon {
+  color: #df9416;
+
+  background: #fff6e5;
+}
+
+
+/* =========================================
+   PROFILE NOTE
+========================================= */
+
+.lp-profile-note {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  margin-top: 20px;
+
+  padding: 13px 14px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f2f5ff,
+      #faf9ff
+    );
+
+  border:
+    1px solid #e1e6f8;
+
+  border-radius: 13px;
+}
+
+
+.lp-profile-note-icon {
+  width: 35px;
+  height: 35px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4961dd;
+
+  background: white;
+
+  border-radius: 9px;
+}
+
+
+.lp-profile-note strong {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #4b5870;
+
+  font-size: 8px;
+}
+
+
+.lp-profile-note p {
+  margin: 0;
+
+  color: #8d97a9;
+
+  font-size: 7px;
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   LOADING
+========================================= */
+
+.lp-loading {
+  min-height: 450px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  color: #778195;
 
   font-size: 10px;
 }
 
 
-.lp-detail-card strong {
-  display: block;
+.lp-loading-spinner {
+  width: 30px;
+  height: 30px;
 
-  color: var(--text-primary);
+  border:
+    3px solid #e7eaf3;
 
-  font-size: 13px;
+  border-top-color:
+    #4f63e7;
+
+  border-radius: 50%;
+
+  animation:
+    lpSpin
+    0.8s linear infinite;
 }
 
 
-/* LOADING */
+@keyframes lpSpin {
 
-.lp-loading {
-  padding: 40px;
-
-  color: var(--text-secondary);
-
-  text-align: center;
-}
-
-
-/* RESPONSIVE */
-
-@media (max-width: 760px) {
-
-  .lecturer-profile-page {
-    padding: 24px 18px;
+  to {
+    transform:
+      rotate(360deg);
   }
 
-  .lp-details {
+}
+
+
+.lp-error {
+  color: #dc2626;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1000px) {
+
+  .lp-profile-shell {
     grid-template-columns:
-      1fr;
+      290px
+      minmax(0, 1fr);
+  }
+
+}
+
+
+@media (max-width: 850px) {
+
+  .lp-profile-shell {
+    grid-template-columns: 1fr;
+  }
+
+
+  .lp-identity-panel {
+    min-height: auto;
+  }
+
+
+  .lp-identity-bottom {
+    margin-top: 40px;
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .lecturer-profile-page {
+    padding:
+      24px 18px 40px;
+  }
+
+
+  .lp-page-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .lp-information-panel {
+    padding: 22px 18px;
+  }
+
+
+  .lp-details {
+    grid-template-columns: 1fr;
+  }
+
+
+  .lp-identity-panel {
+    padding: 25px 22px;
   }
 
 }
