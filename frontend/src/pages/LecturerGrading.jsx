@@ -23,6 +23,14 @@ import {
   Send,
   CheckCircle2,
   Eye,
+  Sparkles,
+  ClipboardCheck,
+  Save,
+  Target,
+  ChevronRight,
+  ExternalLink,
+  Users,
+  TrendingUp,
 } from "lucide-react";
 
 import "../styles/lecturerGrading.css";
@@ -251,7 +259,6 @@ function LecturerGrading() {
       try {
 
         setLoading(true);
-
         setError("");
 
 
@@ -398,7 +405,7 @@ function LecturerGrading() {
     loadSubmissions(
       location.state
         ?.submissionId ||
-        null
+      null
     );
 
   }, []);
@@ -434,10 +441,10 @@ function LecturerGrading() {
 
           const combined =
             `
-            ${submission.student}
-            ${submission.assignment}
-            ${submission.program}
-            ${submission.batch}
+              ${submission.student}
+              ${submission.assignment}
+              ${submission.program}
+              ${submission.batch}
             `
               .toLowerCase();
 
@@ -473,6 +480,32 @@ function LecturerGrading() {
         submission.status ===
         "Graded"
     ).length;
+
+
+  const totalSubmissions =
+    submissions.length;
+
+
+  const gradingProgress =
+    totalSubmissions > 0
+
+      ? Math.round(
+          (
+            gradedCount /
+            totalSubmissions
+          ) * 100
+        )
+
+      : 0;
+
+
+  const uniqueStudents =
+    new Set(
+      submissions.map(
+        (submission) =>
+          submission.studentId
+      )
+    ).size;
 
 
   /* ========================================
@@ -717,11 +750,13 @@ function LecturerGrading() {
     localStorage.setItem(
       draftKey,
       JSON.stringify({
+
         marks:
           selectedSubmission.marks,
 
         feedback:
           selectedSubmission.feedback,
+
       })
     );
 
@@ -834,11 +869,6 @@ function LecturerGrading() {
         );
 
 
-        /*
-          Reload from PostgreSQL so
-          the UI reflects database truth.
-        */
-
         await loadSubmissions(
           selectedSubmission.id
         );
@@ -896,56 +926,62 @@ function LecturerGrading() {
 
 
       {/* ====================================
-          HEADER
+          ASSESSMENT STUDIO HERO
       ==================================== */}
 
-      <section className="lg-header">
-
-        <div>
-
-          <h1>
-            Grading
-          </h1>
-
-          <p>
-            Review student submissions,
-            award marks and provide
-            academic feedback.
-          </p>
-
-        </div>
+      <section className="lg-studio-hero">
 
 
-        <div className="lg-header-badge">
-
-          <GraduationCap
-            size={16}
-          />
-
-          {toGradeCount}{" "}
-          Awaiting Grading
-
-        </div>
-
-      </section>
+        <div className="lg-studio-intro">
 
 
-      {/* ====================================
-          SUMMARY
-      ==================================== */}
+          <div className="lg-studio-icon">
 
-      <section className="lg-summary">
-
-
-        <div className="lg-summary-card lg-orange">
-
-          <div className="lg-summary-icon">
-
-            <Clock3 size={21} />
+            <GraduationCap
+              size={24}
+            />
 
           </div>
 
+
           <div>
+
+            <span className="lg-kicker">
+
+              <Sparkles size={12} />
+
+              ASSESSMENT STUDIO
+
+            </span>
+
+
+            <h1>
+              Grade with clarity.
+            </h1>
+
+
+            <p>
+
+              Review student work, award
+              marks and provide meaningful
+              academic feedback from one
+              focused marking workspace.
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div className="lg-studio-stats">
+
+
+          <div>
+
+            <span>
+              WAITING
+            </span>
 
             <strong>
               {loading
@@ -953,26 +989,18 @@ function LecturerGrading() {
                 : toGradeCount}
             </strong>
 
-            <span>
-              Waiting to Grade
-            </span>
+            <small>
+              Need attention
+            </small>
 
           </div>
 
-        </div>
-
-
-        <div className="lg-summary-card lg-green">
-
-          <div className="lg-summary-icon">
-
-            <CircleCheckBig
-              size={21}
-            />
-
-          </div>
 
           <div>
+
+            <span>
+              REVIEWED
+            </span>
 
             <strong>
               {loading
@@ -980,34 +1008,84 @@ function LecturerGrading() {
                 : gradedCount}
             </strong>
 
+            <small>
+              Grades published
+            </small>
+
+          </div>
+
+
+          <div>
+
             <span>
-              Graded
+              STUDENTS
             </span>
+
+            <strong>
+              {loading
+                ? "..."
+                : uniqueStudents}
+            </strong>
+
+            <small>
+              In grading queue
+            </small>
 
           </div>
 
         </div>
 
 
-        <div className="lg-summary-card lg-blue">
+        <div className="lg-studio-progress">
 
-          <div className="lg-summary-icon">
 
-            <FileText size={21} />
+          <div
+            className="lg-progress-ring"
+            style={{
+              background:
+                `conic-gradient(
+                  #ffffff ${gradingProgress * 3.6}deg,
+                  rgba(255,255,255,0.17) 0deg
+                )`,
+            }}
+          >
+
+            <div className="lg-progress-ring-inner">
+
+              <strong>
+                {gradingProgress}%
+              </strong>
+
+              <span>
+                COMPLETE
+              </span>
+
+            </div>
 
           </div>
 
-          <div>
 
-            <strong>
-              {loading
-                ? "..."
-                : submissions.length}
-            </strong>
+          <div className="lg-progress-copy">
 
             <span>
-              Total Submissions
+              MARKING PROGRESS
             </span>
+
+            <strong>
+
+              {gradingProgress === 100
+                ? "All caught up"
+                : "Keep the queue moving"}
+
+            </strong>
+
+            <p>
+
+              {gradedCount} of{" "}
+              {totalSubmissions} submissions
+              graded.
+
+            </p>
 
           </div>
 
@@ -1022,16 +1100,7 @@ function LecturerGrading() {
 
       {error && (
 
-        <div
-          style={{
-            marginBottom: "20px",
-            padding: "14px 18px",
-            borderRadius: "12px",
-            background: "#fff1f2",
-            color: "#dc2626",
-            fontSize: "14px",
-          }}
-        >
+        <div className="lg-error-message">
 
           {error}
 
@@ -1041,30 +1110,54 @@ function LecturerGrading() {
 
 
       {/* ====================================
-          GRADING WORKSPACE
+          MAIN STUDIO
       ==================================== */}
 
       <section className="lg-workspace">
 
 
         {/* ==================================
-            LEFT QUEUE
+            LEFT: MARKING QUEUE
         ================================== */}
 
         <aside className="lg-queue">
 
+
           <div className="lg-queue-header">
 
+
+            <div className="lg-queue-heading-icon">
+
+              <ClipboardCheck
+                size={18}
+              />
+
+            </div>
+
+
             <div>
+
+              <span>
+                MARKING INBOX
+              </span>
 
               <h2>
                 Grading Queue
               </h2>
 
               <p>
-                Select a submission
-                to review.
+
+                Choose a submission
+                to assess.
+
               </p>
+
+            </div>
+
+
+            <div className="lg-queue-count">
+
+              {filteredSubmissions.length}
 
             </div>
 
@@ -1075,9 +1168,10 @@ function LecturerGrading() {
 
             <Search size={16} />
 
+
             <input
               type="text"
-              placeholder="Search submissions..."
+              placeholder="Find student or assignment..."
               value={searchTerm}
               onChange={(event) =>
                 setSearchTerm(
@@ -1094,13 +1188,7 @@ function LecturerGrading() {
 
             {loading && (
 
-              <div
-                style={{
-                  padding: "20px",
-                  textAlign: "center",
-                  fontSize: "13px",
-                }}
-              >
+              <div className="lg-queue-message">
 
                 Loading submissions...
 
@@ -1114,21 +1202,25 @@ function LecturerGrading() {
                 (submission) => (
 
                   <button
+                    type="button"
                     key={
                       submission.id
                     }
-                    className={`lg-queue-item ${
-                      selectedId ===
-                      submission.id
-                        ? "lg-queue-item-active"
-                        : ""
-                    }`}
+                    className={
+                      `lg-queue-item ${
+                        selectedId ===
+                        submission.id
+                          ? "lg-queue-item-active"
+                          : ""
+                      }`
+                    }
                     onClick={() =>
                       setSelectedId(
                         submission.id
                       )
                     }
                   >
+
 
                     <div className="lg-queue-avatar">
 
@@ -1169,7 +1261,6 @@ function LecturerGrading() {
 
                         {" • "}
 
-                        Batch{" "}
                         {
                           submission
                             .batch
@@ -1180,31 +1271,39 @@ function LecturerGrading() {
                     </div>
 
 
-                    <div
-                      className={
-                        submission
-                          .status ===
-                        "Graded"
-                          ? "lg-small-status lg-small-status-graded"
-                          : "lg-small-status lg-small-status-pending"
-                      }
-                    >
+                    <div className="lg-queue-end">
 
-                      {submission
-                        .status ===
-                      "Graded" ? (
 
-                        <CircleCheckBig
-                          size={11}
-                        />
+                      <div
+                        className={
+                          submission.status ===
+                          "Graded"
+                            ? "lg-small-status lg-small-status-graded"
+                            : "lg-small-status lg-small-status-pending"
+                        }
+                      >
 
-                      ) : (
+                        {submission.status ===
+                        "Graded" ? (
 
-                        <Clock3
-                          size={11}
-                        />
+                          <CircleCheckBig
+                            size={12}
+                          />
 
-                      )}
+                        ) : (
+
+                          <Clock3
+                            size={12}
+                          />
+
+                        )}
+
+                      </div>
+
+
+                      <ChevronRight
+                        size={14}
+                      />
 
                     </div>
 
@@ -1218,15 +1317,20 @@ function LecturerGrading() {
               filteredSubmissions.length ===
                 0 && (
 
-              <div
-                style={{
-                  padding: "24px 16px",
-                  textAlign: "center",
-                  fontSize: "13px",
-                }}
-              >
+              <div className="lg-queue-empty">
 
-                No submissions found.
+                <Search size={22} />
+
+                <strong>
+                  Nothing found
+                </strong>
+
+                <span>
+
+                  Try another student
+                  or assignment.
+
+                </span>
 
               </div>
 
@@ -1238,7 +1342,7 @@ function LecturerGrading() {
 
 
         {/* ==================================
-            RIGHT GRADING AREA
+            RIGHT: GRADING CANVAS
         ================================== */}
 
         {selectedSubmission ? (
@@ -1246,11 +1350,15 @@ function LecturerGrading() {
           <div className="lg-grading-panel">
 
 
-            {/* STUDENT HEADER */}
+            {/* ==================================
+                STUDENT STRIP
+            ================================== */}
 
             <div className="lg-student-header">
 
+
               <div className="lg-student-profile">
+
 
                 <div className="lg-large-avatar">
 
@@ -1263,6 +1371,10 @@ function LecturerGrading() {
 
 
                 <div>
+
+                  <span className="lg-student-label">
+                    CURRENT ASSESSMENT
+                  </span>
 
                   <h2>
 
@@ -1282,6 +1394,23 @@ function LecturerGrading() {
                         .studentId
                     }
 
+
+                    {selectedSubmission
+                      .studentEmail && (
+
+                      <>
+
+                        {" • "}
+
+                        {
+                          selectedSubmission
+                            .studentEmail
+                        }
+
+                      </>
+
+                    )}
+
                   </p>
 
                 </div>
@@ -1299,6 +1428,23 @@ function LecturerGrading() {
                 }
               >
 
+                {selectedSubmission
+                  .status ===
+                "Graded" ? (
+
+                  <CircleCheckBig
+                    size={12}
+                  />
+
+                ) : (
+
+                  <Clock3
+                    size={12}
+                  />
+
+                )}
+
+
                 {
                   selectedSubmission
                     .status
@@ -1309,21 +1455,27 @@ function LecturerGrading() {
             </div>
 
 
-            {/* INFORMATION */}
+            {/* ==================================
+                ASSESSMENT INFO
+            ================================== */}
 
             <div className="lg-info-grid">
 
 
               <div className="lg-info-card">
 
-                <BookOpen
-                  size={18}
-                />
+                <div className="lg-info-icon">
+
+                  <BookOpen
+                    size={18}
+                  />
+
+                </div>
 
                 <div>
 
                   <span>
-                    Program / Batch
+                    PROGRAM / BATCH
                   </span>
 
                   <strong>
@@ -1334,8 +1486,6 @@ function LecturerGrading() {
                     }
 
                     {" • "}
-
-                    Batch{" "}
 
                     {
                       selectedSubmission
@@ -1351,14 +1501,18 @@ function LecturerGrading() {
 
               <div className="lg-info-card">
 
-                <FileText
-                  size={18}
-                />
+                <div className="lg-info-icon">
+
+                  <FileText
+                    size={18}
+                  />
+
+                </div>
 
                 <div>
 
                   <span>
-                    Assignment
+                    ASSIGNMENT
                   </span>
 
                   <strong>
@@ -1377,14 +1531,18 @@ function LecturerGrading() {
 
               <div className="lg-info-card">
 
-                <Award
-                  size={18}
-                />
+                <div className="lg-info-icon">
+
+                  <Award
+                    size={18}
+                  />
+
+                </div>
 
                 <div>
 
                   <span>
-                    Maximum Marks
+                    MAXIMUM MARKS
                   </span>
 
                   <strong>
@@ -1403,9 +1561,12 @@ function LecturerGrading() {
             </div>
 
 
-            {/* FILE */}
+            {/* ==================================
+                SUBMISSION FILE
+            ================================== */}
 
             <div className="lg-submission-file">
+
 
               <div className="lg-file-icon">
 
@@ -1418,6 +1579,10 @@ function LecturerGrading() {
 
               <div>
 
+                <span>
+                  STUDENT SUBMISSION
+                </span>
+
                 <strong>
 
                   {
@@ -1427,9 +1592,10 @@ function LecturerGrading() {
 
                 </strong>
 
-                <span>
-                  Student submission
-                </span>
+                <p>
+                  Review the submitted file
+                  before finalizing the result.
+                </p>
 
               </div>
 
@@ -1445,69 +1611,208 @@ function LecturerGrading() {
 
                 Open File
 
+                <ExternalLink
+                  size={12}
+                />
+
               </button>
 
             </div>
 
 
-            {/* GRADING FORM */}
+            {/* ==================================
+                GRADING LAB
+            ================================== */}
 
-            <div className="lg-form-section">
+            <div className="lg-grading-lab">
 
-              <div className="lg-section-title">
 
-                <h3>
-                  Grade Submission
-                </h3>
+              {/* LEFT */}
 
-                <p>
-                  Enter marks and provide
-                  feedback for the student.
-                </p>
+              <div className="lg-marking-area">
+
+
+                <div className="lg-section-title">
+
+
+                  <span>
+
+                    <Target
+                      size={12}
+                    />
+
+                    RESULT BUILDER
+
+                  </span>
+
+
+                  <h3>
+                    Mark this submission
+                  </h3>
+
+
+                  <p>
+
+                    Enter the awarded marks
+                    and review the calculated
+                    result before publishing.
+
+                  </p>
+
+                </div>
+
+
+                <div className="lg-score-builder">
+
+
+                  <div className="lg-form-group">
+
+                    <label>
+                      Marks Awarded
+                    </label>
+
+
+                    <div className="lg-mark-input">
+
+                      <input
+                        type="number"
+                        min="0"
+                        max={
+                          selectedSubmission
+                            .maxMarks
+                        }
+                        value={
+                          selectedSubmission
+                            .marks
+                        }
+                        onChange={(event) =>
+                          updateSelectedSubmission(
+                            "marks",
+                            event.target
+                              .value
+                          )
+                        }
+                      />
+
+                      <span>
+
+                        /{" "}
+
+                        {
+                          selectedSubmission
+                            .maxMarks
+                        }
+
+                      </span>
+
+                    </div>
+
+                  </div>
+
+
+                  <div className="lg-score-guide">
+
+                    <span>
+                      SCORE PREVIEW
+                    </span>
+
+                    <p>
+
+                      The percentage and
+                      letter grade update
+                      automatically.
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+
+                {/* FEEDBACK */}
+
+                <div className="lg-form-group lg-feedback-group">
+
+                  <label>
+
+                    <MessageSquareText
+                      size={14}
+                    />
+
+                    Lecturer Feedback
+
+                  </label>
+
+
+                  <textarea
+                    rows="7"
+                    placeholder="Write constructive feedback for the student..."
+                    value={
+                      selectedSubmission
+                        .feedback
+                    }
+                    onChange={(event) =>
+                      updateSelectedSubmission(
+                        "feedback",
+                        event.target
+                          .value
+                      )
+                    }
+                  />
+
+                  <span className="lg-feedback-hint">
+
+                    Give clear, specific
+                    feedback the student can
+                    use to improve.
+
+                  </span>
+
+                </div>
 
               </div>
 
 
-              <div className="lg-mark-row">
+              {/* RIGHT RESULT CARD */}
+
+              <aside className="lg-result-card">
 
 
-                <div className="lg-form-group">
+                <div className="lg-result-card-top">
 
-                  <label>
-                    Marks Awarded
-                  </label>
+                  <span>
+                    LIVE RESULT
+                  </span>
 
-                  <div className="lg-mark-input">
+                  <TrendingUp
+                    size={16}
+                  />
 
-                    <input
-                      type="number"
-                      min="0"
-                      max={
-                        selectedSubmission
-                          .maxMarks
-                      }
-                      value={
-                        selectedSubmission
-                          .marks
-                      }
-                      onChange={(event) =>
-                        updateSelectedSubmission(
-                          "marks",
-                          event.target
-                            .value
-                        )
-                      }
-                    />
+                </div>
+
+
+                <div
+                  className="lg-score-ring"
+                  style={{
+                    background:
+                      `conic-gradient(
+                        #4f63e7 ${Math.min(
+                          percentage,
+                          100
+                        ) * 3.6}deg,
+                        #e9edfa 0deg
+                      )`,
+                  }}
+                >
+
+                  <div className="lg-score-ring-inner">
+
+                    <strong>
+                      {percentage}%
+                    </strong>
 
                     <span>
-
-                      /{" "}
-
-                      {
-                        selectedSubmission
-                          .maxMarks
-                      }
-
+                      SCORE
                     </span>
 
                   </div>
@@ -1515,16 +1820,77 @@ function LecturerGrading() {
                 </div>
 
 
-                <div className="lg-result-preview">
+                <div className="lg-grade-display">
+
+                  <span>
+                    LETTER GRADE
+                  </span>
+
+                  <strong>
+                    {grade}
+                  </strong>
+
+                </div>
+
+
+                <div className="lg-result-status">
+
+                  {selectedSubmission
+                    .status ===
+                  "Graded" ? (
+
+                    <>
+
+                      <CheckCircle2
+                        size={15}
+                      />
+
+                      Published result
+
+                    </>
+
+                  ) : (
+
+                    <>
+
+                      <Clock3
+                        size={15}
+                      />
+
+                      Draft result
+
+                    </>
+
+                  )}
+
+                </div>
+
+
+                <div className="lg-result-summary">
 
                   <div>
 
                     <span>
-                      Percentage
+                      Marks
                     </span>
 
                     <strong>
-                      {percentage}%
+
+                      {
+                        selectedSubmission
+                          .marks === ""
+                          ? "—"
+                          : selectedSubmission
+                              .marks
+                      }
+
+                      {" / "}
+
+                      {
+                        selectedSubmission
+                          .maxMarks
+                      }
+
                     </strong>
 
                   </div>
@@ -1536,56 +1902,52 @@ function LecturerGrading() {
                       Grade
                     </span>
 
-                    <strong className="lg-grade-letter">
-
+                    <strong>
                       {grade}
-
                     </strong>
 
                   </div>
 
                 </div>
 
-              </div>
+              </aside>
+
+            </div>
 
 
-              {/* FEEDBACK */}
+            {/* ==================================
+                ACTION BAR
+            ================================== */}
 
-              <div className="lg-form-group">
-
-                <label>
-
-                  <MessageSquareText
-                    size={14}
-                  />
-
-                  Lecturer Feedback
-
-                </label>
+            <div className="lg-form-actions">
 
 
-                <textarea
-                  rows="6"
-                  placeholder="Write constructive feedback for the student..."
-                  value={
-                    selectedSubmission
-                      .feedback
-                  }
-                  onChange={(event) =>
-                    updateSelectedSubmission(
-                      "feedback",
-                      event.target
-                        .value
-                    )
-                  }
+              <div className="lg-action-note">
+
+                <GraduationCap
+                  size={16}
                 />
 
+                <div>
+
+                  <strong>
+                    Ready to finalize?
+                  </strong>
+
+                  <span>
+
+                    Save a draft or publish
+                    the result to the student.
+
+                  </span>
+
+                </div>
+
               </div>
 
 
-              {/* ACTIONS */}
+              <div className="lg-action-buttons">
 
-              <div className="lg-form-actions">
 
                 <button
                   type="button"
@@ -1597,6 +1959,8 @@ function LecturerGrading() {
                     publishing
                   }
                 >
+
+                  <Save size={14} />
 
                   Save Draft
 
@@ -1625,21 +1989,25 @@ function LecturerGrading() {
                     "Graded" ? (
 
                     <>
+
                       <CheckCircle2
                         size={15}
                       />
 
                       Update Grade
+
                     </>
 
                   ) : (
 
                     <>
+
                       <Send
                         size={15}
                       />
 
                       Publish Grade
+
                     </>
 
                   )}
@@ -1654,33 +2022,33 @@ function LecturerGrading() {
 
         ) : (
 
-          <div
-            className="lg-grading-panel"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: "420px",
-              textAlign: "center",
-            }}
-          >
+          <div className="lg-empty-workspace">
 
-            <div>
+
+            <div className="lg-empty-workspace-icon">
 
               <GraduationCap
-                size={34}
+                size={29}
               />
 
-              <h3>
-                No submission selected
-              </h3>
-
-              <p>
-                Select a submission from
-                the grading queue.
-              </p>
-
             </div>
+
+
+            <span>
+              ASSESSMENT STUDIO
+            </span>
+
+            <h3>
+              Select a submission
+            </h3>
+
+            <p>
+
+              Choose a student submission
+              from the grading queue to
+              start reviewing and marking.
+
+            </p>
 
           </div>
 

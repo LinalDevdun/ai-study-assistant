@@ -1,5 +1,6 @@
 /* =========================================
-   LECTURER GRADING PAGE
+   LECTURER GRADING
+   ASSESSMENT STUDIO
 ========================================= */
 
 .lecturer-grading-page {
@@ -8,159 +9,437 @@
 
   margin: 0 auto;
 
-  padding: 34px 36px 55px;
+  padding: 34px 36px 60px;
 }
 
 
 /* =========================================
-   HEADER
+   ASSESSMENT STUDIO HERO
 ========================================= */
 
-.lg-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+.lg-studio-hero {
+  position: relative;
 
-  gap: 20px;
+  overflow: hidden;
 
-  margin-bottom: 27px;
-}
-
-.lg-header h1 {
-  margin: 0;
-
-  color: var(--text-primary);
-
-  font-size: 30px;
-  font-weight: 800;
-
-  letter-spacing: -0.8px;
-}
-
-.lg-header p {
-  margin: 8px 0 0;
-
-  color: var(--text-secondary);
-
-  font-size: 14px;
-}
-
-.lg-header-badge {
-  display: inline-flex;
-  align-items: center;
-
-  gap: 7px;
-
-  padding: 10px 14px;
-
-  color: #d97706;
-  background: #fff7e6;
-
-  border: 1px solid #fde7b0;
-  border-radius: 11px;
-
-  font-size: 11px;
-  font-weight: 700;
-}
-
-
-/* =========================================
-   SUMMARY
-========================================= */
-
-.lg-summary {
   display: grid;
 
   grid-template-columns:
-    repeat(3, 1fr);
+    minmax(0, 1.25fr)
+    minmax(230px, 0.5fr);
 
-  gap: 17px;
+  gap: 22px;
 
-  margin-bottom: 24px;
+  min-height: 235px;
+
+  padding: 31px 32px;
+
+  margin-bottom: 25px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      118deg,
+      #284fd7 0%,
+      #405de0 48%,
+      #6279ee 100%
+    );
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 17px 42px
+    rgba(45, 69, 187, 0.2);
 }
 
-.lg-summary-card {
+
+.lg-studio-hero::before {
+  content: "";
+
+  position: absolute;
+
+  width: 260px;
+  height: 260px;
+
+  top: -165px;
+  right: 7%;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.15);
+
+  border-radius: 50%;
+}
+
+
+.lg-studio-hero::after {
+  content: "";
+
+  position: absolute;
+
+  width: 145px;
+  height: 145px;
+
+  left: 44%;
+  bottom: -112px;
+
+  background:
+    rgba(255, 255, 255, 0.055);
+
+  border-radius: 50%;
+}
+
+
+/* SUBTLE GRID */
+
+.lg-studio-hero {
+  background-image:
+    linear-gradient(
+      rgba(255,255,255,0.035) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.035) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      118deg,
+      #284fd7 0%,
+      #405de0 48%,
+      #6279ee 100%
+    );
+
+  background-size:
+    58px 58px,
+    58px 58px,
+    auto;
+}
+
+
+/* =========================================
+   HERO INTRO
+========================================= */
+
+.lg-studio-intro {
+  position: relative;
+  z-index: 2;
+
   display: flex;
-  align-items: center;
 
-  gap: 14px;
+  align-items: flex-start;
 
-  padding: 18px;
-
-  background: white;
-
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-
-  box-shadow: var(--shadow-sm);
+  gap: 16px;
 }
 
-.lg-summary-icon {
-  width: 46px;
-  height: 46px;
+
+.lg-studio-icon {
+  width: 54px;
+  height: 54px;
 
   flex-shrink: 0;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
-  border-radius: 13px;
+  color: white;
+
+  background:
+    rgba(255, 255, 255, 0.14);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.2);
+
+  border-radius: 15px;
+
+  backdrop-filter:
+    blur(9px);
 }
 
-.lg-orange .lg-summary-icon {
-  color: #d98300;
-  background: #fff7e6;
+
+.lg-kicker {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 8px;
+
+  color:
+    rgba(255, 255, 255, 0.77);
+
+  font-size: 7px;
+  font-weight: 850;
+
+  letter-spacing: 0.1em;
 }
 
-.lg-green .lg-summary-icon {
-  color: #16a34a;
-  background: #ecfdf3;
+
+.lg-studio-intro h1 {
+  margin: 0;
+
+  color: white;
+
+  font-size: 31px;
+  line-height: 1.15;
+
+  font-weight: 850;
+
+  letter-spacing: -0.9px;
 }
 
-.lg-blue .lg-summary-icon {
-  color: #4058df;
-  background: #eef2ff;
-}
 
-.lg-summary-card strong {
-  display: block;
+.lg-studio-intro p {
+  max-width: 575px;
 
-  margin-bottom: 3px;
+  margin: 10px 0 0;
 
-  color: var(--text-primary);
+  color:
+    rgba(255, 255, 255, 0.74);
 
-  font-size: 21px;
-  font-weight: 800;
-}
-
-.lg-summary-card span {
-  color: var(--text-secondary);
-
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 9px;
+  line-height: 1.7;
 }
 
 
 /* =========================================
-   WORKSPACE
+   HERO STATISTICS
+========================================= */
+
+.lg-studio-stats {
+  position: absolute;
+
+  z-index: 2;
+
+  left: 102px;
+  bottom: 28px;
+
+  display: flex;
+
+  gap: 9px;
+}
+
+
+.lg-studio-stats > div {
+  min-width: 112px;
+
+  padding: 10px 12px;
+
+  background:
+    rgba(255, 255, 255, 0.09);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 10px;
+
+  backdrop-filter:
+    blur(8px);
+}
+
+
+.lg-studio-stats span {
+  display: block;
+
+  color:
+    rgba(255, 255, 255, 0.56);
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+.lg-studio-stats strong {
+  display: block;
+
+  margin-top: 3px;
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 850;
+}
+
+
+.lg-studio-stats small {
+  display: block;
+
+  margin-top: 2px;
+
+  color:
+    rgba(255, 255, 255, 0.6);
+
+  font-size: 5px;
+}
+
+
+/* =========================================
+   HERO PROGRESS
+========================================= */
+
+.lg-studio-progress {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 16px;
+
+  align-self: center;
+
+  padding: 20px;
+
+  background:
+    rgba(255, 255, 255, 0.1);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.16);
+
+  border-radius: 17px;
+
+  backdrop-filter:
+    blur(10px);
+}
+
+
+.lg-progress-ring {
+  width: 92px;
+  height: 92px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+}
+
+
+.lg-progress-ring-inner {
+  width: 70px;
+  height: 70px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #405de0;
+
+  border-radius: 50%;
+}
+
+
+.lg-progress-ring-inner strong {
+  color: white;
+
+  font-size: 17px;
+  font-weight: 850;
+}
+
+
+.lg-progress-ring-inner span {
+  margin-top: 2px;
+
+  color:
+    rgba(255, 255, 255, 0.62);
+
+  font-size: 5px;
+  font-weight: 800;
+}
+
+
+.lg-progress-copy > span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color:
+    rgba(255, 255, 255, 0.56);
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.lg-progress-copy strong {
+  display: block;
+
+  color: white;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.lg-progress-copy p {
+  margin: 4px 0 0;
+
+  color:
+    rgba(255, 255, 255, 0.66);
+
+  font-size: 6px;
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.lg-error-message {
+  margin-bottom: 20px;
+
+  padding: 13px 16px;
+
+  color: #dc2626;
+
+  background: #fff1f2;
+
+  border:
+    1px solid #fecdd3;
+
+  border-radius: 12px;
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   MAIN WORKSPACE
 ========================================= */
 
 .lg-workspace {
   display: grid;
 
   grid-template-columns:
-    330px
+    315px
     minmax(0, 1fr);
 
-  gap: 20px;
+  gap: 19px;
 
   align-items: start;
 }
 
 
 /* =========================================
-   QUEUE
+   GRADING QUEUE
 ========================================= */
 
 .lg-queue {
@@ -168,41 +447,118 @@
 
   background: white;
 
-  border: 1px solid var(--border-light);
-  border-radius: 18px;
+  border:
+    1px solid #e4e8f0;
 
-  box-shadow: var(--shadow-sm);
+  border-radius: 20px;
+
+  box-shadow:
+    0 11px 29px
+    rgba(30, 43, 87, 0.06);
 }
+
+
+/* =========================================
+   QUEUE HEADER
+========================================= */
 
 .lg-queue-header {
-  padding: 20px 20px 14px;
+  display: grid;
+
+  grid-template-columns:
+    42px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 19px 18px 14px;
 }
+
+
+.lg-queue-heading-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #4058df;
+
+  background: #edf1ff;
+
+  border-radius: 12px;
+}
+
+
+.lg-queue-header span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
 
 .lg-queue-header h2 {
   margin: 0;
 
-  color: var(--text-primary);
+  color: #101828;
 
-  font-size: 16px;
-  font-weight: 750;
+  font-size: 14px;
+  font-weight: 850;
 }
+
 
 .lg-queue-header p {
-  margin: 5px 0 0;
+  margin: 3px 0 0;
 
-  color: var(--text-muted);
+  color: #98a2b3;
 
-  font-size: 9px;
+  font-size: 6px;
 }
 
 
-/* SEARCH */
+.lg-queue-count {
+  min-width: 28px;
+  height: 28px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #4058df;
+
+  background: #edf1ff;
+
+  border-radius: 8px;
+
+  font-size: 8px;
+  font-weight: 850;
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
 
 .lg-search {
   position: relative;
 
-  margin: 0 15px 15px;
+  margin:
+    0 14px 14px;
 }
+
 
 .lg-search svg {
   position: absolute;
@@ -210,38 +566,84 @@
   left: 12px;
   top: 50%;
 
-  transform: translateY(-50%);
+  transform:
+    translateY(-50%);
 
-  color: var(--text-muted);
+  color: #98a2b3;
 }
+
 
 .lg-search input {
   width: 100%;
-  height: 40px;
+  height: 41px;
 
-  padding: 0 12px 0 38px;
+  box-sizing: border-box;
 
-  color: var(--text-primary);
+  padding:
+    0 12px 0 38px;
+
+  color: #344054;
+
   background: #f8f9fc;
 
-  border: 1px solid transparent;
+  border:
+    1px solid transparent;
+
   border-radius: 10px;
 
   outline: none;
 
-  font-size: 10px;
+  font-family: inherit;
+
+  font-size: 8px;
+
+  transition:
+    background 0.18s ease,
+    border 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 
-/* QUEUE LIST */
+.lg-search input:focus {
+  background: white;
+
+  border-color: #c9d1ff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(64, 88, 223, 0.07);
+}
+
+
+/* =========================================
+   QUEUE LIST
+========================================= */
 
 .lg-queue-list {
-  max-height: 600px;
+  max-height: 660px;
 
   overflow-y: auto;
 
-  padding: 0 10px 12px;
+  padding:
+    0 9px 11px;
 }
+
+
+.lg-queue-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+
+.lg-queue-list::-webkit-scrollbar-thumb {
+  background: #d9deec;
+
+  border-radius: 99px;
+}
+
+
+/* =========================================
+   QUEUE ITEM
+========================================= */
 
 .lg-queue-item {
   width: 100%;
@@ -257,38 +659,65 @@
 
   gap: 10px;
 
-  padding: 11px;
+  padding: 10px;
 
   margin-bottom: 7px;
 
   color: inherit;
+
   background: transparent;
 
-  border: 1px solid transparent;
-  border-radius: 11px;
+  border:
+    1px solid transparent;
+
+  border-radius: 12px;
 
   text-align: left;
 
+  cursor: pointer;
+
   transition:
-    background var(--transition-fast),
-    border var(--transition-fast);
+    transform 0.17s ease,
+    background 0.17s ease,
+    border 0.17s ease,
+    box-shadow 0.17s ease;
 }
+
 
 .lg-queue-item:hover {
-  background: #f8f9fd;
+  background: #fafbff;
+
+  transform:
+    translateX(2px);
 }
+
 
 .lg-queue-item-active {
-  background: #f2f5ff;
+  background:
+    linear-gradient(
+      135deg,
+      #f1f4ff,
+      #f8f9ff
+    );
 
-  border-color: #dce2ff;
+  border-color: #d9e0ff;
+
+  box-shadow:
+    0 5px 15px
+    rgba(64, 88, 223, 0.07);
 }
+
+
+/* =========================================
+   QUEUE AVATAR
+========================================= */
 
 .lg-queue-avatar {
   width: 38px;
   height: 38px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -298,18 +727,24 @@
     linear-gradient(
       135deg,
       #4058df,
-      #7479ef
+      #6f79ed
     );
 
   border-radius: 10px;
 
-  font-size: 9px;
-  font-weight: 750;
+  font-size: 8px;
+  font-weight: 850;
 }
+
+
+/* =========================================
+   QUEUE INFO
+========================================= */
 
 .lg-queue-info {
   min-width: 0;
 }
+
 
 .lg-queue-info strong,
 .lg-queue-info span,
@@ -319,50 +754,122 @@
   overflow: hidden;
 
   white-space: nowrap;
+
   text-overflow: ellipsis;
 }
+
 
 .lg-queue-info strong {
   margin-bottom: 3px;
 
-  color: var(--text-primary);
+  color: #101828;
 
-  font-size: 10px;
+  font-size: 8px;
+  font-weight: 800;
 }
+
 
 .lg-queue-info span {
-  color: var(--text-secondary);
+  color: #667085;
 
-  font-size: 9px;
+  font-size: 7px;
 }
+
 
 .lg-queue-info small {
   margin-top: 3px;
 
-  color: var(--text-muted);
+  color: #98a2b3;
 
-  font-size: 8px;
+  font-size: 6px;
 }
+
+
+/* =========================================
+   QUEUE END
+========================================= */
+
+.lg-queue-end {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color: #b1b8c6;
+}
+
 
 .lg-small-status {
   width: 27px;
   height: 27px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
   border-radius: 8px;
 }
 
+
 .lg-small-status-pending {
   color: #d97706;
+
   background: #fff7e6;
 }
 
+
 .lg-small-status-graded {
   color: #15803d;
+
   background: #ecfdf3;
+}
+
+
+/* =========================================
+   QUEUE MESSAGE
+========================================= */
+
+.lg-queue-message,
+.lg-queue-empty {
+  padding: 34px 20px;
+
+  text-align: center;
+
+  color: #98a2b3;
+
+  font-size: 8px;
+}
+
+
+.lg-queue-empty {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  gap: 5px;
+}
+
+
+.lg-queue-empty svg {
+  margin-bottom: 6px;
+
+  color: #4058df;
+}
+
+
+.lg-queue-empty strong {
+  color: #344054;
+
+  font-size: 9px;
+}
+
+
+.lg-queue-empty span {
+  font-size: 7px;
 }
 
 
@@ -371,44 +878,64 @@
 ========================================= */
 
 .lg-grading-panel {
-  padding: 23px;
+  overflow: hidden;
 
   background: white;
 
-  border: 1px solid var(--border-light);
-  border-radius: 18px;
+  border:
+    1px solid #e4e8f0;
 
-  box-shadow: var(--shadow-sm);
+  border-radius: 20px;
+
+  box-shadow:
+    0 11px 30px
+    rgba(30, 43, 87, 0.06);
 }
 
 
-/* STUDENT HEADER */
+/* =========================================
+   STUDENT HEADER
+========================================= */
 
 .lg-student-header {
   display: flex;
+
   justify-content: space-between;
   align-items: center;
 
   gap: 20px;
 
-  padding-bottom: 20px;
+  padding: 20px 22px;
+
+  background:
+    linear-gradient(
+      120deg,
+      #ffffff,
+      #fafbff
+    );
 
   border-bottom:
-    1px solid var(--border-light);
+    1px solid #edf0f5;
 }
+
 
 .lg-student-profile {
   display: flex;
+
   align-items: center;
 
   gap: 12px;
 }
 
+
 .lg-large-avatar {
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
+
+  flex-shrink: 0;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -418,57 +945,89 @@
     linear-gradient(
       135deg,
       #4058df,
-      #7479ef
+      #707aed
     );
 
-  border-radius: 13px;
+  border-radius: 14px;
 
-  font-size: 10px;
-  font-weight: 750;
-}
-
-.lg-student-profile h2 {
-  margin: 0 0 4px;
-
-  color: var(--text-primary);
-
-  font-size: 15px;
-  font-weight: 750;
-}
-
-.lg-student-profile p {
-  margin: 0;
-
-  color: var(--text-muted);
+  box-shadow:
+    0 8px 18px
+    rgba(64, 88, 223, 0.17);
 
   font-size: 9px;
+  font-weight: 850;
 }
+
+
+.lg-student-label {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+.lg-student-profile h2 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 15px;
+  font-weight: 850;
+}
+
+
+.lg-student-profile p {
+  margin: 4px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 7px;
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
 
 .lg-status {
   display: inline-flex;
+
   align-items: center;
 
-  padding: 6px 9px;
+  gap: 5px;
+
+  padding: 7px 9px;
 
   border-radius: 8px;
 
-  font-size: 8px;
-  font-weight: 750;
+  font-size: 7px;
+  font-weight: 800;
 }
+
 
 .lg-status-pending {
   color: #d97706;
+
   background: #fff7e6;
 }
 
+
 .lg-status-graded {
   color: #15803d;
+
   background: #ecfdf3;
 }
 
 
 /* =========================================
-   INFO GRID
+   INFORMATION GRID
 ========================================= */
 
 .lg-info-grid {
@@ -479,44 +1038,79 @@
 
   gap: 11px;
 
-  margin: 19px 0;
+  padding:
+    18px 22px 0;
 }
+
 
 .lg-info-card {
   display: flex;
-  align-items: flex-start;
+
+  align-items: center;
 
   gap: 10px;
 
-  padding: 13px;
+  min-width: 0;
+
+  padding: 12px;
 
   background: #fafbfe;
 
-  border: 1px solid var(--border-light);
-  border-radius: 11px;
+  border:
+    1px solid #edf0f5;
+
+  border-radius: 12px;
 }
 
-.lg-info-card svg {
+
+.lg-info-icon {
+  width: 36px;
+  height: 36px;
+
   flex-shrink: 0;
 
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
   color: #4058df;
+
+  background: #edf1ff;
+
+  border-radius: 10px;
 }
+
 
 .lg-info-card span {
   display: block;
 
   margin-bottom: 4px;
 
-  color: var(--text-muted);
+  color: #98a2b3;
 
-  font-size: 8px;
+  font-size: 5px;
+  font-weight: 750;
+
+  letter-spacing: 0.05em;
 }
 
-.lg-info-card strong {
-  color: var(--text-primary);
 
-  font-size: 9px;
-  line-height: 1.5;
+.lg-info-card strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: #344054;
+
+  font-size: 8px;
+  font-weight: 750;
+
+  line-height: 1.4;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
 }
 
 
@@ -525,61 +1119,100 @@
 ========================================= */
 
 .lg-submission-file {
-  display: flex;
+  display: grid;
+
+  grid-template-columns:
+    43px
+    minmax(0, 1fr)
+    auto;
+
   align-items: center;
 
   gap: 11px;
 
   padding: 14px;
 
-  margin-bottom: 22px;
+  margin:
+    14px 22px 0;
 
-  background: #f5f7ff;
+  background:
+    linear-gradient(
+      135deg,
+      #f5f7ff,
+      #fafbff
+    );
 
-  border: 1px solid #dde3ff;
-  border-radius: 12px;
+  border:
+    1px solid #dde3ff;
+
+  border-radius: 13px;
 }
+
 
 .lg-file-icon {
   width: 42px;
   height: 42px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
-  flex-shrink: 0;
-
   color: #4058df;
+
   background: #e8edff;
 
   border-radius: 11px;
 }
 
+
 .lg-submission-file > div:nth-child(2) {
-  flex: 1;
+  min-width: 0;
 }
+
+
+.lg-submission-file > div:nth-child(2) > span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
 
 .lg-submission-file strong {
   display: block;
 
-  margin-bottom: 3px;
+  overflow: hidden;
 
-  color: var(--text-primary);
+  color: #344054;
 
-  font-size: 10px;
+  font-size: 9px;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.lg-submission-file span {
-  color: var(--text-muted);
 
-  font-size: 8px;
+.lg-submission-file p {
+  margin: 3px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 6px;
 }
+
 
 .lg-submission-file button {
-  min-height: 35px;
+  min-height: 36px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -588,218 +1221,707 @@
   padding: 0 11px;
 
   color: #4058df;
+
   background: white;
 
-  border: 1px solid #d7defb;
+  border:
+    1px solid #d7defb;
+
   border-radius: 8px;
 
-  font-size: 9px;
-  font-weight: 700;
+  font-family: inherit;
+
+  font-size: 7px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.lg-submission-file button:hover {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 6px 14px
+    rgba(64, 88, 223, 0.1);
 }
 
 
 /* =========================================
-   FORM
+   GRADING LAB
 ========================================= */
 
-.lg-form-section {
-  padding-top: 4px;
+.lg-grading-lab {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.55fr)
+    245px;
+
+  gap: 17px;
+
+  padding: 22px;
 }
+
+
+/* =========================================
+   MARKING AREA
+========================================= */
+
+.lg-marking-area {
+  min-width: 0;
+}
+
+
+/* =========================================
+   SECTION TITLE
+========================================= */
 
 .lg-section-title {
   margin-bottom: 17px;
 }
 
+
+.lg-section-title > span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  margin-bottom: 5px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
 .lg-section-title h3 {
   margin: 0;
 
-  color: var(--text-primary);
+  color: #101828;
 
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 850;
 }
+
 
 .lg-section-title p {
+  max-width: 500px;
+
   margin: 5px 0 0;
 
-  color: var(--text-muted);
+  color: #98a2b3;
 
-  font-size: 9px;
+  font-size: 7px;
+  line-height: 1.6;
 }
 
-.lg-mark-row {
+
+/* =========================================
+   SCORE BUILDER
+========================================= */
+
+.lg-score-builder {
   display: grid;
 
   grid-template-columns:
-    minmax(200px, 0.55fr)
-    minmax(250px, 0.45fr);
+    minmax(180px, 0.8fr)
+    minmax(190px, 1.2fr);
 
-  gap: 15px;
+  gap: 12px;
 
-  margin-bottom: 17px;
+  margin-bottom: 18px;
+
+  padding: 15px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fafbff,
+      #f6f8ff
+    );
+
+  border:
+    1px solid #e8ebf5;
+
+  border-radius: 13px;
 }
+
+
+/* =========================================
+   FORM GROUP
+========================================= */
 
 .lg-form-group {
   display: flex;
+
   flex-direction: column;
 
   gap: 7px;
 }
 
+
 .lg-form-group label {
   display: flex;
+
   align-items: center;
 
   gap: 6px;
 
-  color: var(--text-primary);
+  color: #344054;
 
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 8px;
+  font-weight: 750;
 }
+
+
+/* =========================================
+   MARK INPUT
+========================================= */
 
 .lg-mark-input {
   display: flex;
+
   align-items: center;
 }
 
+
 .lg-mark-input input {
-  width: 120px;
-  height: 44px;
+  width: 105px;
+  height: 43px;
+
+  box-sizing: border-box;
 
   padding: 0 12px;
 
-  color: var(--text-primary);
-  background: #fafbfe;
+  color: #101828;
 
-  border: 1px solid var(--border);
-  border-radius: 10px 0 0 10px;
+  background: white;
+
+  border:
+    1px solid #dce1eb;
+
+  border-radius:
+    9px 0 0 9px;
 
   outline: none;
 
+  font-family: inherit;
+
   font-size: 12px;
+  font-weight: 800;
 }
+
 
 .lg-mark-input span {
-  height: 44px;
+  height: 43px;
+
+  box-sizing: border-box;
 
   display: flex;
+
   align-items: center;
 
-  padding: 0 13px;
+  padding: 0 12px;
 
-  color: var(--text-secondary);
-  background: #f1f3f8;
+  color: #667085;
 
-  border: 1px solid var(--border);
+  background: #eef1f7;
+
+  border:
+    1px solid #dce1eb;
+
   border-left: none;
-  border-radius: 0 10px 10px 0;
 
-  font-size: 10px;
+  border-radius:
+    0 9px 9px 0;
+
+  font-size: 8px;
+  font-weight: 700;
 }
 
-.lg-result-preview {
-  display: grid;
 
-  grid-template-columns: 1fr 1fr;
+.lg-mark-input input:focus {
+  border-color: #bdc7ff;
 
-  gap: 10px;
+  box-shadow:
+    0 0 0 4px
+    rgba(64, 88, 223, 0.06);
 }
 
-.lg-result-preview > div {
+
+/* =========================================
+   SCORE GUIDE
+========================================= */
+
+.lg-score-guide {
+  align-self: stretch;
+
   display: flex;
+
   flex-direction: column;
+
   justify-content: center;
 
-  padding: 10px 13px;
+  padding: 12px;
 
-  background: #f7f9ff;
+  background: white;
+
+  border:
+    1px solid #edf0f5;
 
   border-radius: 10px;
 }
 
-.lg-result-preview span {
-  margin-bottom: 4px;
 
-  color: var(--text-muted);
+.lg-score-guide span {
+  color: #4058df;
 
-  font-size: 8px;
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
 }
 
-.lg-result-preview strong {
-  color: var(--text-primary);
 
-  font-size: 15px;
+.lg-score-guide p {
+  margin: 5px 0 0;
+
+  color: #8b95a7;
+
+  font-size: 7px;
+  line-height: 1.5;
 }
 
-.lg-grade-letter {
-  color: #4058df !important;
-}
 
-.lg-form-group textarea {
+/* =========================================
+   FEEDBACK
+========================================= */
+
+.lg-feedback-group textarea {
   width: 100%;
+
+  box-sizing: border-box;
+
+  min-height: 145px;
 
   padding: 13px;
 
   resize: vertical;
 
-  color: var(--text-primary);
+  color: #344054;
+
   background: #fafbfe;
 
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border:
+    1px solid #e1e5ed;
+
+  border-radius: 11px;
 
   outline: none;
 
   font-family: inherit;
-  font-size: 10px;
+
+  font-size: 8px;
   line-height: 1.7;
+
+  transition:
+    background 0.18s ease,
+    border 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-.lg-form-group textarea:focus,
-.lg-mark-input input:focus {
+
+.lg-feedback-group textarea:focus {
   background: white;
 
   border-color: #bdc7ff;
 
   box-shadow:
     0 0 0 4px
-    rgba(79, 99, 231, 0.07);
+    rgba(64, 88, 223, 0.07);
+}
+
+
+.lg-feedback-hint {
+  color: #a0a8b7;
+
+  font-size: 6px;
 }
 
 
 /* =========================================
-   ACTIONS
+   LIVE RESULT CARD
+========================================= */
+
+.lg-result-card {
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 340px;
+
+  padding: 18px;
+
+  background:
+    linear-gradient(
+      160deg,
+      #f4f6ff,
+      #ffffff 65%
+    );
+
+  border:
+    1px solid #e3e7f5;
+
+  border-radius: 17px;
+}
+
+
+.lg-result-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 145px;
+  height: 145px;
+
+  top: -85px;
+  right: -65px;
+
+  border:
+    18px solid
+    rgba(64, 88, 223, 0.035);
+
+  border-radius: 50%;
+}
+
+
+.lg-result-card-top {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  color: #4058df;
+}
+
+
+.lg-result-card-top span {
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+/* =========================================
+   RESULT RING
+========================================= */
+
+.lg-score-ring {
+  width: 126px;
+  height: 126px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin:
+    24px auto 17px;
+
+  border-radius: 50%;
+
+  transition:
+    background 0.35s ease;
+}
+
+
+.lg-score-ring-inner {
+  width: 97px;
+  height: 97px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  background: white;
+
+  border-radius: 50%;
+
+  box-shadow:
+    inset 0 0 0 1px
+    #eef1f7;
+}
+
+
+.lg-score-ring-inner strong {
+  color: #101828;
+
+  font-size: 22px;
+  font-weight: 850;
+}
+
+
+.lg-score-ring-inner span {
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 5px;
+  font-weight: 800;
+}
+
+
+/* =========================================
+   GRADE DISPLAY
+========================================= */
+
+.lg-grade-display {
+  text-align: center;
+}
+
+
+.lg-grade-display span {
+  display: block;
+
+  color: #98a2b3;
+
+  font-size: 5px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+}
+
+
+.lg-grade-display strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #4058df;
+
+  font-size: 25px;
+  font-weight: 900;
+}
+
+
+/* =========================================
+   RESULT STATUS
+========================================= */
+
+.lg-result-status {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  margin-top: 12px;
+
+  padding: 7px;
+
+  color: #667085;
+
+  background: #f8f9fc;
+
+  border-radius: 8px;
+
+  font-size: 6px;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   RESULT SUMMARY
+========================================= */
+
+.lg-result-summary {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 8px;
+
+  margin-top: 12px;
+}
+
+
+.lg-result-summary > div {
+  padding: 9px;
+
+  text-align: center;
+
+  background: white;
+
+  border:
+    1px solid #edf0f5;
+
+  border-radius: 9px;
+}
+
+
+.lg-result-summary span {
+  display: block;
+
+  color: #98a2b3;
+
+  font-size: 5px;
+}
+
+
+.lg-result-summary strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #344054;
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+
+/* =========================================
+   ACTION BAR
 ========================================= */
 
 .lg-form-actions {
   display: flex;
-  justify-content: flex-end;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 18px;
+
+  padding: 17px 22px;
+
+  background: #fbfcff;
+
+  border-top:
+    1px solid #edf0f5;
+}
+
+
+.lg-action-note {
+  display: flex;
+
+  align-items: center;
 
   gap: 9px;
 
-  margin-top: 18px;
+  color: #4058df;
 }
+
+
+.lg-action-note div {
+  display: flex;
+
+  flex-direction: column;
+}
+
+
+.lg-action-note strong {
+  color: #344054;
+
+  font-size: 8px;
+}
+
+
+.lg-action-note span {
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 6px;
+}
+
+
+.lg-action-buttons {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+/* =========================================
+   SAVE DRAFT
+========================================= */
 
 .lg-save-draft {
-  min-height: 40px;
+  min-height: 39px;
 
-  padding: 0 15px;
+  display: inline-flex;
 
-  color: var(--text-secondary);
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 0 14px;
+
+  color: #667085;
+
   background: white;
 
-  border: 1px solid var(--border);
+  border:
+    1px solid #dce1e8;
+
   border-radius: 9px;
 
-  font-size: 10px;
-  font-weight: 700;
+  font-family: inherit;
+
+  font-size: 7px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
-.lg-publish-button {
-  min-height: 40px;
 
-  display: flex;
+.lg-save-draft:hover {
+  color: #4058df;
+
+  background: #f5f7ff;
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* =========================================
+   PUBLISH BUTTON
+========================================= */
+
+.lg-publish-button {
+  min-height: 39px;
+
+  display: inline-flex;
+
   align-items: center;
   justify-content: center;
 
@@ -813,18 +1935,131 @@
     linear-gradient(
       135deg,
       #4058df,
-      #6366f1
+      #636fe8
     );
 
   border: none;
+
   border-radius: 9px;
 
   box-shadow:
     0 7px 17px
-    rgba(79, 99, 231, 0.2);
+    rgba(64, 88, 223, 0.2);
 
-  font-size: 10px;
-  font-weight: 700;
+  font-family: inherit;
+
+  font-size: 7px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.lg-publish-button:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 10px 21px
+    rgba(64, 88, 223, 0.25);
+}
+
+
+.lg-publish-button:disabled,
+.lg-save-draft:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   EMPTY WORKSPACE
+========================================= */
+
+.lg-empty-workspace {
+  min-height: 520px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px;
+
+  text-align: center;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fafbff
+    );
+
+  border:
+    1px solid #e4e8f0;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 11px 30px
+    rgba(30, 43, 87, 0.05);
+}
+
+
+.lg-empty-workspace-icon {
+  width: 62px;
+  height: 62px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 15px;
+
+  color: #4058df;
+
+  background: #edf1ff;
+
+  border-radius: 17px;
+}
+
+
+.lg-empty-workspace > span {
+  color: #4058df;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.lg-empty-workspace h3 {
+  margin: 7px 0 0;
+
+  color: #101828;
+
+  font-size: 16px;
+}
+
+
+.lg-empty-workspace p {
+  max-width: 280px;
+
+  margin: 6px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 8px;
+  line-height: 1.6;
 }
 
 
@@ -832,14 +2067,82 @@
    RESPONSIVE
 ========================================= */
 
-@media (max-width: 1050px) {
+@media (max-width: 1120px) {
+
+  .lg-workspace {
+    grid-template-columns:
+      285px
+      minmax(0, 1fr);
+  }
+
+
+  .lg-grading-lab {
+    grid-template-columns: 1fr;
+  }
+
+
+  .lg-result-card {
+    min-height: auto;
+  }
+
+
+  .lg-result-card {
+    display: grid;
+
+    grid-template-columns:
+      auto
+      150px
+      1fr;
+
+    align-items: center;
+
+    gap: 20px;
+  }
+
+
+  .lg-result-card-top {
+    align-self: start;
+  }
+
+
+  .lg-score-ring {
+    margin: 0 auto;
+  }
+
+
+  .lg-grade-display {
+    text-align: left;
+  }
+
+}
+
+
+@media (max-width: 950px) {
+
+  .lg-studio-hero {
+    grid-template-columns: 1fr;
+
+    padding-bottom: 110px;
+  }
+
+
+  .lg-studio-progress {
+    width: min(
+      420px,
+      100%
+    );
+
+    box-sizing: border-box;
+  }
+
 
   .lg-workspace {
     grid-template-columns: 1fr;
   }
 
+
   .lg-queue-list {
-    max-height: 300px;
+    max-height: 320px;
   }
 
 }
@@ -848,21 +2151,139 @@
 @media (max-width: 800px) {
 
   .lecturer-grading-page {
-    padding: 24px 18px 40px;
+    padding:
+      24px 18px 42px;
   }
 
-  .lg-header {
-    align-items: flex-start;
+
+  .lg-studio-hero {
+    padding:
+      24px 22px 130px;
+  }
+
+
+  .lg-studio-intro {
     flex-direction: column;
   }
 
-  .lg-summary,
+
+  .lg-studio-intro h1 {
+    font-size: 27px;
+  }
+
+
+  .lg-studio-stats {
+    left: 22px;
+    right: 22px;
+    bottom: 22px;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
+
+
+  .lg-studio-stats > div {
+    min-width: 0;
+  }
+
+
   .lg-info-grid {
     grid-template-columns: 1fr;
   }
 
-  .lg-mark-row {
+
+  .lg-score-builder {
     grid-template-columns: 1fr;
+  }
+
+
+  .lg-form-actions {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .lg-action-buttons {
+    width: 100%;
+  }
+
+
+  .lg-action-buttons button {
+    flex: 1;
+  }
+
+
+  .lg-result-card {
+    display: block;
+  }
+
+
+  .lg-score-ring {
+    margin:
+      22px auto 16px;
+  }
+
+
+  .lg-grade-display {
+    text-align: center;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .lg-studio-hero {
+    padding-bottom: 200px;
+  }
+
+
+  .lg-studio-stats {
+    grid-template-columns: 1fr;
+  }
+
+
+  .lg-studio-progress {
+    padding: 15px;
+  }
+
+
+  .lg-student-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .lg-submission-file {
+    grid-template-columns:
+      42px
+      minmax(0, 1fr);
+  }
+
+
+  .lg-submission-file button {
+    grid-column: 1 / -1;
+
+    width: 100%;
+  }
+
+
+  .lg-form-actions {
+    padding: 16px;
+  }
+
+
+  .lg-action-buttons {
+    flex-direction: column;
+  }
+
+
+  .lg-action-buttons button {
+    width: 100%;
   }
 
 }

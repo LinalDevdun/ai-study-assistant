@@ -19,6 +19,9 @@ import {
   ClipboardList,
   Award,
   CircleCheckBig,
+  UserRound,
+  ChevronRight,
+  BarChart3,
 } from "lucide-react";
 
 import "../styles/lecturerStudents.css";
@@ -102,6 +105,7 @@ function LecturerStudents() {
         const formattedStudents =
           realStudents.map(
             (student) => ({
+
               id:
                 student.id,
 
@@ -169,6 +173,7 @@ function LecturerStudents() {
                 student.is_active === false
                   ? "Inactive"
                   : "Active",
+
             })
           );
 
@@ -400,67 +405,91 @@ function LecturerStudents() {
 
 
       {/* ====================================
-          HEADER
+          HEADER / ROSTER INTRO
       ==================================== */}
 
-      <section className="lst-header">
+      <section className="lst-roster-header">
 
-        <div>
 
-          <h1>
-            Students
-          </h1>
+        <div className="lst-roster-heading">
 
-          <p>
-            View student information,
-            learning progress and academic
-            performance.
-          </p>
+
+          <div className="lst-roster-icon">
+
+            <Users size={22} />
+
+          </div>
+
+
+          <div>
+
+            <span className="lst-eyebrow">
+              STUDENT ROSTER
+            </span>
+
+
+            <h1>
+              Your Students
+            </h1>
+
+
+            <p>
+
+              View your teaching groups,
+              monitor learning progress and
+              quickly check student performance.
+
+            </p>
+
+          </div>
 
         </div>
 
 
-        <div className="lst-header-badge">
+        <div className="lst-roster-total">
 
-          <Users size={16} />
+          <span>
+            TOTAL ROSTER
+          </span>
 
-          {totalStudents}{" "}
+          <strong>
+            {loading
+              ? "..."
+              : totalStudents}
+          </strong>
 
-          {totalStudents === 1
-            ? "Student"
-            : "Students"}
+          <small>
+
+            {totalStudents === 1
+              ? "student"
+              : "students"}
+
+          </small>
 
         </div>
 
       </section>
 
 
-
       {/* ====================================
-          SUMMARY
+          CLASS OVERVIEW
       ==================================== */}
 
-      <section className="lst-summary">
+      <section className="lst-overview-strip">
 
 
-        <div className="lst-summary-card lst-blue">
+        <div className="lst-overview-label">
 
-          <div className="lst-summary-icon">
-
-            <Users size={21} />
-
-          </div>
+          <BarChart3 size={17} />
 
           <div>
 
             <strong>
-              {loading
-                ? "..."
-                : totalStudents}
+              Class Overview
             </strong>
 
             <span>
-              Total Students
+              Current student activity
             </span>
 
           </div>
@@ -468,110 +497,115 @@ function LecturerStudents() {
         </div>
 
 
+        <div className="lst-overview-stat">
 
-        <div className="lst-summary-card lst-green">
+          <span>
+            ACTIVE
+          </span>
 
-          <div className="lst-summary-icon">
+          <strong>
+            {loading
+              ? "..."
+              : activeStudents}
+          </strong>
 
-            <CircleCheckBig
-              size={21}
-            />
-
-          </div>
-
-          <div>
-
-            <strong>
-              {loading
-                ? "..."
-                : activeStudents}
-            </strong>
-
-            <span>
-              Active Students
-            </span>
-
-          </div>
+          <small>
+            students
+          </small>
 
         </div>
 
 
+        <div className="lst-overview-divider" />
 
-        <div className="lst-summary-card lst-purple">
 
-          <div className="lst-summary-icon">
+        <div className="lst-overview-stat">
 
-            <TrendingUp
-              size={21}
-            />
+          <span>
+            AVG. PROGRESS
+          </span>
 
-          </div>
+          <strong>
 
-          <div>
+            {loading
+              ? "..."
+              : `${averageProgress}%`}
 
-            <strong>
+          </strong>
 
-              {loading
-                ? "..."
-                : `${averageProgress}%`}
-
-            </strong>
-
-            <span>
-              Average Progress
-            </span>
-
-          </div>
+          <small>
+            coursework
+          </small>
 
         </div>
 
 
+        <div className="lst-overview-divider" />
 
-        <div className="lst-summary-card lst-orange">
 
-          <div className="lst-summary-icon">
+        <div className="lst-overview-stat">
 
-            <Award size={21} />
+          <span>
+            AVG. SCORE
+          </span>
 
-          </div>
+          <strong>
 
-          <div>
+            {loading
+              ? "..."
+              : averagePerformance !== null
+                ? `${averagePerformance}%`
+                : "—"}
 
-            <strong>
+          </strong>
 
-              {loading
-                ? "..."
-                : averagePerformance !== null
-                  ? `${averagePerformance}%`
-                  : "—"}
-
-            </strong>
-
-            <span>
-              Average Score
-            </span>
-
-          </div>
+          <small>
+            graded work
+          </small>
 
         </div>
 
       </section>
 
 
-
       {/* ====================================
-          TOOLBAR
+          SEARCH / FILTER
       ==================================== */}
 
       <section className="lst-toolbar">
 
+
+        <div className="lst-toolbar-info">
+
+          <div className="lst-toolbar-icon">
+
+            <Search size={16} />
+
+          </div>
+
+
+          <div>
+
+            <strong>
+              Find a student
+            </strong>
+
+            <span>
+              Search your teaching roster
+            </span>
+
+          </div>
+
+        </div>
+
+
         <div className="lst-search">
 
-          <Search size={17} />
+          <Search size={16} />
 
           <input
             type="text"
-            placeholder="Search students..."
+            placeholder="Search name, email, course..."
             value={searchTerm}
             onChange={(event) =>
               setSearchTerm(
@@ -618,6 +652,41 @@ function LecturerStudents() {
       </section>
 
 
+      {/* ====================================
+          SECTION TITLE
+      ==================================== */}
+
+      {!loading && !error && (
+
+        <div className="lst-section-heading">
+
+          <div>
+
+            <span>
+              CLASS DIRECTORY
+            </span>
+
+            <h2>
+              Student Profiles
+            </h2>
+
+          </div>
+
+
+          <small>
+
+            {filteredStudents.length}{" "}
+
+            {filteredStudents.length === 1
+              ? "result"
+              : "results"}
+
+          </small>
+
+        </div>
+
+      )}
+
 
       {/* ====================================
           LOADING
@@ -634,14 +703,15 @@ function LecturerStudents() {
           </h3>
 
           <p>
+
             Please wait while student
             information is loaded.
+
           </p>
 
         </div>
 
       )}
-
 
 
       {/* ====================================
@@ -667,14 +737,16 @@ function LecturerStudents() {
       )}
 
 
-
       {/* ====================================
           STUDENT GRID
       ==================================== */}
 
-      {!loading && !error && (
+      {!loading &&
+        !error &&
+        filteredStudents.length > 0 && (
 
         <section className="lst-grid">
+
 
           {filteredStudents.map(
             (student) => (
@@ -687,7 +759,8 @@ function LecturerStudents() {
 
                 {/* TOP */}
 
-                <div className="lst-student-top">
+                <div className="lst-card-top">
+
 
                   <div className="lst-avatar">
 
@@ -696,7 +769,18 @@ function LecturerStudents() {
                   </div>
 
 
-                  <span className="lst-active-badge">
+                  <span
+                    className={
+                      student.status ===
+                      "Active"
+                        ? "lst-status lst-status-active"
+                        : "lst-status lst-status-inactive"
+                    }
+                  >
+
+                    <span
+                      className="lst-status-dot"
+                    />
 
                     {student.status}
 
@@ -705,28 +789,30 @@ function LecturerStudents() {
                 </div>
 
 
+                {/* NAME */}
 
-                {/* DETAILS */}
+                <div className="lst-card-identity">
 
-                <h3>
-                  {student.name}
-                </h3>
+                  <h3>
+                    {student.name}
+                  </h3>
+
+                  <p>
+                    {student.studentId}
+                  </p>
+
+                </div>
 
 
-                <p className="lst-student-id">
+                {/* ACADEMIC INFO */}
 
-                  {student.studentId}
-
-                </p>
-
-
-                <div className="lst-student-details">
+                <div className="lst-academic-info">
 
 
                   <div>
 
                     <GraduationCap
-                      size={13}
+                      size={14}
                     />
 
                     <span>
@@ -738,8 +824,19 @@ function LecturerStudents() {
 
                   <div>
 
+                    <Users size={14} />
+
+                    <span>
+                      Batch {student.batch}
+                    </span>
+
+                  </div>
+
+
+                  <div>
+
                     <BookOpen
-                      size={13}
+                      size={14}
                     />
 
                     <span>
@@ -748,29 +845,18 @@ function LecturerStudents() {
 
                   </div>
 
-
-                  <div>
-
-                    <Users size={13} />
-
-                    <span>
-                      Batch {student.batch}
-                    </span>
-
-                  </div>
-
                 </div>
-
 
 
                 {/* PROGRESS */}
 
                 <div className="lst-progress">
 
+
                   <div className="lst-progress-info">
 
                     <span>
-                      Learning Progress
+                      Learning progress
                     </span>
 
                     <strong>
@@ -795,10 +881,10 @@ function LecturerStudents() {
                 </div>
 
 
-
                 {/* PERFORMANCE */}
 
                 <div className="lst-performance">
+
 
                   <div>
 
@@ -807,7 +893,7 @@ function LecturerStudents() {
                     </strong>
 
                     <span>
-                      Submissions
+                      Submitted
                     </span>
 
                   </div>
@@ -845,10 +931,10 @@ function LecturerStudents() {
                 </div>
 
 
-
                 {/* ACTION */}
 
                 <button
+                  type="button"
                   className="lst-view-button"
                   onClick={() =>
                     setSelectedStudent(
@@ -859,7 +945,11 @@ function LecturerStudents() {
 
                   <Eye size={14} />
 
-                  View Student
+                  View Profile
+
+                  <ChevronRight
+                    size={14}
+                  />
 
                 </button>
 
@@ -873,9 +963,8 @@ function LecturerStudents() {
       )}
 
 
-
       {/* ====================================
-          EMPTY STATE
+          EMPTY SEARCH RESULT
       ==================================== */}
 
       {!loading &&
@@ -884,21 +973,22 @@ function LecturerStudents() {
 
         <div className="lst-empty">
 
-          <Users size={28} />
+          <Search size={28} />
 
           <h3>
             No students found
           </h3>
 
           <p>
+
             Try changing your search
             or batch filter.
+
           </p>
 
         </div>
 
       )}
-
 
 
       {/* ====================================
@@ -909,28 +999,39 @@ function LecturerStudents() {
 
         <div className="lst-modal-overlay">
 
+
           <div className="lst-modal">
 
 
-            {/* HEADER */}
+            {/* ==================================
+                MODAL TOPBAR
+            ================================== */}
 
             <div className="lst-modal-header">
 
+
               <div>
 
+                <span>
+                  STUDENT PROFILE
+                </span>
+
                 <h2>
-                  Student Details
+                  Academic Overview
                 </h2>
 
                 <p>
-                  Academic and learning
-                  progress overview.
+
+                  Student account,
+                  coursework and performance.
+
                 </p>
 
               </div>
 
 
               <button
+                type="button"
                 onClick={() =>
                   setSelectedStudent(
                     null
@@ -945,10 +1046,12 @@ function LecturerStudents() {
             </div>
 
 
-
-            {/* PROFILE */}
+            {/* ==================================
+                PROFILE BANNER
+            ================================== */}
 
             <div className="lst-modal-profile">
+
 
               <div className="lst-modal-avatar">
 
@@ -959,7 +1062,11 @@ function LecturerStudents() {
               </div>
 
 
-              <div>
+              <div className="lst-modal-profile-text">
+
+                <span>
+                  STUDENT
+                </span>
 
                 <h3>
 
@@ -980,26 +1087,42 @@ function LecturerStudents() {
               </div>
 
 
-              <span>
+              <div
+                className={
+                  selectedStudent.status ===
+                  "Active"
+                    ? "lst-modal-status lst-modal-status-active"
+                    : "lst-modal-status lst-modal-status-inactive"
+                }
+              >
+
+                <CircleCheckBig
+                  size={13}
+                />
 
                 {
                   selectedStudent.status
                 }
 
-              </span>
+              </div>
 
             </div>
 
 
-
-            {/* INFO */}
+            {/* ==================================
+                INFO
+            ================================== */}
 
             <div className="lst-modal-info-grid">
 
 
               <div className="lst-info-card">
 
-                <Mail size={17} />
+                <div className="lst-info-icon">
+
+                  <Mail size={17} />
+
+                </div>
 
                 <div>
 
@@ -1022,9 +1145,13 @@ function LecturerStudents() {
 
               <div className="lst-info-card">
 
-                <GraduationCap
-                  size={17}
-                />
+                <div className="lst-info-icon">
+
+                  <GraduationCap
+                    size={17}
+                  />
+
+                </div>
 
                 <div>
 
@@ -1047,9 +1174,13 @@ function LecturerStudents() {
 
               <div className="lst-info-card">
 
-                <BookOpen
-                  size={17}
-                />
+                <div className="lst-info-icon">
+
+                  <BookOpen
+                    size={17}
+                  />
+
+                </div>
 
                 <div>
 
@@ -1072,7 +1203,11 @@ function LecturerStudents() {
 
               <div className="lst-info-card">
 
-                <Users size={17} />
+                <div className="lst-info-icon">
+
+                  <Users size={17} />
+
+                </div>
 
                 <div>
 
@@ -1095,54 +1230,70 @@ function LecturerStudents() {
             </div>
 
 
-
-            {/* PROGRESS PANEL */}
+            {/* ==================================
+                PROGRESS
+            ================================== */}
 
             <div className="lst-modal-progress">
 
-              <div className="lst-modal-progress-header">
 
-                <div>
+              <div className="lst-modal-progress-icon">
 
-                  <h3>
-                    Learning Progress
-                  </h3>
-
-                  <p>
-                    Current overall
-                    assignment completion.
-                  </p>
-
-                </div>
-
-
-                <strong>
-
-                  {
-                    selectedStudent.progress
-                  }%
-
-                </strong>
+                <TrendingUp
+                  size={19}
+                />
 
               </div>
 
 
-              <div className="lst-modal-progress-track">
+              <div className="lst-modal-progress-body">
 
-                <div
-                  style={{
-                    width:
-                      `${selectedStudent.progress}%`,
-                  }}
-                />
+
+                <div className="lst-modal-progress-header">
+
+                  <div>
+
+                    <span>
+                      LEARNING PROGRESS
+                    </span>
+
+                    <h3>
+                      Coursework completion
+                    </h3>
+
+                  </div>
+
+
+                  <strong>
+
+                    {
+                      selectedStudent.progress
+                    }%
+
+                  </strong>
+
+                </div>
+
+
+                <div className="lst-modal-progress-track">
+
+                  <div
+                    style={{
+                      width:
+                        `${selectedStudent.progress}%`,
+                    }}
+                  />
+
+                </div>
 
               </div>
 
             </div>
 
 
-
-            {/* ACADEMIC STATS */}
+            {/* ==================================
+                ACADEMIC STATS
+            ================================== */}
 
             <div className="lst-modal-stats">
 
@@ -1153,6 +1304,10 @@ function LecturerStudents() {
                   size={18}
                 />
 
+                <span>
+                  SUBMISSIONS
+                </span>
+
                 <strong>
 
                   {
@@ -1160,10 +1315,6 @@ function LecturerStudents() {
                   }
 
                 </strong>
-
-                <span>
-                  Submissions
-                </span>
 
               </div>
 
@@ -1174,6 +1325,10 @@ function LecturerStudents() {
                   size={18}
                 />
 
+                <span>
+                  GRADED
+                </span>
+
                 <strong>
 
                   {
@@ -1182,16 +1337,16 @@ function LecturerStudents() {
 
                 </strong>
 
-                <span>
-                  Graded
-                </span>
-
               </div>
 
 
               <div>
 
                 <Award size={18} />
+
+                <span>
+                  AVG. SCORE
+                </span>
 
                 <strong>
 
@@ -1201,21 +1356,34 @@ function LecturerStudents() {
 
                 </strong>
 
-                <span>
-                  Average Score
-                </span>
-
               </div>
 
             </div>
 
 
-
-            {/* FOOTER */}
+            {/* ==================================
+                FOOTER
+            ================================== */}
 
             <div className="lst-modal-footer">
 
+
+              <div>
+
+                <UserRound size={16} />
+
+                <span>
+
+                  Academic information
+                  for this student.
+
+                </span>
+
+              </div>
+
+
               <button
+                type="button"
                 onClick={() =>
                   setSelectedStudent(
                     null

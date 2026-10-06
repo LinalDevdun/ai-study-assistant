@@ -1,5 +1,6 @@
 /* =========================================
-   LECTURER STUDENTS PAGE
+   LECTURER STUDENTS
+   CLEAN STUDENT ROSTER
 ========================================= */
 
 .lecturer-students-page {
@@ -12,269 +13,85 @@
 }
 
 
-/* HEADER */
-
-.lst-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-
-  gap: 20px;
-
-  margin-bottom: 27px;
-}
-
-.lst-header h1 {
-  margin: 0;
-
-  color: var(--text-primary);
-
-  font-size: 30px;
-  font-weight: 800;
-
-  letter-spacing: -0.8px;
-}
-
-.lst-header p {
-  margin: 8px 0 0;
-
-  color: var(--text-secondary);
-
-  font-size: 14px;
-}
-
-.lst-header-badge {
-  display: inline-flex;
-  align-items: center;
-
-  gap: 7px;
-
-  padding: 10px 14px;
-
-  color: #4058df;
-  background: #eef2ff;
-
-  border: 1px solid #dce2ff;
-  border-radius: 11px;
-
-  font-size: 11px;
-  font-weight: 700;
-}
-
-
 /* =========================================
-   SUMMARY
+   ROSTER HEADER
 ========================================= */
 
-.lst-summary {
-  display: grid;
-
-  grid-template-columns:
-    repeat(4, 1fr);
-
-  gap: 17px;
-
-  margin-bottom: 27px;
-}
-
-.lst-summary-card {
-  display: flex;
-  align-items: center;
-
-  gap: 14px;
-
-  padding: 18px;
-
-  background: white;
-
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-
-  box-shadow: var(--shadow-sm);
-}
-
-.lst-summary-icon {
-  width: 46px;
-  height: 46px;
-
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 13px;
-}
-
-.lst-blue .lst-summary-icon {
-  color: #4058df;
-  background: #eef2ff;
-}
-
-.lst-green .lst-summary-icon {
-  color: #16a34a;
-  background: #ecfdf3;
-}
-
-.lst-purple .lst-summary-icon {
-  color: #7c4fe0;
-  background: #f3edff;
-}
-
-.lst-orange .lst-summary-icon {
-  color: #d98300;
-  background: #fff7e6;
-}
-
-.lst-summary-card strong {
-  display: block;
-
-  margin-bottom: 3px;
-
-  color: var(--text-primary);
-
-  font-size: 21px;
-  font-weight: 800;
-}
-
-.lst-summary-card span {
-  color: var(--text-secondary);
-
-  font-size: 11px;
-  font-weight: 600;
-}
-
-
-/* =========================================
-   TOOLBAR
-========================================= */
-
-.lst-toolbar {
-  display: flex;
-  justify-content: space-between;
-
-  gap: 15px;
-
-  padding: 15px;
-
-  margin-bottom: 22px;
-
-  background: white;
-
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-
-  box-shadow: var(--shadow-xs);
-}
-
-.lst-search {
-  width: min(470px, 100%);
-
+.lst-roster-header {
   position: relative;
-}
 
-.lst-search svg {
-  position: absolute;
+  overflow: hidden;
 
-  left: 14px;
-  top: 50%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-  transform: translateY(-50%);
+  gap: 24px;
 
-  color: var(--text-muted);
-}
+  min-height: 145px;
 
-.lst-search input {
-  width: 100%;
-  height: 43px;
+  padding: 27px 30px;
 
-  padding: 0 14px 0 42px;
+  margin-bottom: 18px;
 
-  color: var(--text-primary);
-  background: #f8f9fc;
+  background:
+    linear-gradient(
+      120deg,
+      #ffffff 0%,
+      #f8faff 70%,
+      #eef2ff 100%
+    );
 
-  border: 1px solid transparent;
-  border-radius: 11px;
+  border:
+    1px solid #e2e7f1;
 
-  outline: none;
-
-  font-size: 12px;
-}
-
-.lst-search input:focus {
-  background: white;
-
-  border-color: #ccd5ff;
+  border-radius: 21px;
 
   box-shadow:
-    0 0 0 4px
-    rgba(79, 99, 231, 0.07);
+    0 10px 30px
+    rgba(30, 43, 87, 0.05);
 }
 
-.lst-filter {
-  min-width: 175px;
-  height: 43px;
 
-  padding: 0 13px;
+.lst-roster-header::after {
+  content: "";
 
-  color: var(--text-secondary);
-  background: #f8f9fc;
+  position: absolute;
 
-  border: 1px solid var(--border-light);
-  border-radius: 11px;
+  width: 170px;
+  height: 170px;
 
-  outline: none;
+  right: -60px;
+  top: -95px;
 
-  font-size: 11px;
-  font-weight: 600;
+  border:
+    24px solid
+    rgba(64, 88, 223, 0.045);
+
+  border-radius: 50%;
 }
 
 
 /* =========================================
-   STUDENT GRID
+   HEADING
 ========================================= */
 
-.lst-grid {
-  display: grid;
+.lst-roster-heading {
+  position: relative;
+  z-index: 2;
 
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-
-  gap: 18px;
-}
-
-.lst-student-card {
-  padding: 19px;
-
-  background: white;
-
-  border: 1px solid var(--border-light);
-  border-radius: 17px;
-
-  box-shadow: var(--shadow-sm);
-
-  transition:
-    transform var(--transition-normal),
-    box-shadow var(--transition-normal);
-}
-
-.lst-student-card:hover {
-  transform: translateY(-3px);
-
-  box-shadow: var(--shadow-md);
-}
-
-.lst-student-top {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 
-  margin-bottom: 13px;
+  gap: 17px;
 }
 
-.lst-avatar {
-  width: 46px;
-  height: 46px;
+
+.lst-roster-icon {
+  width: 55px;
+  height: 55px;
+
+  flex-shrink: 0;
 
   display: flex;
   align-items: center;
@@ -286,97 +103,742 @@
     linear-gradient(
       135deg,
       #4058df,
-      #7479ef
+      #6374eb
+    );
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 10px 22px
+    rgba(64, 88, 223, 0.18);
+}
+
+
+.lst-eyebrow {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #4058df;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.1em;
+}
+
+
+.lst-roster-heading h1 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 29px;
+  font-weight: 850;
+
+  letter-spacing: -0.8px;
+}
+
+
+.lst-roster-heading p {
+  max-width: 610px;
+
+  margin: 7px 0 0;
+
+  color: #667085;
+
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+
+/* =========================================
+   ROSTER COUNT
+========================================= */
+
+.lst-roster-total {
+  position: relative;
+  z-index: 2;
+
+  min-width: 120px;
+
+  padding: 15px 19px;
+
+  text-align: center;
+
+  background: white;
+
+  border:
+    1px solid #dfe5f3;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 7px 19px
+    rgba(39, 52, 97, 0.05);
+}
+
+
+.lst-roster-total span {
+  display: block;
+
+  color: #98a2b3;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+.lst-roster-total strong {
+  display: block;
+
+  margin: 4px 0 1px;
+
+  color: #4058df;
+
+  font-size: 25px;
+  font-weight: 900;
+}
+
+
+.lst-roster-total small {
+  color: #667085;
+
+  font-size: 6px;
+}
+
+
+/* =========================================
+   CLASS OVERVIEW
+========================================= */
+
+.lst-overview-strip {
+  display: grid;
+
+  grid-template-columns:
+    minmax(240px, 1.7fr)
+    minmax(120px, 0.7fr)
+    1px
+    minmax(120px, 0.7fr)
+    1px
+    minmax(120px, 0.7fr);
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding: 16px 20px;
+
+  margin-bottom: 18px;
+
+  background: white;
+
+  border:
+    1px solid #e5e9f1;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 7px 22px
+    rgba(30, 43, 87, 0.045);
+}
+
+
+.lst-overview-label {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+}
+
+
+.lst-overview-label > svg {
+  width: 39px;
+  height: 39px;
+
+  padding: 10px;
+
+  box-sizing: border-box;
+
+  color: #4058df;
+
+  background: #eef2ff;
+
+  border-radius: 11px;
+}
+
+
+.lst-overview-label strong {
+  display: block;
+
+  color: #101828;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.lst-overview-label span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 6px;
+}
+
+
+.lst-overview-stat {
+  text-align: center;
+}
+
+
+.lst-overview-stat span {
+  display: block;
+
+  color: #98a2b3;
+
+  font-size: 5px;
+  font-weight: 800;
+
+  letter-spacing: 0.06em;
+}
+
+
+.lst-overview-stat strong {
+  display: block;
+
+  margin: 4px 0 1px;
+
+  color: #101828;
+
+  font-size: 18px;
+  font-weight: 850;
+}
+
+
+.lst-overview-stat small {
+  color: #98a2b3;
+
+  font-size: 6px;
+}
+
+
+.lst-overview-divider {
+  width: 1px;
+  height: 35px;
+
+  background: #edf0f5;
+}
+
+
+/* =========================================
+   TOOLBAR
+========================================= */
+
+.lst-toolbar {
+  display: grid;
+
+  grid-template-columns:
+    190px
+    minmax(260px, 1fr)
+    175px;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 14px 15px;
+
+  margin-bottom: 24px;
+
+  background: white;
+
+  border:
+    1px solid #e5e9f1;
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 7px 22px
+    rgba(30, 43, 87, 0.04);
+}
+
+
+/* TOOLBAR LABEL */
+
+.lst-toolbar-info {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.lst-toolbar-icon {
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4058df;
+
+  background: #eef2ff;
+
+  border-radius: 10px;
+}
+
+
+.lst-toolbar-info strong {
+  display: block;
+
+  color: #344054;
+
+  font-size: 8px;
+}
+
+
+.lst-toolbar-info span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 5px;
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
+
+.lst-search {
+  position: relative;
+
+  width: 100%;
+}
+
+
+.lst-search > svg {
+  position: absolute;
+
+  left: 13px;
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  color: #98a2b3;
+}
+
+
+.lst-search input {
+  width: 100%;
+  height: 42px;
+
+  box-sizing: border-box;
+
+  padding:
+    0 13px 0 39px;
+
+  color: #344054;
+
+  background: #f8f9fc;
+
+  border:
+    1px solid transparent;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  font-family: inherit;
+
+  font-size: 8px;
+
+  transition:
+    background 0.18s ease,
+    border 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.lst-search input:focus {
+  background: white;
+
+  border-color: #c7d0ff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(64, 88, 223, 0.06);
+}
+
+
+/* =========================================
+   FILTER
+========================================= */
+
+.lst-filter {
+  width: 100%;
+  height: 42px;
+
+  padding: 0 12px;
+
+  color: #667085;
+
+  background: #f8f9fc;
+
+  border:
+    1px solid #e5e9f1;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  font-family: inherit;
+
+  font-size: 8px;
+  font-weight: 650;
+}
+
+
+/* =========================================
+   SECTION HEADING
+========================================= */
+
+.lst-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  margin-bottom: 13px;
+}
+
+
+.lst-section-heading span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.lst-section-heading h2 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 16px;
+  font-weight: 850;
+}
+
+
+.lst-section-heading small {
+  padding: 5px 8px;
+
+  color: #667085;
+
+  background: #f4f6fa;
+
+  border-radius: 7px;
+
+  font-size: 6px;
+}
+
+
+/* =========================================
+   STUDENT GRID
+========================================= */
+
+.lst-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 17px;
+}
+
+
+/* =========================================
+   STUDENT CARD
+========================================= */
+
+.lst-student-card {
+  position: relative;
+
+  overflow: hidden;
+
+  padding: 18px;
+
+  background: white;
+
+  border:
+    1px solid #e5e9f1;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 8px 24px
+    rgba(30, 43, 87, 0.045);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border 0.2s ease;
+}
+
+
+.lst-student-card::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  width: 3px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #4058df,
+      #7883ee
+    );
+}
+
+
+.lst-student-card:hover {
+  transform:
+    translateY(-3px);
+
+  border-color: #d8def3;
+
+  box-shadow:
+    0 13px 29px
+    rgba(30, 43, 87, 0.075);
+}
+
+
+/* =========================================
+   CARD TOP
+========================================= */
+
+.lst-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 13px;
+}
+
+
+.lst-avatar {
+  width: 47px;
+  height: 47px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #6675eb
     );
 
   border-radius: 13px;
 
-  font-size: 10px;
-  font-weight: 750;
+  box-shadow:
+    0 7px 15px
+    rgba(64, 88, 223, 0.16);
+
+  font-size: 9px;
+  font-weight: 850;
 }
 
-.lst-active-badge {
-  padding: 5px 8px;
 
-  color: #15803d;
-  background: #ecfdf3;
+/* =========================================
+   STATUS
+========================================= */
+
+.lst-status {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  padding: 5px 8px;
 
   border-radius: 7px;
 
-  font-size: 8px;
+  font-size: 6px;
   font-weight: 750;
 }
 
-.lst-student-card h3 {
-  margin: 0 0 3px;
 
-  color: var(--text-primary);
+.lst-status-dot {
+  width: 5px;
+  height: 5px;
 
-  font-size: 14px;
-  font-weight: 750;
-}
-
-.lst-student-id {
-  margin: 0 0 15px;
-
-  color: var(--text-muted);
-
-  font-size: 9px;
+  border-radius: 50%;
 }
 
 
-/* DETAILS */
+.lst-status-active {
+  color: #15803d;
 
-.lst-student-details {
+  background: #ecfdf3;
+}
+
+
+.lst-status-active
+.lst-status-dot {
+  background: #22c55e;
+}
+
+
+.lst-status-inactive {
+  color: #64748b;
+
+  background: #f1f5f9;
+}
+
+
+.lst-status-inactive
+.lst-status-dot {
+  background: #94a3b8;
+}
+
+
+/* =========================================
+   IDENTITY
+========================================= */
+
+.lst-card-identity {
+  margin-bottom: 14px;
+}
+
+
+.lst-card-identity h3 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+
+.lst-card-identity p {
+  margin: 3px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 7px;
+}
+
+
+/* =========================================
+   ACADEMIC INFO
+========================================= */
+
+.lst-academic-info {
   display: flex;
   flex-direction: column;
 
-  gap: 8px;
+  gap: 7px;
 
-  padding-bottom: 15px;
+  padding-bottom: 14px;
 
   border-bottom:
-    1px solid var(--border-light);
+    1px solid #edf0f5;
 }
 
-.lst-student-details div {
+
+.lst-academic-info > div {
   display: flex;
   align-items: center;
 
   gap: 7px;
 
-  color: var(--text-secondary);
+  min-width: 0;
 
-  font-size: 9px;
+  color: #667085;
 }
 
-.lst-student-details svg {
+
+.lst-academic-info svg {
   flex-shrink: 0;
 
-  color: #7e8da4;
+  color: #7f8da4;
 }
 
 
-/* PROGRESS */
+.lst-academic-info span {
+  overflow: hidden;
+
+  font-size: 7px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================
+   PROGRESS
+========================================= */
 
 .lst-progress {
-  margin: 15px 0;
+  margin: 14px 0;
 }
+
 
 .lst-progress-info {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 
   margin-bottom: 7px;
-
-  color: var(--text-muted);
-
-  font-size: 8px;
 }
+
+
+.lst-progress-info span {
+  color: #98a2b3;
+
+  font-size: 6px;
+}
+
 
 .lst-progress-info strong {
-  color: var(--text-primary);
+  color: #344054;
+
+  font-size: 7px;
+  font-weight: 800;
 }
+
 
 .lst-progress-track {
   width: 100%;
@@ -389,6 +851,7 @@
   border-radius: 99px;
 }
 
+
 .lst-progress-fill {
   height: 100%;
 
@@ -396,14 +859,19 @@
     linear-gradient(
       90deg,
       #4058df,
-      #7480ee
+      #7782ef
     );
 
   border-radius: 99px;
+
+  transition:
+    width 0.35s ease;
 }
 
 
-/* PERFORMANCE */
+/* =========================================
+   PERFORMANCE
+========================================= */
 
 .lst-performance {
   display: grid;
@@ -411,67 +879,97 @@
   grid-template-columns:
     repeat(3, 1fr);
 
-  gap: 8px;
+  gap: 7px;
 
-  margin-bottom: 15px;
+  margin-bottom: 13px;
 }
 
-.lst-performance div {
-  padding: 9px 5px;
+
+.lst-performance > div {
+  padding: 9px 4px;
 
   text-align: center;
 
-  background: #fafbfe;
+  background: #f8f9fc;
+
+  border:
+    1px solid #f0f2f6;
 
   border-radius: 9px;
 }
 
+
 .lst-performance strong {
   display: block;
 
-  margin-bottom: 3px;
+  color: #101828;
 
-  color: var(--text-primary);
-
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 850;
 }
+
 
 .lst-performance span {
-  color: var(--text-muted);
+  display: block;
 
-  font-size: 7px;
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 5px;
 }
 
 
-/* BUTTON */
+/* =========================================
+   VIEW BUTTON
+========================================= */
 
 .lst-view-button {
   width: 100%;
-  min-height: 38px;
+  min-height: 37px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  gap: 7px;
+  gap: 6px;
 
   color: #4058df;
+
   background: #eef2ff;
 
   border: none;
+
   border-radius: 9px;
 
-  font-size: 9px;
-  font-weight: 700;
+  font-family: inherit;
+
+  font-size: 7px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
 }
+
+
+.lst-view-button svg:last-child {
+  margin-left: auto;
+}
+
 
 .lst-view-button:hover {
   background: #e4e9ff;
+
+  transform:
+    translateY(-1px);
 }
 
 
 /* =========================================
-   EMPTY
+   EMPTY STATE
 ========================================= */
 
 .lst-empty {
@@ -479,34 +977,40 @@
 
   text-align: center;
 
-  color: var(--text-muted);
+  color: #98a2b3;
+
   background: white;
 
-  border: 1px dashed #d7ddea;
-  border-radius: 17px;
+  border:
+    1px dashed #d7ddea;
+
+  border-radius: 18px;
 }
+
 
 .lst-empty svg {
   color: #4058df;
 }
 
-.lst-empty h3 {
-  margin: 12px 0 5px;
 
-  color: var(--text-primary);
+.lst-empty h3 {
+  margin: 11px 0 5px;
+
+  color: #101828;
 
   font-size: 14px;
 }
 
+
 .lst-empty p {
   margin: 0;
 
-  font-size: 10px;
+  font-size: 8px;
 }
 
 
 /* =========================================
-   MODAL
+   MODAL OVERLAY
 ========================================= */
 
 .lst-modal-overlay {
@@ -523,28 +1027,42 @@
   padding: 20px;
 
   background:
-    rgba(15, 23, 42, 0.44);
+    rgba(15, 23, 42, 0.43);
 
-  backdrop-filter: blur(5px);
+  backdrop-filter:
+    blur(6px);
 }
 
+
+/* =========================================
+   MODAL
+========================================= */
+
 .lst-modal {
-  width: min(680px, 100%);
+  width: min(
+    700px,
+    100%
+  );
 
   max-height: 90vh;
 
   overflow-y: auto;
 
-  padding: 25px;
+  padding: 0;
 
   background: white;
 
-  border-radius: 20px;
+  border-radius: 21px;
 
   box-shadow:
-    0 25px 70px
-    rgba(15, 23, 42, 0.23);
+    0 28px 75px
+    rgba(15, 23, 42, 0.24);
 }
+
+
+/* =========================================
+   MODAL HEADER
+========================================= */
 
 .lst-modal-header {
   display: flex;
@@ -553,43 +1071,66 @@
 
   gap: 20px;
 
-  margin-bottom: 20px;
+  padding: 21px 23px 17px;
 }
+
+
+.lst-modal-header > div > span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
 
 .lst-modal-header h2 {
   margin: 0;
 
-  color: var(--text-primary);
+  color: #101828;
 
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 850;
 }
+
 
 .lst-modal-header p {
-  margin: 6px 0 0;
+  margin: 5px 0 0;
 
-  color: var(--text-muted);
+  color: #98a2b3;
 
-  font-size: 10px;
+  font-size: 7px;
 }
 
+
 .lst-modal-header button {
-  width: 35px;
-  height: 35px;
+  width: 34px;
+  height: 34px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  color: var(--text-secondary);
-  background: #f7f8fb;
+  color: #667085;
+
+  background: #f6f7fa;
 
   border: none;
+
   border-radius: 9px;
+
+  cursor: pointer;
 }
 
 
-/* PROFILE */
+/* =========================================
+   MODAL PROFILE
+========================================= */
 
 .lst-modal-profile {
   display: flex;
@@ -597,74 +1138,104 @@
 
   gap: 12px;
 
-  padding: 15px;
-
-  margin-bottom: 17px;
-
-  background: #f5f7ff;
-
-  border-radius: 13px;
-}
-
-.lst-modal-avatar {
-  width: 48px;
-  height: 48px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  flex-shrink: 0;
+  padding: 18px 23px;
 
   color: white;
 
   background:
     linear-gradient(
-      135deg,
+      120deg,
       #4058df,
-      #7479ef
+      #6374eb
     );
+}
+
+
+.lst-modal-avatar {
+  width: 50px;
+  height: 50px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    rgba(255, 255, 255, 0.14);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.22);
 
   border-radius: 13px;
 
   font-size: 10px;
-  font-weight: 750;
+  font-weight: 850;
 }
 
-.lst-modal-profile div:nth-child(2) {
+
+.lst-modal-profile-text {
   flex: 1;
 }
 
-.lst-modal-profile h3 {
-  margin: 0 0 3px;
 
-  color: var(--text-primary);
+.lst-modal-profile-text > span {
+  color:
+    rgba(255, 255, 255, 0.67);
+
+  font-size: 5px;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+}
+
+
+.lst-modal-profile h3 {
+  margin: 3px 0 0;
+
+  color: white;
 
   font-size: 14px;
+  font-weight: 800;
 }
+
 
 .lst-modal-profile p {
-  margin: 0;
+  margin: 3px 0 0;
 
-  color: var(--text-muted);
+  color:
+    rgba(255, 255, 255, 0.73);
 
-  font-size: 9px;
+  font-size: 7px;
 }
 
-.lst-modal-profile > span {
-  padding: 5px 8px;
 
-  color: #15803d;
-  background: #ecfdf3;
+.lst-modal-status {
+  display: inline-flex;
+  align-items: center;
 
-  border-radius: 7px;
+  gap: 5px;
 
-  font-size: 8px;
+  padding: 6px 8px;
+
+  background:
+    rgba(255, 255, 255, 0.13);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.17);
+
+  border-radius: 8px;
+
+  font-size: 6px;
   font-weight: 750;
 }
 
 
-/* INFO GRID */
+/* =========================================
+   MODAL INFO
+========================================= */
 
 .lst-modal-info-grid {
   display: grid;
@@ -672,60 +1243,128 @@
   grid-template-columns:
     repeat(2, 1fr);
 
-  gap: 11px;
+  gap: 10px;
 
-  margin-bottom: 17px;
+  padding:
+    18px 23px 0;
 }
+
 
 .lst-info-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
 
   gap: 10px;
 
-  padding: 13px;
+  min-width: 0;
+
+  padding: 12px;
 
   background: #fafbfe;
 
-  border: 1px solid var(--border-light);
+  border:
+    1px solid #edf0f5;
+
   border-radius: 11px;
 }
 
-.lst-info-card svg {
+
+.lst-info-icon {
+  width: 35px;
+  height: 35px;
+
   flex-shrink: 0;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   color: #4058df;
+
+  background: #eef2ff;
+
+  border-radius: 9px;
 }
+
 
 .lst-info-card span {
   display: block;
 
   margin-bottom: 3px;
 
-  color: var(--text-muted);
+  color: #98a2b3;
 
-  font-size: 8px;
+  font-size: 6px;
 }
+
 
 .lst-info-card strong {
-  color: var(--text-primary);
+  display: block;
 
-  font-size: 9px;
-  line-height: 1.5;
+  overflow: hidden;
+
+  color: #344054;
+
+  font-size: 8px;
+  font-weight: 750;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
 }
 
 
-/* MODAL PROGRESS */
+/* =========================================
+   MODAL PROGRESS
+========================================= */
 
 .lst-modal-progress {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
   padding: 15px;
 
-  margin-bottom: 17px;
+  margin:
+    13px 23px 0;
 
-  background: #fafbfe;
+  background:
+    linear-gradient(
+      135deg,
+      #f5f7ff,
+      #fafbff
+    );
+
+  border:
+    1px solid #e1e6fb;
 
   border-radius: 12px;
 }
+
+
+.lst-modal-progress-icon {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #4058df;
+
+  background: white;
+
+  border-radius: 10px;
+}
+
+
+.lst-modal-progress-body {
+  flex: 1;
+}
+
 
 .lst-modal-progress-header {
   display: flex;
@@ -733,56 +1372,68 @@
 
   gap: 20px;
 
-  margin-bottom: 11px;
+  margin-bottom: 9px;
 }
+
+
+.lst-modal-progress-header span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.07em;
+}
+
 
 .lst-modal-progress-header h3 {
-  margin: 0 0 3px;
-
-  color: var(--text-primary);
-
-  font-size: 12px;
-}
-
-.lst-modal-progress-header p {
   margin: 0;
 
-  color: var(--text-muted);
+  color: #344054;
 
-  font-size: 8px;
+  font-size: 9px;
 }
+
 
 .lst-modal-progress-header > strong {
   color: #4058df;
 
-  font-size: 17px;
+  font-size: 15px;
 }
 
+
 .lst-modal-progress-track {
-  height: 7px;
+  height: 6px;
 
   overflow: hidden;
 
-  background: #eaedf4;
+  background: #e5e9f3;
 
   border-radius: 99px;
 }
 
-.lst-modal-progress-track div {
+
+.lst-modal-progress-track > div {
   height: 100%;
 
   background:
     linear-gradient(
       90deg,
       #4058df,
-      #7479ef
+      #747fee
     );
 
   border-radius: 99px;
 }
 
 
-/* STATS */
+/* =========================================
+   MODAL STATS
+========================================= */
 
 .lst-modal-stats {
   display: grid;
@@ -790,64 +1441,113 @@
   grid-template-columns:
     repeat(3, 1fr);
 
-  gap: 10px;
+  gap: 9px;
 
-  margin-bottom: 18px;
+  padding:
+    13px 23px 20px;
 }
 
+
 .lst-modal-stats > div {
-  padding: 14px;
+  padding: 13px;
 
   text-align: center;
 
-  background: #f7f9ff;
+  background: #f8f9fc;
+
+  border:
+    1px solid #edf0f5;
 
   border-radius: 11px;
 }
 
-.lst-modal-stats svg {
-  margin-bottom: 7px;
 
+.lst-modal-stats svg {
   color: #4058df;
+
+  margin-bottom: 6px;
 }
+
+
+.lst-modal-stats span {
+  display: block;
+
+  color: #98a2b3;
+
+  font-size: 5px;
+  font-weight: 750;
+}
+
 
 .lst-modal-stats strong {
   display: block;
 
-  margin-bottom: 3px;
+  margin-top: 4px;
 
-  color: var(--text-primary);
+  color: #101828;
 
   font-size: 14px;
-}
-
-.lst-modal-stats span {
-  color: var(--text-muted);
-
-  font-size: 8px;
+  font-weight: 850;
 }
 
 
-/* FOOTER */
+/* =========================================
+   MODAL FOOTER
+========================================= */
 
 .lst-modal-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 14px 23px;
+
+  background: #fafbfe;
+
+  border-top:
+    1px solid #edf0f5;
 }
 
-.lst-modal-footer button {
-  min-height: 40px;
 
-  padding: 0 15px;
+.lst-modal-footer > div {
+  display: flex;
+  align-items: center;
 
-  color: var(--text-secondary);
+  gap: 7px;
+
+  color: #98a2b3;
+
+  font-size: 6px;
+}
+
+
+.lst-modal-footer > div svg {
+  color: #4058df;
+}
+
+
+.lst-modal-footer > button {
+  min-height: 36px;
+
+  padding: 0 14px;
+
+  color: #4058df;
+
   background: white;
 
-  border: 1px solid var(--border);
-  border-radius: 9px;
+  border:
+    1px solid #d9dff2;
 
-  font-size: 10px;
-  font-weight: 700;
+  border-radius: 8px;
+
+  font-family: inherit;
+
+  font-size: 7px;
+  font-weight: 750;
+
+  cursor: pointer;
 }
 
 
@@ -857,42 +1557,141 @@
 
 @media (max-width: 1100px) {
 
-  .lst-summary {
-    grid-template-columns:
-      repeat(2, 1fr);
-  }
-
   .lst-grid {
     grid-template-columns:
       repeat(2, 1fr);
   }
 
+
+  .lst-toolbar {
+    grid-template-columns:
+      160px
+      1fr
+      160px;
+  }
+
 }
+
+
+@media (max-width: 900px) {
+
+  .lst-overview-strip {
+    grid-template-columns:
+      1fr
+      repeat(3, 0.6fr);
+  }
+
+
+  .lst-overview-divider {
+    display: none;
+  }
+
+
+  .lst-toolbar {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
 
 @media (max-width: 760px) {
 
   .lecturer-students-page {
-    padding: 24px 18px 40px;
+    padding:
+      24px 18px 40px;
   }
 
-  .lst-header {
+
+  .lst-roster-header {
     align-items: flex-start;
+
     flex-direction: column;
   }
 
-  .lst-summary,
-  .lst-grid,
+
+  .lst-roster-heading {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .lst-roster-total {
+    width: 100%;
+
+    box-sizing: border-box;
+  }
+
+
+  .lst-overview-strip {
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
+
+
+  .lst-overview-label {
+    grid-column: 1 / -1;
+
+    padding-bottom: 11px;
+
+    border-bottom:
+      1px solid #edf0f5;
+  }
+
+
+  .lst-grid {
+    grid-template-columns: 1fr;
+  }
+
+
   .lst-modal-info-grid,
   .lst-modal-stats {
     grid-template-columns: 1fr;
   }
 
-  .lst-toolbar {
+
+  .lst-modal-profile {
+    align-items: flex-start;
+
+    flex-wrap: wrap;
+  }
+
+
+  .lst-modal-status {
+    margin-left: auto;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .lst-overview-strip {
+    grid-template-columns: 1fr;
+  }
+
+
+  .lst-overview-stat {
+    padding: 8px 0;
+
+    text-align: left;
+  }
+
+
+  .lst-modal-progress {
+    align-items: flex-start;
+  }
+
+
+  .lst-modal-footer {
+    align-items: stretch;
+
     flex-direction: column;
   }
 
-  .lst-search,
-  .lst-filter {
+
+  .lst-modal-footer button {
     width: 100%;
   }
 
