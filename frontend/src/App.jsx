@@ -47,6 +47,7 @@ import LecturerProfile from "./pages/LecturerProfile";
 import LecturerChangePassword from "./pages/LecturerChangePassword";
 import LecturerSettings from "./pages/LecturerSettings";
 import LecturerTutor from "./pages/LecturerTutor";
+import LecturerNotifications from "./pages/LecturerNotifications";
 
 
 /* =========================================
@@ -339,6 +340,19 @@ function App() {
           }
         />
 
+        <Route
+          path="/lecturer/notifications"
+          element={
+            <ProtectedRoute
+              allowedRoles={["LECTURER"]}
+            >
+              <LecturerLayout>
+                <LecturerNotifications />
+              </LecturerLayout>
+            </ProtectedRoute>
+          }
+        />
+
 
         <Route
           path="/lecturer/grading"
@@ -407,6 +421,19 @@ function App() {
 
                 <LecturerSettings />
 
+              </LecturerLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/lecturer/tutor"
+          element={
+            <ProtectedRoute
+              allowedRoles={["LECTURER"]}
+            >
+              <LecturerLayout>
+                <LecturerTutor />
               </LecturerLayout>
             </ProtectedRoute>
           }
@@ -545,31 +572,11 @@ function App() {
           path="/tutor"
           element={
             <ProtectedRoute
-              allowedRoles={[
-                "STUDENT",
-                "LECTURER",
-                "ADMIN",
-              ]}
+              allowedRoles={["STUDENT"]}
             >
-
-              {role === "STUDENT" ? (
-
-                <StudentLayout>
-                  <Tutor />
-                </StudentLayout>
-
-              ) : role === "LECTURER" ? (
-
-                <LecturerLayout>
-                  <LecturerTutor />
-                </LecturerLayout>
-
-              ) : (
-
+              <StudentLayout>
                 <Tutor />
-
-              )}
-
+              </StudentLayout>
             </ProtectedRoute>
           }
         />

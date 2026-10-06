@@ -437,23 +437,23 @@ function LecturerSidebar() {
         <nav className="lecturer-menu">
 
 
-          {/* AI STUDY TUTOR */}
+          {/* AI TEACHING ASSISTANT */}
 
           <button
             className={getNavClass(
-              "/tutor"
+              "/lecturer/tutor"
             )}
             onClick={() =>
-              navigate("/tutor")
+              navigate(
+                "/lecturer/tutor"
+              )
             }
           >
-
             <Sparkles
               size={19}
             />
 
             AI Teaching Assistant
-
           </button>
 
         </nav>

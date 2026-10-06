@@ -21,7 +21,16 @@ import {
   LogOut,
   BookOpen,
   ClipboardPlus,
+  LayoutDashboard,
+  FileCheck2,
+  GraduationCap,
+  Users,
+  Sparkles,
+  BellRing,
+  ArrowUpRight,
 } from "lucide-react";
+
+import "../../styles/lecturerTopbarSearch.css";
 
 
 function LecturerTopbar() {
@@ -31,6 +40,9 @@ function LecturerTopbar() {
 
 
   const profileRef =
+    useRef(null);
+
+  const searchRef =
     useRef(null);
 
 
@@ -62,6 +74,262 @@ function LecturerTopbar() {
     createOpen,
     setCreateOpen,
   ] = useState(false);
+
+
+  /* ========================================
+     SEARCH STATE
+  ======================================== */
+
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState("");
+
+
+  const [
+    searchOpen,
+    setSearchOpen,
+  ] = useState(false);
+
+
+  /* ========================================
+     LECTURER SEARCH ITEMS
+  ======================================== */
+
+  const lecturerSearchItems = [
+
+    {
+      title: "Dashboard",
+      description:
+        "Teaching overview and lecturer workspace",
+      keywords:
+        "dashboard home overview teaching workspace",
+      path:
+        "/lecturer-dashboard",
+      icon:
+        LayoutDashboard,
+    },
+
+    {
+      title: "My Courses",
+      description:
+        "View and manage your assigned courses",
+      keywords:
+        "course courses modules subjects classes teaching",
+      path:
+        "/lecturer/courses",
+      icon:
+        BookOpen,
+    },
+
+    {
+      title: "Assignments",
+      description:
+        "Create and manage academic assignments",
+      keywords:
+        "assignment assignments coursework assessment create",
+      path:
+        "/lecturer/assignments",
+      icon:
+        ClipboardPlus,
+    },
+
+    {
+      title: "Submissions",
+      description:
+        "Review student coursework submissions",
+      keywords:
+        "submission submissions coursework student review files",
+      path:
+        "/lecturer/submissions",
+      icon:
+        FileCheck2,
+    },
+
+    {
+      title: "Grading",
+      description:
+        "Grade submissions and provide feedback",
+      keywords:
+        "grading grade marks score feedback results assessment",
+      path:
+        "/lecturer/grading",
+      icon:
+        GraduationCap,
+    },
+
+    {
+      title: "Students",
+      description:
+        "View students across your courses",
+      keywords:
+        "student students learners class roster degree batch",
+      path:
+        "/lecturer/students",
+      icon:
+        Users,
+    },
+
+    {
+      title: "AI Teaching Assistant",
+      description:
+        "Create lessons, quizzes, rubrics and teaching content",
+      keywords:
+        "ai teaching assistant tutor artificial intelligence lesson quiz rubric",
+      path:
+        "/lecturer/tutor",
+      icon:
+        Sparkles,
+    },
+
+    {
+      title: "Notifications",
+      description:
+        "View lecturer alerts and academic activity",
+      keywords:
+        "notification notifications bell alerts activity reminders",
+      path:
+        "/lecturer/notifications",
+      icon:
+        BellRing,
+    },
+
+    {
+      title: "My Profile",
+      description:
+        "View your lecturer account information",
+      keywords:
+        "profile account lecturer personal information email",
+      path:
+        "/lecturer/profile",
+      icon:
+        User,
+    },
+
+    {
+      title: "Settings",
+      description:
+        "Manage notification and lecturer preferences",
+      keywords:
+        "settings preferences notifications email alerts reminders",
+      path:
+        "/lecturer/settings",
+      icon:
+        Settings,
+    },
+
+    {
+      title: "Change Password",
+      description:
+        "Update your CampusLearn account password",
+      keywords:
+        "password security secure account change password",
+      path:
+        "/lecturer/change-password",
+      icon:
+        LockKeyhole,
+    },
+
+  ];
+
+
+  /* ========================================
+     SEARCH RESULTS
+  ======================================== */
+
+  const normalizedSearch =
+    searchQuery
+      .trim()
+      .toLowerCase();
+
+
+  const filteredSearchItems =
+    normalizedSearch
+      ? lecturerSearchItems.filter(
+          (item) => {
+
+            return (
+
+              item.title
+                .toLowerCase()
+                .includes(
+                  normalizedSearch
+                ) ||
+
+              item.description
+                .toLowerCase()
+                .includes(
+                  normalizedSearch
+                ) ||
+
+              item.keywords
+                .toLowerCase()
+                .includes(
+                  normalizedSearch
+                )
+
+            );
+
+          }
+        )
+      : [];
+
+
+  /* ========================================
+     OPEN SEARCH RESULT
+  ======================================== */
+
+  const openSearchResult =
+    (item) => {
+
+      navigate(
+        item.path
+      );
+
+
+      setSearchQuery("");
+
+      setSearchOpen(false);
+
+      setProfileOpen(false);
+
+      setCreateOpen(false);
+
+    };
+
+
+  /* ========================================
+     SEARCH KEYBOARD
+  ======================================== */
+
+  const handleSearchKeyDown =
+    (event) => {
+
+      if (
+        event.key === "Escape"
+      ) {
+
+        setSearchOpen(false);
+
+        return;
+
+      }
+
+
+      if (
+        event.key === "Enter" &&
+        filteredSearchItems.length > 0
+      ) {
+
+        event.preventDefault();
+
+        openSearchResult(
+          filteredSearchItems[0]
+        );
+
+      }
+
+    };
 
 
   /* ========================================
@@ -133,8 +401,8 @@ function LecturerTopbar() {
 
           /*
             If Submission Alerts is OFF,
-            we will hide the pending
-            submission notification count.
+            hide the pending submission
+            notification count.
           */
 
           const submissionAlertsEnabled =
@@ -175,18 +443,12 @@ function LecturerTopbar() {
             ).length;
 
 
-          /*
-            Submission Alerts ON
-              -> show pending count
-
-            Submission Alerts OFF
-              -> hide count
-          */
-
           setNotificationCount(
+
             submissionAlertsEnabled
               ? pendingCount
               : 0
+
           );
 
 
@@ -213,6 +475,7 @@ function LecturerTopbar() {
               "role"
             );
 
+
             navigate(
               "/login"
             );
@@ -226,34 +489,51 @@ function LecturerTopbar() {
 
     loadTopbarData();
 
-
   }, [navigate]);
 
 
   /* ========================================
-     CLOSE PROFILE WHEN CLICKING OUTSIDE
+     CLOSE DROPDOWNS WHEN CLICKING OUTSIDE
   ======================================== */
 
   useEffect(() => {
 
-    const handleOutsideClick = (
-      event
-    ) => {
+    const handleOutsideClick =
+      (event) => {
 
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(
-          event.target
-        )
-      ) {
 
-        setProfileOpen(
-          false
-        );
+        /* PROFILE */
 
-      }
+        if (
+          profileRef.current &&
+          !profileRef.current.contains(
+            event.target
+          )
+        ) {
 
-    };
+          setProfileOpen(
+            false
+          );
+
+        }
+
+
+        /* SEARCH */
+
+        if (
+          searchRef.current &&
+          !searchRef.current.contains(
+            event.target
+          )
+        ) {
+
+          setSearchOpen(
+            false
+          );
+
+        }
+
+      };
 
 
     document.addEventListener(
@@ -270,7 +550,6 @@ function LecturerTopbar() {
       );
 
     };
-
 
   }, []);
 
@@ -290,14 +569,20 @@ function LecturerTopbar() {
 
 
       return name
+
         .split(" ")
+
         .filter(Boolean)
+
         .map(
           (word) =>
             word.charAt(0)
         )
+
         .join("")
+
         .slice(0, 2)
+
         .toUpperCase();
 
     };
@@ -323,6 +608,7 @@ function LecturerTopbar() {
       "role"
     );
 
+
     navigate(
       "/login"
     );
@@ -346,17 +632,242 @@ function LecturerTopbar() {
       ================================= */}
 
       <div
-        className="lecturer-search"
+        className="lecturer-search-wrapper"
+        ref={searchRef}
       >
 
-        <Search
-          size={18}
-        />
 
-        <input
-          type="text"
-          placeholder="Search courses, students, submissions..."
-        />
+        <div
+          className={
+            searchOpen
+              ? "lecturer-search lecturer-search-active"
+              : "lecturer-search"
+          }
+        >
+
+
+          <Search
+            size={18}
+          />
+
+
+          <input
+            type="text"
+            value={searchQuery}
+            placeholder="Search pages, teaching tools and settings..."
+            onChange={(event) => {
+
+              const value =
+                event.target.value;
+
+
+              setSearchQuery(
+                value
+              );
+
+
+              setSearchOpen(
+                Boolean(
+                  value.trim()
+                )
+              );
+
+
+              setProfileOpen(
+                false
+              );
+
+              setCreateOpen(
+                false
+              );
+
+            }}
+            onFocus={() => {
+
+              if (
+                searchQuery.trim()
+              ) {
+
+                setSearchOpen(
+                  true
+                );
+
+              }
+
+            }}
+            onKeyDown={
+              handleSearchKeyDown
+            }
+          />
+
+
+        </div>
+
+
+        {/* SEARCH DROPDOWN */}
+
+        {searchOpen &&
+          searchQuery.trim() && (
+
+          <div className="lecturer-search-dropdown">
+
+
+            <div className="lecturer-search-dropdown-header">
+
+
+              <span>
+                SEARCH RESULTS
+              </span>
+
+
+              <strong>
+
+                {
+                  filteredSearchItems
+                    .length
+                }{" "}
+
+                {
+                  filteredSearchItems
+                    .length === 1
+                    ? "result"
+                    : "results"
+                }
+
+              </strong>
+
+
+            </div>
+
+
+            {filteredSearchItems.length >
+            0 ? (
+
+              <div className="lecturer-search-results">
+
+
+                {filteredSearchItems.map(
+                  (item) => {
+
+                    const Icon =
+                      item.icon;
+
+
+                    return (
+
+                      <button
+                        key={item.path}
+                        type="button"
+                        className="lecturer-search-result"
+                        onClick={() =>
+                          openSearchResult(
+                            item
+                          )
+                        }
+                      >
+
+
+                        <div className="lecturer-search-result-icon">
+
+                          <Icon
+                            size={16}
+                          />
+
+                        </div>
+
+
+                        <div className="lecturer-search-result-content">
+
+                          <strong>
+                            {item.title}
+                          </strong>
+
+                          <span>
+                            {
+                              item.description
+                            }
+                          </span>
+
+                        </div>
+
+
+                        <div className="lecturer-search-result-open">
+
+                          <span>
+                            Open
+                          </span>
+
+                          <ArrowUpRight
+                            size={12}
+                          />
+
+                        </div>
+
+
+                      </button>
+
+                    );
+
+                  }
+                )}
+
+
+              </div>
+
+            ) : (
+
+              <div className="lecturer-search-empty">
+
+
+                <div className="lecturer-search-empty-icon">
+
+                  <Search
+                    size={19}
+                  />
+
+                </div>
+
+
+                <strong>
+                  No results found
+                </strong>
+
+
+                <span>
+                  Try searching for courses,
+                  grading, students,
+                  notifications or settings.
+                </span>
+
+
+              </div>
+
+            )}
+
+
+            {filteredSearchItems.length >
+              0 && (
+
+              <div className="lecturer-search-hint">
+
+                <span>
+                  Press Enter to open the
+                  first result
+                </span>
+
+                <span>
+                  Esc to close
+                </span>
+
+              </div>
+
+            )}
+
+
+          </div>
+
+        )}
+
 
       </div>
 
@@ -378,6 +889,7 @@ function LecturerTopbar() {
           className="lecturer-create-wrapper"
         >
 
+
           <button
             className="lecturer-create-button"
             type="button"
@@ -388,7 +900,13 @@ function LecturerTopbar() {
                   !previous
               );
 
+
               setProfileOpen(
+                false
+              );
+
+
+              setSearchOpen(
                 false
               );
 
@@ -420,6 +938,7 @@ function LecturerTopbar() {
                   setCreateOpen(
                     false
                   );
+
 
                   navigate(
                     "/lecturer/courses",
@@ -470,6 +989,7 @@ function LecturerTopbar() {
                     false
                   );
 
+
                   navigate(
                     "/lecturer/assignments",
                     {
@@ -508,9 +1028,11 @@ function LecturerTopbar() {
 
               </button>
 
+
             </div>
 
           )}
+
 
         </div>
 
@@ -522,11 +1044,27 @@ function LecturerTopbar() {
         <button
           className="lecturer-notification-button"
           type="button"
-          onClick={() =>
+          onClick={() => {
+
+            setSearchOpen(
+              false
+            );
+
+            setProfileOpen(
+              false
+            );
+
+            setCreateOpen(
+              false
+            );
+
+
             navigate(
-              "/lecturer/submissions"
-            )
-          }
+              "/lecturer/notifications"
+            );
+
+          }}
+          title="Notifications"
         >
 
           <Bell
@@ -554,6 +1092,7 @@ function LecturerTopbar() {
           ref={profileRef}
         >
 
+
           <button
             className="lecturer-profile"
             type="button"
@@ -564,12 +1103,19 @@ function LecturerTopbar() {
                   !previous
               );
 
+
               setCreateOpen(
+                false
+              );
+
+
+              setSearchOpen(
                 false
               );
 
             }}
           >
+
 
             <div
               className="lecturer-top-avatar"
@@ -604,6 +1150,7 @@ function LecturerTopbar() {
               }
             />
 
+
           </button>
 
 
@@ -623,6 +1170,7 @@ function LecturerTopbar() {
               <div
                 className="lecturer-dropdown-header"
               >
+
 
                 <div
                   className="lecturer-dropdown-avatar"
@@ -645,6 +1193,7 @@ function LecturerTopbar() {
 
                 </div>
 
+
               </div>
 
 
@@ -664,6 +1213,7 @@ function LecturerTopbar() {
                     setProfileOpen(
                       false
                     );
+
 
                     navigate(
                       "/lecturer/profile"
@@ -691,6 +1241,7 @@ function LecturerTopbar() {
                       false
                     );
 
+
                     navigate(
                       "/lecturer/settings"
                     );
@@ -717,6 +1268,7 @@ function LecturerTopbar() {
                       false
                     );
 
+
                     navigate(
                       "/lecturer/change-password"
                     );
@@ -731,6 +1283,7 @@ function LecturerTopbar() {
                   Change Password
 
                 </button>
+
 
               </div>
 
@@ -759,13 +1312,17 @@ function LecturerTopbar() {
 
               </div>
 
+
             </div>
 
           )}
 
+
         </div>
 
+
       </div>
+
 
     </header>
 
