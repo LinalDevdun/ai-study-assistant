@@ -4,7 +4,9 @@ import {
   useState,
 } from "react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useNavigate,
+} from "react-router-dom";
 
 import axios from "axios";
 
@@ -22,6 +24,12 @@ import {
   X,
   FileText,
   Award,
+  Sparkles,
+  Inbox,
+  TrendingUp,
+  SlidersHorizontal,
+  ChevronRight,
+  ArrowUpRight,
 } from "lucide-react";
 
 import "../styles/lecturerSubmissions.css";
@@ -29,7 +37,8 @@ import "../styles/lecturerSubmissions.css";
 
 function LecturerSubmissions() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
 
   /* ========================================
@@ -54,7 +63,8 @@ function LecturerSubmissions() {
   const [
     selectedSubmission,
     setSelectedSubmission,
-  ] = useState(null);
+  ] =
+    useState(null);
 
 
   /* ========================================
@@ -63,93 +73,96 @@ function LecturerSubmissions() {
 
   useEffect(() => {
 
-    const loadSubmissions = async () => {
+    const loadSubmissions =
+      async () => {
 
-      try {
+        try {
 
-        setLoading(true);
-        setError("");
-
-
-        const token =
-          localStorage.getItem("token");
+          setLoading(true);
+          setError("");
 
 
-        if (!token) {
+          const token =
+            localStorage.getItem(
+              "token"
+            );
 
-          navigate("/login");
 
-          return;
+          if (!token) {
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          const response =
+            await axios.get(
+              "http://localhost:5000/lecturer/submissions",
+              {
+                headers: {
+                  Authorization:
+                    `Bearer ${token}`,
+                },
+              }
+            );
+
+
+          const realSubmissions =
+            Array.isArray(
+              response.data?.submissions
+            )
+              ? response.data.submissions
+              : [];
+
+
+          setSubmissions(
+            realSubmissions
+          );
+
+
+        } catch (loadError) {
+
+          console.error(
+            "Failed to load lecturer submissions:",
+            loadError
+          );
+
+
+          if (
+            loadError.response?.status === 401 ||
+            loadError.response?.status === 403
+          ) {
+
+            localStorage.removeItem(
+              "token"
+            );
+
+            localStorage.removeItem(
+              "role"
+            );
+
+            navigate("/login");
+
+            return;
+
+          }
+
+
+          setError(
+            loadError.response?.data?.error ||
+            "Failed to load submissions."
+          );
+
+
+        } finally {
+
+          setLoading(false);
 
         }
 
-
-        const response =
-          await axios.get(
-            "http://localhost:5000/lecturer/submissions",
-            {
-              headers: {
-                Authorization:
-                  `Bearer ${token}`,
-              },
-            }
-          );
-
-
-        const realSubmissions =
-          Array.isArray(
-            response.data?.submissions
-          )
-            ? response.data.submissions
-            : [];
-
-
-        setSubmissions(
-          realSubmissions
-        );
-
-
-      } catch (loadError) {
-
-        console.error(
-          "Failed to load lecturer submissions:",
-          loadError
-        );
-
-
-        if (
-          loadError.response?.status === 401 ||
-          loadError.response?.status === 403
-        ) {
-
-          localStorage.removeItem(
-            "token"
-          );
-
-          localStorage.removeItem(
-            "role"
-          );
-
-          navigate("/login");
-
-          return;
-
-        }
-
-
-        setError(
-          loadError.response?.data?.error ||
-          "Failed to load submissions."
-        );
-
-
-      } finally {
-
-        setLoading(false);
-
-      }
-
-    };
+      };
 
 
     loadSubmissions();
@@ -158,28 +171,41 @@ function LecturerSubmissions() {
 
 
   /* ========================================
-     INITIALS
+     HELPERS
   ======================================== */
 
-  const getInitials = (name) => {
+  const getInitials =
+    (name) => {
 
-    if (!name) {
-      return "ST";
-    }
+      if (!name) {
+        return "ST";
+      }
 
 
-    return name
-      .split(" ")
-      .filter(Boolean)
-      .map(
-        (word) =>
-          word.charAt(0)
-      )
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
+      return name
+        .split(" ")
+        .filter(Boolean)
+        .map(
+          (word) =>
+            word.charAt(0)
+        )
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
 
-  };
+    };
+
+
+  const isSubmissionGraded =
+    (submission) => {
+
+      return (
+        submission.grade !== null &&
+        submission.grade !== undefined &&
+        submission.grade !== ""
+      );
+
+    };
 
 
   /* ========================================
@@ -193,18 +219,18 @@ function LecturerSubmissions() {
   const toGradeCount =
     submissions.filter(
       (submission) =>
-        submission.grade === null ||
-        submission.grade === undefined ||
-        submission.grade === ""
+        !isSubmissionGraded(
+          submission
+        )
     ).length;
 
 
   const gradedCount =
     submissions.filter(
       (submission) =>
-        submission.grade !== null &&
-        submission.grade !== undefined &&
-        submission.grade !== ""
+        isSubmissionGraded(
+          submission
+        )
     ).length;
 
 
@@ -215,6 +241,48 @@ function LecturerSubmissions() {
           submission.student_id
       )
     ).size;
+
+
+  const gradingProgress =
+    totalSubmissions > 0
+
+      ? Math.round(
+          (
+            gradedCount /
+            totalSubmissions
+          ) * 100
+        )
+
+      : 0;
+
+
+  /* ========================================
+     MOST RECENT SUBMISSION
+  ======================================== */
+
+  const latestSubmission =
+    useMemo(() => {
+
+      if (
+        submissions.length === 0
+      ) {
+        return null;
+      }
+
+
+      return [
+        ...submissions,
+      ].sort(
+        (a, b) =>
+          new Date(
+            b.submitted_at || 0
+          ) -
+          new Date(
+            a.submitted_at || 0
+          )
+      )[0];
+
+    }, [submissions]);
 
 
   /* ========================================
@@ -256,6 +324,8 @@ function LecturerSubmissions() {
 
           const matchesSearch =
 
+            !search ||
+
             studentName
               .toLowerCase()
               .includes(search) ||
@@ -278,9 +348,9 @@ function LecturerSubmissions() {
 
 
           const currentStatus =
-            submission.grade !== null &&
-            submission.grade !== undefined &&
-            submission.grade !== ""
+            isSubmissionGraded(
+              submission
+            )
               ? "Graded"
               : "To Grade";
 
@@ -312,150 +382,177 @@ function LecturerSubmissions() {
      DATE FORMAT
   ======================================== */
 
-  const formatDate = (date) => {
+  const formatDate =
+    (date) => {
 
-    if (!date) {
-      return "—";
-    }
-
-
-    return new Date(
-      date
-    ).toLocaleString(
-      "en-US",
-      {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+      if (!date) {
+        return "—";
       }
-    );
 
-  };
+
+      return new Date(
+        date
+      ).toLocaleString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      );
+
+    };
+
+
+  const formatShortDate =
+    (date) => {
+
+      if (!date) {
+        return "—";
+      }
+
+
+      return new Date(
+        date
+      ).toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+        }
+      );
+
+    };
 
 
   /* ========================================
      FILE URL
   ======================================== */
 
-  const getFileUrl = (
-    filePath
-  ) => {
+  const getFileUrl =
+    (filePath) => {
 
-    if (!filePath) {
-      return "";
-    }
-
-
-    const normalized =
-      String(filePath)
-        .replace(/\\/g, "/");
+      if (!filePath) {
+        return "";
+      }
 
 
-    const uploadsIndex =
-      normalized
-        .toLowerCase()
-        .lastIndexOf(
-          "/uploads/"
-        );
+      const normalized =
+        String(filePath)
+          .replace(
+            /\\/g,
+            "/"
+          );
 
 
-    let relativePath;
-
-
-    if (
-      uploadsIndex !== -1
-    ) {
-
-      relativePath =
-        normalized.slice(
-          uploadsIndex + 1
-        );
-
-    } else if (
-      normalized
-        .toLowerCase()
-        .startsWith("uploads/")
-    ) {
-
-      relativePath =
-        normalized;
-
-    } else {
-
-      const fileName =
+      const uploadsIndex =
         normalized
-          .split("/")
-          .pop();
+          .toLowerCase()
+          .lastIndexOf(
+            "/uploads/"
+          );
 
 
-      relativePath =
-        `uploads/${fileName}`;
-
-    }
+      let relativePath;
 
 
-    return (
-      `http://localhost:5000/${relativePath}`
-    );
+      if (
+        uploadsIndex !== -1
+      ) {
 
-  };
+        relativePath =
+          normalized.slice(
+            uploadsIndex + 1
+          );
+
+      } else if (
+        normalized
+          .toLowerCase()
+          .startsWith(
+            "uploads/"
+          )
+      ) {
+
+        relativePath =
+          normalized;
+
+      } else {
+
+        const fileName =
+          normalized
+            .split("/")
+            .pop();
+
+
+        relativePath =
+          `uploads/${fileName}`;
+
+      }
+
+
+      return (
+        `http://localhost:5000/${relativePath}`
+      );
+
+    };
 
 
   /* ========================================
      FILE NAME
   ======================================== */
 
-  const getFileName = (
-    filePath
-  ) => {
+  const getFileName =
+    (filePath) => {
 
-    if (!filePath) {
-      return "Submission file";
-    }
+      if (!filePath) {
+        return "Submission file";
+      }
 
 
-    return String(filePath)
-      .replace(/\\/g, "/")
-      .split("/")
-      .pop();
+      return String(filePath)
+        .replace(
+          /\\/g,
+          "/"
+        )
+        .split("/")
+        .pop();
 
-  };
+    };
 
 
   /* ========================================
-     DOWNLOAD / OPEN FILE
+     OPEN FILE
   ======================================== */
 
-  const handleOpenFile = (
-    submission
-  ) => {
+  const handleOpenFile =
+    (submission) => {
 
-    const fileUrl =
-      getFileUrl(
-        submission.file_path
+      const fileUrl =
+        getFileUrl(
+          submission.file_path
+        );
+
+
+      if (!fileUrl) {
+
+        alert(
+          "No submission file is available."
+        );
+
+        return;
+
+      }
+
+
+      window.open(
+        fileUrl,
+        "_blank",
+        "noopener,noreferrer"
       );
 
-
-    if (!fileUrl) {
-
-      alert(
-        "No submission file is available."
-      );
-
-      return;
-
-    }
-
-
-    window.open(
-      fileUrl,
-      "_blank",
-      "noopener,noreferrer"
-    );
-
-  };
+    };
 
 
   /* ========================================
@@ -485,159 +582,326 @@ function LecturerSubmissions() {
 
 
       {/* ====================================
-          HEADER
+          REVIEW HUB
       ==================================== */}
 
-      <section className="ls-header">
+      <section className="ls-review-hub">
 
-        <div>
 
-          <h1>
-            Submissions
-          </h1>
+        {/* LEFT */}
 
-          <p>
-            Review student coursework,
-            submitted files and grading
-            status.
-          </p>
+        <div className="ls-review-intro">
+
+
+          <div className="ls-review-heading">
+
+
+            <div className="ls-review-heading-icon">
+
+              <Inbox size={22} />
+
+            </div>
+
+
+            <div>
+
+              <span className="ls-kicker">
+
+                <Sparkles size={12} />
+
+                SUBMISSION REVIEW HUB
+
+              </span>
+
+
+              <h1>
+                Review. Grade. Complete.
+              </h1>
+
+
+              <p>
+
+                Keep student coursework
+                organized, review every
+                submission and move each
+                assessment smoothly through
+                your grading workflow.
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="ls-review-metrics">
+
+
+            <div className="ls-review-metric">
+
+              <span>
+                TOTAL RECEIVED
+              </span>
+
+              <strong>
+                {totalSubmissions}
+              </strong>
+
+              <small>
+                Student files
+              </small>
+
+            </div>
+
+
+            <div className="ls-review-metric">
+
+              <span>
+                REVIEW QUEUE
+              </span>
+
+              <strong>
+                {toGradeCount}
+              </strong>
+
+              <small>
+                Awaiting grading
+              </small>
+
+            </div>
+
+
+            <div className="ls-review-metric">
+
+              <span>
+                COMPLETED
+              </span>
+
+              <strong>
+                {gradedCount}
+              </strong>
+
+              <small>
+                Results published
+              </small>
+
+            </div>
+
+
+            <div className="ls-review-metric">
+
+              <span>
+                STUDENTS
+              </span>
+
+              <strong>
+                {uniqueStudents}
+              </strong>
+
+              <small>
+                Unique learners
+              </small>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        <div className="ls-header-badge">
+        {/* RIGHT */}
 
-          <FileCheck2 size={16} />
+        <aside className="ls-queue-panel">
 
-          {toGradeCount} Awaiting Review
 
-        </div>
+          <div className="ls-queue-top">
+
+            <div>
+
+              <span>
+                REVIEW QUEUE
+              </span>
+
+              <strong>
+                {toGradeCount}
+              </strong>
+
+              <p>
+                awaiting review
+              </p>
+
+            </div>
+
+
+            <div className="ls-queue-icon">
+
+              <FileCheck2
+                size={23}
+              />
+
+            </div>
+
+          </div>
+
+
+          <div
+            className="ls-grading-ring"
+            style={{
+              background:
+                `conic-gradient(
+                  #ffffff ${gradingProgress * 3.6}deg,
+                  rgba(255,255,255,0.16) 0deg
+                )`,
+            }}
+          >
+
+            <div className="ls-grading-ring-inner">
+
+              <strong>
+                {gradingProgress}%
+              </strong>
+
+              <span>
+                REVIEWED
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div className="ls-grading-progress-copy">
+
+            <TrendingUp
+              size={15}
+            />
+
+            <div>
+
+              <strong>
+                Grading progress
+              </strong>
+
+              <span>
+
+                {gradedCount} of{" "}
+                {totalSubmissions} submissions
+                reviewed
+
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div className="ls-latest-submission">
+
+            <span>
+              LATEST SUBMISSION
+            </span>
+
+
+            {latestSubmission ? (
+
+              <>
+
+                <strong>
+
+                  {
+                    latestSubmission
+                      .student_name
+                  }
+
+                </strong>
+
+                <p>
+
+                  {
+                    latestSubmission
+                      .assignment_title
+                  }
+
+                </p>
+
+                <small>
+
+                  {
+                    formatShortDate(
+                      latestSubmission
+                        .submitted_at
+                    )
+                  }
+
+                </small>
+
+              </>
+
+            ) : (
+
+              <>
+
+                <strong>
+                  No activity yet
+                </strong>
+
+                <p>
+                  New submissions will appear here.
+                </p>
+
+              </>
+
+            )}
+
+          </div>
+
+        </aside>
 
       </section>
 
 
-
       {/* ====================================
-          SUMMARY
+          FINDER
       ==================================== */}
 
-      <section className="ls-summary">
+      <section className="ls-toolbar">
 
 
-        <div className="ls-summary-card ls-blue">
-
-          <div className="ls-summary-icon">
-
-            <FileCheck2 size={21} />
-
-          </div>
+        <div className="ls-toolbar-label">
 
           <div>
 
-            <strong>
-              {totalSubmissions}
-            </strong>
-
-            <span>
-              Total Submissions
-            </span>
-
-          </div>
-
-        </div>
-
-
-
-        <div className="ls-summary-card ls-orange">
-
-          <div className="ls-summary-icon">
-
-            <Clock3 size={21} />
-
-          </div>
-
-          <div>
-
-            <strong>
-              {toGradeCount}
-            </strong>
-
-            <span>
-              To Grade
-            </span>
-
-          </div>
-
-        </div>
-
-
-
-        <div className="ls-summary-card ls-green">
-
-          <div className="ls-summary-icon">
-
-            <CircleCheckBig
-              size={21}
+            <SlidersHorizontal
+              size={18}
             />
 
           </div>
 
-          <div>
+
+          <span>
 
             <strong>
-              {gradedCount}
+              Submission Finder
             </strong>
 
-            <span>
-              Graded
-            </span>
+            Find student coursework
 
-          </div>
+          </span>
 
         </div>
 
-
-
-        <div className="ls-summary-card ls-purple">
-
-          <div className="ls-summary-icon">
-
-            <Users size={21} />
-
-          </div>
-
-          <div>
-
-            <strong>
-              {uniqueStudents}
-            </strong>
-
-            <span>
-              Students
-            </span>
-
-          </div>
-
-        </div>
-
-      </section>
-
-
-
-      {/* ====================================
-          TOOLBAR
-      ==================================== */}
-
-      <section className="ls-toolbar">
 
         <div className="ls-search">
 
           <Search size={17} />
 
+
           <input
             type="text"
             placeholder="Search student, assignment or program..."
-            value={searchTerm}
+            value={
+              searchTerm
+            }
             onChange={(event) =>
               setSearchTerm(
                 event.target.value
@@ -650,7 +914,9 @@ function LecturerSubmissions() {
 
         <select
           className="ls-filter"
-          value={statusFilter}
+          value={
+            statusFilter
+          }
           onChange={(event) =>
             setStatusFilter(
               event.target.value
@@ -675,6 +941,57 @@ function LecturerSubmissions() {
       </section>
 
 
+      {/* ====================================
+          LIST HEADING
+      ==================================== */}
+
+      <section className="ls-list-heading">
+
+
+        <div>
+
+          <span>
+
+            <FileCheck2
+              size={13}
+            />
+
+            REVIEW INBOX
+
+          </span>
+
+
+          <h2>
+            Student Submissions
+          </h2>
+
+
+          <p>
+
+            Open coursework, check results
+            and continue to grading.
+
+          </p>
+
+        </div>
+
+
+        <div className="ls-result-count">
+
+          {filteredSubmissions.length}
+
+          <span>
+
+            {filteredSubmissions.length === 1
+              ? "submission"
+              : "submissions"}
+
+          </span>
+
+        </div>
+
+      </section>
+
 
       {/* ====================================
           LOADING
@@ -682,27 +999,27 @@ function LecturerSubmissions() {
 
       {loading && (
 
-        <section className="ls-table-container">
+        <section className="ls-state-box">
 
-          <div className="ls-empty">
+          <div className="ls-state-icon">
 
-            <FileCheck2 size={28} />
-
-            <h3>
-              Loading submissions...
-            </h3>
-
-            <p>
-              Please wait while your
-              submissions are loaded.
-            </p>
+            <Inbox size={24} />
 
           </div>
+
+          <h3>
+            Loading submissions...
+          </h3>
+
+          <p>
+
+            Preparing your review inbox.
+
+          </p>
 
         </section>
 
       )}
-
 
 
       {/* ====================================
@@ -711,325 +1028,296 @@ function LecturerSubmissions() {
 
       {!loading && error && (
 
-        <section className="ls-table-container">
+        <section className="ls-state-box">
 
-          <div className="ls-empty">
+          <div className="ls-state-icon">
 
-            <FileCheck2 size={28} />
-
-            <h3>
-              Unable to load submissions
-            </h3>
-
-            <p>
-              {error}
-            </p>
+            <FileCheck2
+              size={24}
+            />
 
           </div>
+
+          <h3>
+            Unable to load submissions
+          </h3>
+
+          <p>
+            {error}
+          </p>
 
         </section>
 
       )}
 
 
-
       {/* ====================================
-          TABLE
+          SUBMISSION CARDS
       ==================================== */}
 
-      {!loading && !error && (
+      {!loading &&
+        !error && (
 
-        <section className="ls-table-container">
-
-          <table className="ls-table">
-
-            <thead>
-
-              <tr>
-
-                <th>
-                  Student
-                </th>
-
-                <th>
-                  Assignment
-                </th>
-
-                <th>
-                  Program / Batch
-                </th>
-
-                <th>
-                  Submitted
-                </th>
-
-                <th>
-                  Status
-                </th>
-
-                <th>
-                  Grade
-                </th>
-
-                <th>
-                  Action
-                </th>
-
-              </tr>
-
-            </thead>
+        <section className="ls-submission-list">
 
 
-            <tbody>
+          {filteredSubmissions.map(
+            (submission) => {
 
-              {filteredSubmissions.map(
-                (submission) => {
-
-                  const isGraded =
-
-                    submission.grade !==
-                      null &&
-
-                    submission.grade !==
-                      undefined &&
-
-                    submission.grade !==
-                      "";
+              const isGraded =
+                isSubmissionGraded(
+                  submission
+                );
 
 
-                  return (
+              return (
 
-                    <tr
-                      key={
+                <article
+                  className={
+                    isGraded
+                      ? "ls-submission-card ls-card-graded"
+                      : "ls-submission-card ls-card-pending"
+                  }
+                  key={
+                    submission
+                      .submission_id
+                  }
+                >
+
+
+                  {/* STUDENT */}
+
+                  <div className="ls-student-block">
+
+
+                    <div className="ls-student-avatar">
+
+                      {getInitials(
                         submission
-                          .submission_id
-                      }
-                    >
+                          .student_name
+                      )}
+
+                    </div>
 
 
-                      {/* STUDENT */}
+                    <div>
 
-                      <td>
+                      <span className="ls-small-label">
+                        STUDENT
+                      </span>
 
-                        <div className="ls-student">
-
-                          <div className="ls-student-avatar">
-
-                            {getInitials(
-                              submission
-                                .student_name
-                            )}
-
-                          </div>
-
-
-                          <div>
-
-                            <strong>
-
-                              {
-                                submission
-                                  .student_name
-                              }
-
-                            </strong>
-
-                            <span>
-
-                              Student ID{" "}
-                              {
-                                submission
-                                  .student_id
-                              }
-
-                            </span>
-
-                          </div>
-
-                        </div>
-
-                      </td>
-
-
-
-                      {/* ASSIGNMENT */}
-
-                      <td className="ls-primary-text">
+                      <strong>
 
                         {
                           submission
-                            .assignment_title
+                            .student_name
                         }
 
-                      </td>
+                      </strong>
+
+                      <small>
+
+                        ID{" "}
+                        {
+                          submission
+                            .student_id
+                        }
+
+                      </small>
+
+                    </div>
+
+                  </div>
 
 
+                  {/* ASSIGNMENT */}
 
-                      {/* PROGRAM / BATCH */}
+                  <div className="ls-assignment-block">
 
-                      <td>
+                    <span className="ls-small-label">
+                      ASSIGNMENT
+                    </span>
 
-                        <div className="ls-course">
+                    <h3>
 
-                          <BookOpen
-                            size={12}
-                          />
+                      {
+                        submission
+                          .assignment_title
+                      }
 
-                          {
-                            submission.degree ||
-                            "No degree"
-                          }
-
-                          {" • "}
-
-                          {
-                            submission.batch ||
-                            "No batch"
-                          }
-
-                        </div>
-
-                      </td>
+                    </h3>
 
 
-
-                      {/* DATE */}
-
-                      <td>
-
-                        <div className="ls-date">
-
-                          <CalendarDays
-                            size={12}
-                          />
-
-                          {formatDate(
-                            submission
-                              .submitted_at
-                          )}
-
-                        </div>
-
-                      </td>
+                    <div className="ls-assignment-meta">
 
 
+                      <span>
 
-                      {/* STATUS */}
+                        <BookOpen
+                          size={12}
+                        />
 
-                      <td>
+                        {
+                          submission.degree ||
+                          "No degree"
+                        }
 
-                        <span
-                          className={
-                            isGraded
-                              ? "ls-status ls-status-graded"
-                              : "ls-status ls-status-pending"
-                          }
-                        >
+                        {" • "}
 
-                          {isGraded ? (
+                        {
+                          submission.batch ||
+                          "No batch"
+                        }
 
-                            <CircleCheckBig
-                              size={11}
-                            />
-
-                          ) : (
-
-                            <Clock3
-                              size={11}
-                            />
-
-                          )}
+                      </span>
 
 
-                          {isGraded
-                            ? "Graded"
-                            : "To Grade"}
+                      <span>
 
-                        </span>
+                        <CalendarDays
+                          size={12}
+                        />
 
-                      </td>
-
-
-
-                      {/* GRADE */}
-
-                      <td>
-
-                        {isGraded ? (
-
-                          <strong className="ls-mark">
-
-                            {
-                              submission
-                                .grade
-                            }
-
-                          </strong>
-
-                        ) : (
-
-                          <span className="ls-no-mark">
-
-                            —
-
-                          </span>
-
+                        {formatDate(
+                          submission
+                            .submitted_at
                         )}
 
-                      </td>
+                      </span>
+
+                    </div>
+
+                  </div>
 
 
+                  {/* STATUS */}
 
-                      {/* ACTION */}
+                  <div className="ls-status-block">
 
-                      <td>
+                    <span className="ls-small-label">
+                      REVIEW STATUS
+                    </span>
 
-                        <button
-                          className="ls-review-button"
-                          onClick={() =>
-                            setSelectedSubmission(
-                              submission
-                            )
-                          }
-                        >
 
-                          <Eye size={14} />
+                    <span
+                      className={
+                        isGraded
+                          ? "ls-status ls-status-graded"
+                          : "ls-status ls-status-pending"
+                      }
+                    >
 
-                          Review
+                      {isGraded ? (
 
-                        </button>
+                        <CircleCheckBig
+                          size={11}
+                        />
 
-                      </td>
+                      ) : (
 
-                    </tr>
+                        <Clock3
+                          size={11}
+                        />
 
-                  );
+                      )}
 
-                }
-              )}
 
-            </tbody>
+                      {isGraded
+                        ? "Graded"
+                        : "To Grade"}
 
-          </table>
+                    </span>
+
+                  </div>
+
+
+                  {/* GRADE */}
+
+                  <div className="ls-grade-block">
+
+                    <span className="ls-small-label">
+                      GRADE
+                    </span>
+
+
+                    {isGraded ? (
+
+                      <div className="ls-grade-value">
+
+                        {
+                          submission.grade
+                        }
+
+                      </div>
+
+                    ) : (
+
+                      <div className="ls-grade-empty">
+
+                        —
+
+                      </div>
+
+                    )}
+
+                  </div>
+
+
+                  {/* ACTION */}
+
+                  <div className="ls-card-action">
+
+                    <button
+                      type="button"
+                      className="ls-review-button"
+                      onClick={() =>
+                        setSelectedSubmission(
+                          submission
+                        )
+                      }
+                    >
+
+                      <Eye size={14} />
+
+                      Review
+
+                      <ChevronRight
+                        size={13}
+                      />
+
+                    </button>
+
+                  </div>
+
+                </article>
+
+              );
+
+            }
+          )}
 
 
           {filteredSubmissions.length ===
             0 && (
 
-            <div className="ls-empty">
+            <div className="ls-state-box">
 
-              <FileCheck2
-                size={28}
-              />
+              <div className="ls-state-icon">
+
+                <Search size={24} />
+
+              </div>
 
               <h3>
                 No submissions found
               </h3>
 
               <p>
+
                 There are no submissions
-                matching your current
-                search or filter.
+                matching your current search
+                or filter.
+
               </p>
 
             </div>
@@ -1039,7 +1327,6 @@ function LecturerSubmissions() {
         </section>
 
       )}
-
 
 
       {/* ====================================
@@ -1057,22 +1344,41 @@ function LecturerSubmissions() {
 
             <div className="ls-modal-header">
 
-              <div>
 
-                <h2>
-                  Review Submission
-                </h2>
+              <div className="ls-modal-title">
 
-                <p>
-                  View the student's
-                  real submission
-                  information.
-                </p>
+                <div className="ls-modal-title-icon">
+
+                  <Eye size={19} />
+
+                </div>
+
+
+                <div>
+
+                  <span>
+                    SUBMISSION REVIEW
+                  </span>
+
+                  <h2>
+                    Review Submission
+                  </h2>
+
+                  <p>
+
+                    Inspect student details,
+                    coursework and current
+                    grading status.
+
+                  </p>
+
+                </div>
 
               </div>
 
 
               <button
+                type="button"
                 className="ls-modal-close"
                 onClick={() =>
                   setSelectedSubmission(
@@ -1088,10 +1394,10 @@ function LecturerSubmissions() {
             </div>
 
 
-
             {/* STUDENT */}
 
             <div className="ls-review-student">
+
 
               <div className="ls-review-avatar">
 
@@ -1104,6 +1410,10 @@ function LecturerSubmissions() {
 
 
               <div>
+
+                <span>
+                  STUDENT SUBMISSION
+                </span>
 
                 <h3>
 
@@ -1119,6 +1429,7 @@ function LecturerSubmissions() {
                   {
                     selectedSubmission
                       .student_email ||
+
                     `Student ID ${selectedSubmission.student_id}`
                   }
 
@@ -1126,8 +1437,26 @@ function LecturerSubmissions() {
 
               </div>
 
-            </div>
 
+              <div
+                className={
+                  isSubmissionGraded(
+                    selectedSubmission
+                  )
+                    ? "ls-review-state ls-review-state-graded"
+                    : "ls-review-state ls-review-state-pending"
+                }
+              >
+
+                {isSubmissionGraded(
+                  selectedSubmission
+                )
+                  ? "Graded"
+                  : "Awaiting Review"}
+
+              </div>
+
+            </div>
 
 
             {/* INFO GRID */}
@@ -1137,7 +1466,9 @@ function LecturerSubmissions() {
 
               <div className="ls-review-info">
 
-                <BookOpen size={17} />
+                <BookOpen
+                  size={17}
+                />
 
                 <div>
 
@@ -1168,10 +1499,11 @@ function LecturerSubmissions() {
               </div>
 
 
-
               <div className="ls-review-info">
 
-                <FileCheck2 size={17} />
+                <FileCheck2
+                  size={17}
+                />
 
                 <div>
 
@@ -1191,7 +1523,6 @@ function LecturerSubmissions() {
                 </div>
 
               </div>
-
 
 
               <div className="ls-review-info">
@@ -1218,7 +1549,6 @@ function LecturerSubmissions() {
                 </div>
 
               </div>
-
 
 
               <div className="ls-review-info">
@@ -1248,10 +1578,10 @@ function LecturerSubmissions() {
             </div>
 
 
-
             {/* FILE */}
 
             <div className="ls-file-card">
+
 
               <div className="ls-file-icon">
 
@@ -1262,6 +1592,10 @@ function LecturerSubmissions() {
 
               <div>
 
+                <span>
+                  SUBMISSION FILE
+                </span>
+
                 <strong>
 
                   {getFileName(
@@ -1271,14 +1605,15 @@ function LecturerSubmissions() {
 
                 </strong>
 
-                <span>
-                  Student submission file
-                </span>
+                <p>
+                  Student coursework attachment
+                </p>
 
               </div>
 
 
               <button
+                type="button"
                 onClick={() =>
                   handleOpenFile(
                     selectedSubmission
@@ -1290,22 +1625,20 @@ function LecturerSubmissions() {
 
                 Open File
 
+                <ArrowUpRight
+                  size={13}
+                />
+
               </button>
 
             </div>
 
 
-
             {/* CURRENT RESULT */}
 
-            {selectedSubmission.grade !==
-              null &&
-
-              selectedSubmission.grade !==
-                undefined &&
-
-              selectedSubmission.grade !==
-                "" && (
+            {isSubmissionGraded(
+              selectedSubmission
+            ) && (
 
               <div className="ls-result-box">
 
@@ -1316,7 +1649,7 @@ function LecturerSubmissions() {
                 <div>
 
                   <strong>
-                    Already Graded
+                    Assessment Completed
                   </strong>
 
                   <span>
@@ -1328,15 +1661,19 @@ function LecturerSubmissions() {
                         .grade
                     }
 
+
                     {selectedSubmission
                       .feedback && (
 
                       <>
+
                         {" • "}
+
                         {
                           selectedSubmission
                             .feedback
                         }
+
                       </>
 
                     )}
@@ -1350,12 +1687,12 @@ function LecturerSubmissions() {
             )}
 
 
-
             {/* FOOTER */}
 
             <div className="ls-modal-actions">
 
               <button
+                type="button"
                 className="ls-secondary-button"
                 onClick={() =>
                   setSelectedSubmission(
@@ -1370,6 +1707,7 @@ function LecturerSubmissions() {
 
 
               <button
+                type="button"
                 className="lecturer-primary-button"
                 onClick={() =>
                   handleGradeSubmission(
@@ -1382,12 +1720,10 @@ function LecturerSubmissions() {
                   size={15}
                 />
 
-                {selectedSubmission
-                  .grade !== null &&
-                selectedSubmission
-                  .grade !== undefined &&
-                selectedSubmission
-                  .grade !== ""
+
+                {isSubmissionGraded(
+                  selectedSubmission
+                )
                   ? "View Grade"
                   : "Grade Submission"}
 
@@ -1402,7 +1738,9 @@ function LecturerSubmissions() {
       )}
 
     </div>
+
   );
+
 }
 
 

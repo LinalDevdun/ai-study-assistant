@@ -1,117 +1,583 @@
 /* =========================================
-   LECTURER SUBMISSIONS
+   LECTURER SUBMISSION REVIEW HUB
 ========================================= */
 
 .lecturer-submissions-page {
   width: 100%;
   max-width: 1440px;
+
   margin: 0 auto;
-  padding: 34px 36px 55px;
-}
 
-
-/* HEADER */
-
-.ls-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 20px;
-  margin-bottom: 27px;
-}
-
-.ls-header h1 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: -0.8px;
-}
-
-.ls-header p {
-  margin: 8px 0 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.ls-header-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 14px;
-  color: #d97706;
-  background: #fff7e6;
-  border: 1px solid #fde7b0;
-  border-radius: 11px;
-  font-size: 11px;
-  font-weight: 700;
+  padding: 34px 36px 58px;
 }
 
 
 /* =========================================
-   SUMMARY
+   REVIEW HUB
 ========================================= */
 
-.ls-summary {
+.ls-review-hub {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 17px;
-  margin-bottom: 27px;
+
+  grid-template-columns:
+    minmax(0, 1.4fr)
+    minmax(280px, 0.6fr);
+
+  gap: 18px;
+
+  margin-bottom: 25px;
 }
 
-.ls-summary-card {
+
+/* =========================================
+   LEFT REVIEW INTRO
+========================================= */
+
+.ls-review-intro {
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 285px;
+
+  padding: 32px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fbfcff 58%,
+      #f2f6ff 100%
+    );
+
+  border:
+    1px solid #e2e6ef;
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 15px 38px
+    rgba(27, 41, 92, 0.065);
+}
+
+
+.ls-review-intro::before {
+  content: "";
+
+  position: absolute;
+
+  width: 240px;
+  height: 240px;
+
+  right: -90px;
+  top: -135px;
+
+  border:
+    29px solid
+    rgba(64, 88, 223, 0.042);
+
+  border-radius: 50%;
+}
+
+
+.ls-review-intro::after {
+  content: "";
+
+  position: absolute;
+
+  width: 145px;
+  height: 145px;
+
+  right: 17%;
+  bottom: -115px;
+
+  background:
+    rgba(64, 88, 223, 0.032);
+
+  border-radius: 50%;
+}
+
+
+/* =========================================
+   HEADING
+========================================= */
+
+.ls-review-heading {
+  position: relative;
+  z-index: 2;
+
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px;
-  background: white;
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-  box-shadow: var(--shadow-sm);
+
+  align-items: flex-start;
+
+  gap: 16px;
 }
 
-.ls-summary-icon {
-  width: 46px;
-  height: 46px;
+
+.ls-review-heading-icon {
+  width: 53px;
+  height: 53px;
+
   flex-shrink: 0;
+
   display: flex;
+
   align-items: center;
   justify-content: center;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #3155df,
+      #6478ed
+    );
+
+  border-radius: 15px;
+
+  box-shadow:
+    0 11px 24px
+    rgba(49, 85, 223, 0.2);
+}
+
+
+.ls-kicker {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 8px;
+
+  color: #4058df;
+
+  font-size: 7px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.ls-review-heading h1 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 29px;
+  line-height: 1.15;
+
+  font-weight: 850;
+
+  letter-spacing: -0.9px;
+}
+
+
+.ls-review-heading p {
+  max-width: 620px;
+
+  margin: 9px 0 0;
+
+  color: #7d879a;
+
+  font-size: 9px;
+  line-height: 1.7;
+}
+
+
+/* =========================================
+   REVIEW METRICS
+========================================= */
+
+.ls-review-metrics {
+  position: relative;
+  z-index: 2;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 10px;
+
+  margin-top: 36px;
+}
+
+
+.ls-review-metric {
+  padding: 14px 15px;
+
+  background:
+    rgba(248, 249, 253, 0.9);
+
+  border:
+    1px solid #e9ecf3;
+
   border-radius: 13px;
 }
 
-.ls-blue .ls-summary-icon {
-  color: #4058df;
-  background: #eef2ff;
-}
 
-.ls-orange .ls-summary-icon {
-  color: #d98300;
-  background: #fff7e6;
-}
-
-.ls-green .ls-summary-icon {
-  color: #16a34a;
-  background: #ecfdf3;
-}
-
-.ls-purple .ls-summary-icon {
-  color: #7c4fe0;
-  background: #f3edff;
-}
-
-.ls-summary-card strong {
+.ls-review-metric > span {
   display: block;
-  margin-bottom: 3px;
-  color: var(--text-primary);
-  font-size: 21px;
+
+  margin-bottom: 5px;
+
+  color: #98a2b3;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+.ls-review-metric strong {
+  display: block;
+
+  color: #344054;
+
+  font-size: 18px;
+  font-weight: 850;
+}
+
+
+.ls-review-metric small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #98a2b3;
+
+  font-size: 6px;
+}
+
+
+/* =========================================
+   QUEUE PANEL
+========================================= */
+
+.ls-queue-panel {
+  position: relative;
+
+  overflow: hidden;
+
+  min-height: 285px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  padding: 25px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      150deg,
+      #294fd7 0%,
+      #4460df 53%,
+      #6279ee 100%
+    );
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 17px 40px
+    rgba(45, 70, 190, 0.22);
+}
+
+
+.ls-queue-panel::before {
+  content: "";
+
+  position: absolute;
+
+  width: 175px;
+  height: 175px;
+
+  right: -85px;
+  top: -85px;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.15);
+
+  border-radius: 50%;
+}
+
+
+.ls-queue-panel::after {
+  content: "";
+
+  position: absolute;
+
+  width: 100px;
+  height: 100px;
+
+  left: -55px;
+  bottom: -38px;
+
+  background:
+    rgba(255, 255, 255, 0.06);
+
+  border-radius: 50%;
+}
+
+
+/* =========================================
+   QUEUE TOP
+========================================= */
+
+.ls-queue-top {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+
+.ls-queue-top span {
+  display: block;
+
+  color:
+    rgba(255, 255, 255, 0.65);
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.ls-queue-top strong {
+  display: block;
+
+  margin-top: 5px;
+
+  color: white;
+
+  font-size: 28px;
+  line-height: 1;
+
+  font-weight: 850;
+}
+
+
+.ls-queue-top p {
+  margin: 5px 0 0;
+
+  color:
+    rgba(255, 255, 255, 0.7);
+
+  font-size: 7px;
+}
+
+
+.ls-queue-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  background:
+    rgba(255, 255, 255, 0.12);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.16);
+
+  border-radius: 12px;
+}
+
+
+/* =========================================
+   GRADING RING
+========================================= */
+
+.ls-grading-ring {
+  position: absolute;
+
+  z-index: 2;
+
+  width: 102px;
+  height: 102px;
+
+  top: 83px;
+  right: 25px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+}
+
+
+.ls-grading-ring-inner {
+  width: 77px;
+  height: 77px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  background: #405cdf;
+
+  border-radius: 50%;
+}
+
+
+.ls-grading-ring-inner strong {
+  color: white;
+
+  font-size: 18px;
+  font-weight: 850;
+}
+
+
+.ls-grading-ring-inner span {
+  margin-top: 2px;
+
+  color:
+    rgba(255, 255, 255, 0.65);
+
+  font-size: 5px;
   font-weight: 800;
 }
 
-.ls-summary-card span {
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 600;
+
+/* =========================================
+   GRADING COPY
+========================================= */
+
+.ls-grading-progress-copy {
+  position: relative;
+  z-index: 2;
+
+  max-width: 150px;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 8px;
+
+  margin-top: 34px;
+}
+
+
+.ls-grading-progress-copy svg {
+  flex-shrink: 0;
+
+  margin-top: 1px;
+}
+
+
+.ls-grading-progress-copy strong {
+  display: block;
+
+  font-size: 8px;
+}
+
+
+.ls-grading-progress-copy span {
+  display: block;
+
+  margin-top: 3px;
+
+  color:
+    rgba(255, 255, 255, 0.65);
+
+  font-size: 6px;
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   LATEST SUBMISSION
+========================================= */
+
+.ls-latest-submission {
+  position: relative;
+  z-index: 2;
+
+  margin-top: auto;
+
+  padding: 11px 12px;
+
+  background:
+    rgba(255, 255, 255, 0.1);
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.13);
+
+  border-radius: 11px;
+}
+
+
+.ls-latest-submission > span {
+  display: block;
+
+  color:
+    rgba(255, 255, 255, 0.55);
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+.ls-latest-submission strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: white;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+.ls-latest-submission p {
+  overflow: hidden;
+
+  margin: 3px 0 0;
+
+  color:
+    rgba(255, 255, 255, 0.72);
+
+  font-size: 6px;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+.ls-latest-submission small {
+  display: block;
+
+  margin-top: 5px;
+
+  color:
+    rgba(255, 255, 255, 0.55);
+
+  font-size: 5px;
 }
 
 
@@ -120,237 +586,705 @@
 ========================================= */
 
 .ls-toolbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 15px;
-  padding: 15px;
-  margin-bottom: 22px;
+  display: grid;
+
+  grid-template-columns:
+    205px
+    minmax(0, 1fr)
+    175px;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 14px;
+
+  margin-bottom: 25px;
+
   background: white;
-  border: 1px solid var(--border-light);
-  border-radius: 16px;
-  box-shadow: var(--shadow-xs);
-}
 
-.ls-search {
-  width: min(480px, 100%);
-  position: relative;
-}
+  border:
+    1px solid #e5e8ef;
 
-.ls-search svg {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-}
+  border-radius: 17px;
 
-.ls-search input {
-  width: 100%;
-  height: 43px;
-  padding: 0 14px 0 42px;
-  color: var(--text-primary);
-  background: #f8f9fc;
-  border: 1px solid transparent;
-  border-radius: 11px;
-  outline: none;
-  font-size: 12px;
-}
-
-.ls-search input:focus {
-  background: white;
-  border-color: #ccd5ff;
   box-shadow:
-    0 0 0 4px rgba(79, 99, 231, 0.07);
+    0 9px 24px
+    rgba(32, 43, 87, 0.045);
 }
 
-.ls-filter {
-  min-width: 175px;
-  height: 43px;
-  padding: 0 13px;
-  color: var(--text-secondary);
-  background: #f8f9fc;
-  border: 1px solid var(--border-light);
+
+.ls-toolbar-label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.ls-toolbar-label > div {
+  width: 39px;
+  height: 39px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #4058df;
+
+  background: #edf1ff;
+
   border-radius: 11px;
-  outline: none;
-  font-size: 11px;
-  font-weight: 600;
+}
+
+
+.ls-toolbar-label > span {
+  display: flex;
+
+  flex-direction: column;
+
+  color: #98a2b3;
+
+  font-size: 6px;
+}
+
+
+.ls-toolbar-label strong {
+  margin-bottom: 2px;
+
+  color: #344054;
+
+  font-size: 8px;
 }
 
 
 /* =========================================
-   TABLE
+   SEARCH
 ========================================= */
 
-.ls-table-container {
-  overflow-x: auto;
-  background: white;
-  border: 1px solid var(--border-light);
-  border-radius: 18px;
-  box-shadow: var(--shadow-sm);
-}
+.ls-search {
+  position: relative;
 
-.ls-table {
   width: 100%;
-  border-collapse: collapse;
-  min-width: 1050px;
 }
 
-.ls-table th {
-  padding: 14px 16px;
-  color: var(--text-muted);
-  background: #fafbfe;
+
+.ls-search svg {
+  position: absolute;
+
+  left: 14px;
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  color: #98a2b3;
+}
+
+
+.ls-search input {
+  width: 100%;
+  height: 43px;
+
+  box-sizing: border-box;
+
+  padding:
+    0 14px 0 42px;
+
+  color: #344054;
+
+  background: #f8f9fc;
+
+  border:
+    1px solid transparent;
+
+  border-radius: 11px;
+
+  outline: none;
+
+  font-family: inherit;
+
   font-size: 9px;
-  font-weight: 750;
-  text-align: left;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
 
-.ls-table td {
-  padding: 15px 16px;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-light);
-  font-size: 10px;
-}
-
-.ls-table tbody tr {
-  transition: background var(--transition-fast);
-}
-
-.ls-table tbody tr:hover {
-  background: #fcfcff;
+  transition:
+    background 0.18s ease,
+    border 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 
-/* STUDENT */
+.ls-search input::placeholder {
+  color: #a0a9ba;
+}
 
-.ls-student {
+
+.ls-search input:focus {
+  background: white;
+
+  border-color: #c7d0ff;
+
+  box-shadow:
+    0 0 0 4px
+    rgba(64, 88, 223, 0.07);
+}
+
+
+/* =========================================
+   FILTER
+========================================= */
+
+.ls-filter {
+  width: 100%;
+  height: 43px;
+
+  padding: 0 12px;
+
+  color: #667085;
+
+  background: #f8f9fc;
+
+  border:
+    1px solid #eaecf0;
+
+  border-radius: 11px;
+
+  outline: none;
+
+  font-family: inherit;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+/* =========================================
+   LIST HEADING
+========================================= */
+
+.ls-list-heading {
   display: flex;
+
+  justify-content: space-between;
+  align-items: flex-end;
+
+  gap: 16px;
+
+  margin-bottom: 15px;
+}
+
+
+.ls-list-heading > div:first-child > span {
+  display: inline-flex;
+
   align-items: center;
+
+  gap: 6px;
+
+  margin-bottom: 6px;
+
+  color: #4058df;
+
+  font-size: 7px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
+
+.ls-list-heading h2 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 20px;
+  font-weight: 850;
+
+  letter-spacing: -0.4px;
+}
+
+
+.ls-list-heading p {
+  margin: 5px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 8px;
+}
+
+
+.ls-result-count {
+  display: inline-flex;
+
+  align-items: baseline;
+
+  gap: 4px;
+
+  padding: 7px 10px;
+
+  color: #4058df;
+
+  background: #edf1ff;
+
+  border-radius: 8px;
+
+  font-size: 10px;
+  font-weight: 850;
+}
+
+
+.ls-result-count span {
+  color: #8490a7;
+
+  font-size: 6px;
+  font-weight: 650;
+}
+
+
+/* =========================================
+   SUBMISSION LIST
+========================================= */
+
+.ls-submission-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 13px;
+}
+
+
+/* =========================================
+   SUBMISSION CARD
+========================================= */
+
+.ls-submission-card {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(170px, 0.75fr)
+    minmax(300px, 1.55fr)
+    125px
+    80px
+    115px;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding: 17px 18px;
+
+  background: white;
+
+  border:
+    1px solid #e5e8ef;
+
+  border-radius: 17px;
+
+  box-shadow:
+    0 8px 23px
+    rgba(31, 42, 87, 0.046);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border 0.2s ease;
+}
+
+
+.ls-submission-card::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 18px;
+  bottom: 18px;
+
+  width: 3px;
+
+  border-radius:
+    0 4px 4px 0;
+}
+
+
+.ls-card-graded::before {
+  background: #20b66b;
+}
+
+
+.ls-card-pending::before {
+  background: #f0a126;
+}
+
+
+.ls-submission-card:hover {
+  transform:
+    translateY(-2px);
+
+  border-color: #dce1ef;
+
+  box-shadow:
+    0 14px 30px
+    rgba(31, 42, 87, 0.08);
+}
+
+
+/* =========================================
+   SMALL LABEL
+========================================= */
+
+.ls-small-label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #9ba5b7;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+/* =========================================
+   STUDENT
+========================================= */
+
+.ls-student-block {
+  display: flex;
+
+  align-items: center;
+
   gap: 10px;
 }
 
+
 .ls-student-avatar {
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
+
   flex-shrink: 0;
+
   display: flex;
+
   align-items: center;
   justify-content: center;
+
   color: white;
+
   background:
     linear-gradient(
       135deg,
       #4058df,
-      #7479ef
+      #707ced
     );
-  border-radius: 10px;
-  font-size: 9px;
-  font-weight: 750;
-}
 
-.ls-student strong {
-  display: block;
-  color: var(--text-primary);
-  font-size: 10px;
-}
+  border-radius: 12px;
 
-.ls-student span {
-  display: block;
-  margin-top: 2px;
-  color: var(--text-muted);
   font-size: 8px;
+  font-weight: 850;
+
+  box-shadow:
+    0 7px 15px
+    rgba(64, 88, 223, 0.15);
 }
 
-.ls-primary-text {
-  color: var(--text-primary) !important;
-  font-weight: 700;
+
+.ls-student-block strong {
+  display: block;
+
+  color: #101828;
+
+  font-size: 9px;
+  font-weight: 800;
 }
 
-.ls-course,
-.ls-date {
+
+.ls-student-block small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #98a2b3;
+
+  font-size: 6px;
+}
+
+
+/* =========================================
+   ASSIGNMENT
+========================================= */
+
+.ls-assignment-block {
+  min-width: 0;
+}
+
+
+.ls-assignment-block h3 {
+  overflow: hidden;
+
+  margin: 0 0 8px;
+
+  color: #101828;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+.ls-assignment-meta {
   display: flex;
-  align-items: center;
-  gap: 6px;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
 }
 
 
-/* STATUS */
+.ls-assignment-meta span {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  color: #7d8798;
+
+  font-size: 6px;
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
+
+.ls-status-block {
+  min-width: 0;
+}
+
 
 .ls-status {
   display: inline-flex;
+
   align-items: center;
+
   gap: 5px;
-  padding: 5px 8px;
+
+  padding: 6px 8px;
+
   border-radius: 7px;
-  font-size: 8px;
+
+  font-size: 7px;
   font-weight: 750;
+
   white-space: nowrap;
 }
 
+
 .ls-status-pending {
-  color: #d97706;
-  background: #fff7e6;
+  color: #cd7900;
+
+  background: #fff5df;
 }
+
 
 .ls-status-graded {
-  color: #15803d;
-  background: #ecfdf3;
-}
+  color: #13804c;
 
-.ls-mark {
-  color: #15803d;
-}
-
-.ls-no-mark {
-  color: var(--text-muted);
+  background: #eafbf1;
 }
 
 
-/* BUTTON */
+/* =========================================
+   GRADE
+========================================= */
 
-.ls-review-button {
-  min-height: 34px;
-  display: inline-flex;
+.ls-grade-block {
+  text-align: center;
+}
+
+
+.ls-grade-value {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 0 11px;
-  color: white;
-  background:
-    linear-gradient(
-      135deg,
-      #4058df,
-      #6366f1
-    );
-  border: none;
-  border-radius: 8px;
-  font-size: 9px;
+
+  margin: 0 auto;
+
+  color: #13804c;
+
+  background: #eafbf1;
+
+  border-radius: 10px;
+
+  font-size: 12px;
+  font-weight: 850;
+}
+
+
+.ls-grade-empty {
+  color: #a4adbd;
+
+  font-size: 16px;
   font-weight: 700;
 }
 
 
-/* EMPTY */
+/* =========================================
+   REVIEW BUTTON
+========================================= */
 
-.ls-empty {
-  padding: 60px 20px;
+.ls-card-action {
+  display: flex;
+
+  justify-content: flex-end;
+}
+
+
+.ls-review-button {
+  min-height: 37px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  padding: 0 11px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #636fe8
+    );
+
+  border: none;
+  border-radius: 9px;
+
+  font-family: inherit;
+
+  font-size: 7px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 6px 15px
+    rgba(64, 88, 223, 0.17);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.ls-review-button:hover {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 9px 19px
+    rgba(64, 88, 223, 0.22);
+}
+
+
+/* =========================================
+   EMPTY / LOADING
+========================================= */
+
+.ls-state-box {
+  padding: 67px 24px;
+
   text-align: center;
-  color: var(--text-muted);
+
+  background: white;
+
+  border:
+    1px dashed #dce0e9;
+
+  border-radius: 18px;
 }
 
-.ls-empty svg {
+
+.ls-state-icon {
+  width: 56px;
+  height: 56px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin:
+    0 auto 13px;
+
   color: #4058df;
+
+  background: #edf1ff;
+
+  border-radius: 15px;
 }
 
-.ls-empty h3 {
-  margin: 12px 0 5px;
-  color: var(--text-primary);
-  font-size: 14px;
-}
 
-.ls-empty p {
+.ls-state-box h3 {
   margin: 0;
-  font-size: 10px;
+
+  color: #344054;
+
+  font-size: 11px;
+}
+
+
+.ls-state-box p {
+  margin: 5px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 7px;
+}
+
+
+/* =========================================
+   MODAL OVERLAY
+========================================= */
+
+.ls-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1200;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(15, 23, 42, 0.48);
+
+  backdrop-filter:
+    blur(7px);
 }
 
 
@@ -358,103 +1292,177 @@
    REVIEW MODAL
 ========================================= */
 
-.ls-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
-
-  background:
-    rgba(15, 23, 42, 0.44);
-
-  backdrop-filter: blur(5px);
-}
-
 .ls-review-modal {
-  width: min(650px, 100%);
+  width:
+    min(660px, 100%);
+
   max-height: 90vh;
+
   overflow-y: auto;
 
   padding: 25px;
 
-  background: white;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fbfcff
+    );
 
-  border-radius: 20px;
+  border-radius: 21px;
 
   box-shadow:
-    0 25px 70px rgba(15, 23, 42, 0.23);
+    0 28px 75px
+    rgba(15, 23, 42, 0.25);
 }
+
+
+/* =========================================
+   MODAL HEADER
+========================================= */
 
 .ls-modal-header {
   display: flex;
+
   justify-content: space-between;
   align-items: flex-start;
 
-  gap: 20px;
+  gap: 18px;
 
-  margin-bottom: 22px;
+  padding-bottom: 19px;
+
+  margin-bottom: 19px;
+
+  border-bottom:
+    1px solid #edf0f4;
 }
 
-.ls-modal-header h2 {
+
+.ls-modal-title {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 12px;
+}
+
+
+.ls-modal-title-icon {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #4058df;
+
+  background: #edf1ff;
+
+  border-radius: 13px;
+}
+
+
+.ls-modal-title span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #4058df;
+
+  font-size: 6px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.ls-modal-title h2 {
   margin: 0;
 
-  color: var(--text-primary);
+  color: #101828;
 
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 19px;
+  font-weight: 850;
 }
 
-.ls-modal-header p {
-  margin: 6px 0 0;
 
-  color: var(--text-muted);
+.ls-modal-title p {
+  max-width: 330px;
 
-  font-size: 10px;
+  margin: 5px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 8px;
+  line-height: 1.5;
 }
+
 
 .ls-modal-close {
   width: 35px;
   height: 35px;
 
+  flex-shrink: 0;
+
   display: flex;
+
   align-items: center;
   justify-content: center;
 
-  color: var(--text-secondary);
-  background: #f7f8fb;
+  color: #667085;
+
+  background: #f6f7fa;
 
   border: none;
   border-radius: 9px;
+
+  cursor: pointer;
 }
 
 
-/* STUDENT PROFILE */
+/* =========================================
+   REVIEW STUDENT
+========================================= */
 
 .ls-review-student {
+  position: relative;
+
   display: flex;
+
   align-items: center;
 
   gap: 12px;
 
-  padding: 15px;
+  padding: 16px;
 
   margin-bottom: 18px;
 
-  background: #f7f9ff;
+  background:
+    linear-gradient(
+      135deg,
+      #f5f7ff,
+      #fafbff
+    );
 
-  border-radius: 13px;
+  border:
+    1px solid #e3e7fa;
+
+  border-radius: 14px;
 }
 
+
 .ls-review-avatar {
-  width: 45px;
-  height: 45px;
+  width: 47px;
+  height: 47px;
+
+  flex-shrink: 0;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -464,33 +1472,85 @@
     linear-gradient(
       135deg,
       #4058df,
-      #7479ef
+      #727ded
     );
 
-  border-radius: 12px;
-
-  font-size: 10px;
-  font-weight: 750;
-}
-
-.ls-review-student h3 {
-  margin: 0 0 3px;
-
-  color: var(--text-primary);
-
-  font-size: 13px;
-}
-
-.ls-review-student p {
-  margin: 0;
-
-  color: var(--text-muted);
+  border-radius: 13px;
 
   font-size: 9px;
+  font-weight: 850;
 }
 
 
-/* GRID */
+.ls-review-student > div:nth-child(2) {
+  min-width: 0;
+
+  flex: 1;
+}
+
+
+.ls-review-student > div:nth-child(2) > span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.09em;
+}
+
+
+.ls-review-student h3 {
+  margin: 0;
+
+  color: #101828;
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+
+.ls-review-student p {
+  margin: 3px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 7px;
+}
+
+
+.ls-review-state {
+  flex-shrink: 0;
+
+  padding: 6px 9px;
+
+  border-radius: 8px;
+
+  font-size: 6px;
+  font-weight: 800;
+}
+
+
+.ls-review-state-graded {
+  color: #14804d;
+
+  background: #eafbf1;
+}
+
+
+.ls-review-state-pending {
+  color: #cc7900;
+
+  background: #fff5df;
+}
+
+
+/* =========================================
+   REVIEW GRID
+========================================= */
 
 .ls-review-grid {
   display: grid;
@@ -503,8 +1563,10 @@
   margin-bottom: 18px;
 }
 
+
 .ls-review-info {
   display: flex;
+
   align-items: flex-start;
 
   gap: 10px;
@@ -513,9 +1575,12 @@
 
   background: #fafbfe;
 
-  border: 1px solid var(--border-light);
+  border:
+    1px solid #edf0f5;
+
   border-radius: 11px;
 }
+
 
 .ls-review-info svg {
   flex-shrink: 0;
@@ -523,30 +1588,40 @@
   color: #4058df;
 }
 
+
 .ls-review-info span {
   display: block;
 
   margin-bottom: 3px;
 
-  color: var(--text-muted);
+  color: #98a2b3;
 
-  font-size: 8px;
+  font-size: 7px;
 }
+
 
 .ls-review-info strong {
   display: block;
 
-  color: var(--text-primary);
+  color: #344054;
 
-  font-size: 9px;
+  font-size: 8px;
   line-height: 1.5;
 }
 
 
-/* FILE */
+/* =========================================
+   FILE CARD
+========================================= */
 
 .ls-file-card {
-  display: flex;
+  display: grid;
+
+  grid-template-columns:
+    43px
+    minmax(0, 1fr)
+    auto;
+
   align-items: center;
 
   gap: 11px;
@@ -555,21 +1630,28 @@
 
   margin-bottom: 18px;
 
-  background: #f6f8ff;
+  background:
+    linear-gradient(
+      135deg,
+      #f6f8ff,
+      #fbfcff
+    );
 
-  border: 1px solid #dde3ff;
+  border:
+    1px solid #dfe5ff;
+
   border-radius: 12px;
 }
+
 
 .ls-file-icon {
   width: 42px;
   height: 42px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
-
-  flex-shrink: 0;
 
   color: #4058df;
 
@@ -578,30 +1660,54 @@
   border-radius: 11px;
 }
 
+
 .ls-file-card > div:nth-child(2) {
-  flex: 1;
+  min-width: 0;
 }
+
+
+.ls-file-card > div:nth-child(2) > span {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: #4058df;
+
+  font-size: 5px;
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+}
+
 
 .ls-file-card strong {
   display: block;
 
-  margin-bottom: 3px;
+  overflow: hidden;
 
-  color: var(--text-primary);
+  color: #344054;
 
-  font-size: 10px;
+  font-size: 9px;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.ls-file-card span {
-  color: var(--text-muted);
 
-  font-size: 8px;
+.ls-file-card p {
+  margin: 3px 0 0;
+
+  color: #98a2b3;
+
+  font-size: 6px;
 }
+
 
 .ls-file-card button {
-  min-height: 35px;
+  min-height: 36px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -610,20 +1716,30 @@
   padding: 0 11px;
 
   color: #4058df;
+
   background: white;
 
-  border: 1px solid #d8def8;
+  border:
+    1px solid #d8def8;
+
   border-radius: 8px;
 
-  font-size: 9px;
-  font-weight: 700;
+  font-family: inherit;
+
+  font-size: 7px;
+  font-weight: 750;
+
+  cursor: pointer;
 }
 
 
-/* RESULT */
+/* =========================================
+   RESULT BOX
+========================================= */
 
 .ls-result-box {
   display: flex;
+
   align-items: center;
 
   gap: 10px;
@@ -633,28 +1749,45 @@
   margin-bottom: 18px;
 
   color: #15803d;
-  background: #ecfdf3;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ecfdf3,
+      #f5fff8
+    );
+
+  border:
+    1px solid #ccefd9;
 
   border-radius: 11px;
 }
+
 
 .ls-result-box strong {
   display: block;
 
   margin-bottom: 3px;
 
-  font-size: 10px;
-}
-
-.ls-result-box span {
   font-size: 9px;
 }
 
 
-/* ACTIONS */
+.ls-result-box span {
+  color: #5d806a;
+
+  font-size: 7px;
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   MODAL ACTIONS
+========================================= */
 
 .ls-modal-actions {
   display: flex;
+
   justify-content: flex-end;
 
   gap: 9px;
@@ -662,19 +1795,64 @@
   padding-top: 5px;
 }
 
+
 .ls-secondary-button {
   min-height: 41px;
 
   padding: 0 15px;
 
-  color: var(--text-secondary);
+  color: #667085;
+
   background: white;
 
-  border: 1px solid var(--border);
+  border:
+    1px solid #dde1e8;
+
   border-radius: 10px;
 
-  font-size: 10px;
+  font-family: inherit;
+
+  font-size: 8px;
   font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.lecturer-primary-button {
+  min-height: 41px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  padding: 0 15px;
+
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #4058df,
+      #626fe9
+    );
+
+  border: none;
+  border-radius: 10px;
+
+  font-family: inherit;
+
+  font-size: 8px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 7px 17px
+    rgba(64, 88, 223, 0.18);
 }
 
 
@@ -682,11 +1860,57 @@
    RESPONSIVE
 ========================================= */
 
-@media (max-width: 1050px) {
+@media (max-width: 1150px) {
 
-  .ls-summary {
+  .ls-submission-card {
     grid-template-columns:
-      repeat(2, 1fr);
+      minmax(150px, 0.8fr)
+      minmax(240px, 1.4fr)
+      115px
+      70px
+      105px;
+  }
+
+}
+
+
+@media (max-width: 1000px) {
+
+  .ls-review-hub {
+    grid-template-columns: 1fr;
+  }
+
+
+  .ls-queue-panel {
+    min-height: 275px;
+  }
+
+
+  .ls-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+
+  .ls-submission-card {
+    grid-template-columns:
+      1fr
+      1.4fr
+      auto;
+  }
+
+
+  .ls-status-block {
+    text-align: right;
+  }
+
+
+  .ls-grade-block {
+    text-align: left;
+  }
+
+
+  .ls-card-action {
+    justify-content: flex-start;
   }
 
 }
@@ -695,29 +1919,125 @@
 @media (max-width: 760px) {
 
   .lecturer-submissions-page {
-    padding: 24px 18px 40px;
+    padding:
+      24px 18px 42px;
   }
 
-  .ls-header {
+
+  .ls-review-intro {
+    padding: 25px 22px;
+  }
+
+
+  .ls-review-heading {
+    flex-direction: column;
+  }
+
+
+  .ls-review-heading h1 {
+    font-size: 25px;
+  }
+
+
+  .ls-review-metrics {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+
+  .ls-list-heading {
+    flex-direction: column;
+
     align-items: flex-start;
-    flex-direction: column;
   }
 
-  .ls-summary {
+
+  .ls-submission-card {
     grid-template-columns: 1fr;
+
+    gap: 14px;
   }
 
-  .ls-toolbar {
-    flex-direction: column;
+
+  .ls-status-block,
+  .ls-grade-block {
+    text-align: left;
   }
 
-  .ls-search,
-  .ls-filter {
+
+  .ls-grade-value {
+    margin: 0;
+  }
+
+
+  .ls-card-action {
+    justify-content: stretch;
+  }
+
+
+  .ls-review-button {
     width: 100%;
   }
 
+
   .ls-review-grid {
     grid-template-columns: 1fr;
+  }
+
+
+  .ls-file-card {
+    grid-template-columns:
+      42px
+      1fr;
+  }
+
+
+  .ls-file-card button {
+    grid-column: 1 / -1;
+
+    width: 100%;
+  }
+
+
+  .ls-review-student {
+    align-items: flex-start;
+
+    flex-wrap: wrap;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .ls-review-metrics {
+    grid-template-columns: 1fr;
+  }
+
+
+  .ls-grading-ring {
+    position: relative;
+
+    top: auto;
+    right: auto;
+
+    margin:
+      20px auto 0;
+  }
+
+
+  .ls-grading-progress-copy {
+    margin-top: 15px;
+  }
+
+
+  .ls-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+
+  .ls-modal-actions button {
+    width: 100%;
   }
 
 }
